@@ -87,7 +87,7 @@ export async function getFullMenu(businessId: string): Promise<{
     return { menus, categories: [], items: [] }
   }
 
-  const categoryIds = categories?.map((cat: MenuCategory) => cat.id) || []
+  const categoryIds = categories?.map((cat) => cat.id) || []
   const { data: items, error: itemsError } = await supabase
     .from("menu_items")
     .select("*")
