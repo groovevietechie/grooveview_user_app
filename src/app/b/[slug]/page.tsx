@@ -17,13 +17,17 @@ async function getBusinessData(slug: string): Promise<{
     items: MenuItem[]
   } | null
 }> {
+  console.log('Looking for business with slug:', slug)
   const business = await getBusinessBySlug(slug)
+  console.log('Business found:', business ? business.name : 'null')
 
   if (!business) {
+    console.log('No business found for slug:', slug)
     return { business: null, menuData: null }
   }
 
   const menuData = await getFullMenu(business.id)
+  console.log('Menu data:', menuData ? 'found' : 'null')
 
   return { business, menuData }
 }

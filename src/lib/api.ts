@@ -3,6 +3,7 @@ import { Business, Menu, MenuCategory, MenuItem, OrderSubmission } from '@/types
 
 // Business API
 export async function getBusinessBySlug(slug: string): Promise<Business | null> {
+  console.log('Querying for slug:', slug)
   const { data, error } = await supabase
     .from('businesses')
     .select('*')
@@ -11,9 +12,11 @@ export async function getBusinessBySlug(slug: string): Promise<Business | null> 
 
   if (error) {
     console.error('Error fetching business:', error)
+    console.log('Available error details:', error.details, error.hint, error.message)
     return null
   }
 
+  console.log('Business data retrieved:', data ? { id: data.id, name: data.name, is_active: data.is_active } : 'null')
   return data
 }
 
