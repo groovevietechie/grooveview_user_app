@@ -21,7 +21,7 @@ export default function MenuSelection({ menus, onSelectMenu, themeColor }: MenuS
         <p className="text-gray-600 text-sm mt-1">Browse our available menus</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-4">
         {menus.map((menu) => (
           <button
             key={menu.id}
