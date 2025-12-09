@@ -5,7 +5,7 @@ export interface Business {
   slug: string
   address?: string
   phone?: string
-  hours?: Record<string, any>
+  hours?: Record<string, unknown>
   logo_url?: string
   theme_color_hex: string
   is_active: boolean

@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { Cart, CartItem, MenuItem } from '@/types/database'
+import { Cart, MenuItem } from '@/types/database'
 
 interface CartStore extends Cart {
   addItem: (item: MenuItem, quantity?: number, note?: string) => void

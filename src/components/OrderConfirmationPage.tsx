@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { Business } from '@/types/database'
+import { useTheme } from '@/contexts/ThemeContext'
 import { CheckCircleIcon } from '@heroicons/react/24/solid'
 
 interface OrderConfirmationPageProps {
@@ -11,6 +12,7 @@ interface OrderConfirmationPageProps {
 
 export default function OrderConfirmationPage({ business, orderId }: OrderConfirmationPageProps) {
   const router = useRouter()
+  const { primaryColor } = useTheme()
 
   const handleBackToMenu = () => {
     router.push(`/b/${business.slug}`)
@@ -38,9 +40,9 @@ export default function OrderConfirmationPage({ business, orderId }: OrderConfir
 
         {/* Instructions */}
         <div className="text-left space-y-3 mb-8">
-          <h3 className="font-semibold text-gray-900">What's next?</h3>
+          <h3 className="font-semibold text-gray-900">What’s next?</h3>
           <ul className="text-sm text-gray-600 space-y-2">
-            <li>• You'll receive updates on your order status</li>
+            <li>• You’ll receive updates on your order status</li>
             <li>• Our team will prepare your order shortly</li>
             <li>• Payment will be collected as selected</li>
           </ul>
@@ -50,7 +52,8 @@ export default function OrderConfirmationPage({ business, orderId }: OrderConfir
         <div className="space-y-3">
           <button
             onClick={handleBackToMenu}
-            className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+            style={{ backgroundColor: primaryColor }}
+            className="w-full text-white py-3 px-6 rounded-lg transition-colors font-semibold"
           >
             Order More Items
           </button>

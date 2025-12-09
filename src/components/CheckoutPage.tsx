@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Business, PaymentMethod } from '@/types/database'
 import { useCartStore } from '@/store/cartStore'
+import { useTheme } from '@/contexts/ThemeContext'
 import { submitOrder } from '@/lib/api'
 import { ArrowLeftIcon } from '@heroicons/react/24/outline'
 
@@ -16,6 +17,7 @@ type OrderType = 'table' | 'home'
 export default function CheckoutPage({ business }: CheckoutPageProps) {
   const router = useRouter()
   const { items, getTotal, clearCart } = useCartStore()
+  const { primaryColor } = useTheme()
 
   const [orderType, setOrderType] = useState<OrderType>('table')
   const [tableNumber, setTableNumber] = useState('')
@@ -106,7 +108,7 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
                   value="table"
                   checked={orderType === 'table'}
                   onChange={(e) => setOrderType(e.target.value as OrderType)}
-                  className="text-blue-600"
+                  style={{ accentColor: primaryColor }}
                 />
                 <span>Dining in (Table order)</span>
               </label>
@@ -116,7 +118,7 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
                   value="home"
                   checked={orderType === 'home'}
                   onChange={(e) => setOrderType(e.target.value as OrderType)}
-                  className="text-blue-600"
+                  style={{ accentColor: primaryColor }}
                 />
                 <span>Home delivery</span>
               </label>
@@ -209,9 +211,11 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
                   value="cash"
                   checked={paymentMethod === 'cash'}
                   onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
-                  className="text-blue-600"
+                  style={{ accentColor: primaryColor }}
                 />
-                <span>Pay in {orderType === 'table' ? 'place' : 'cash on delivery'}</span>
+                <span>
+                  {orderType === 'table' ? 'Pay in place (cash)' : 'Pay on delivery (cash)'}
+                </span>
               </label>
               <label className="flex items-center gap-3">
                 <input
@@ -219,9 +223,9 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
                   value="card"
                   checked={paymentMethod === 'card'}
                   onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
-                  className="text-blue-600"
+                  style={{ accentColor: primaryColor }}
                 />
-                <span>Pay with card</span>
+                <span>Pay in app (card)</span>
               </label>
               <label className="flex items-center gap-3">
                 <input
@@ -229,9 +233,9 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
                   value="mobile"
                   checked={paymentMethod === 'mobile'}
                   onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
-                  className="text-blue-600"
+                  style={{ accentColor: primaryColor }}
                 />
-                <span>Mobile payment</span>
+                <span>Pay in app (mobile)</span>
               </label>
             </div>
           </div>
@@ -240,7 +244,8 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full bg-blue-600 text-white py-4 px-6 rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors font-semibold text-lg"
+            style={isSubmitting ? {} : { backgroundColor: primaryColor }}
+            className="w-full text-white py-4 px-6 rounded-lg disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors font-semibold text-lg"
           >
             {isSubmitting ? 'Placing Order...' : `Place Order - ₦${total.toLocaleString()}`}
           </button>

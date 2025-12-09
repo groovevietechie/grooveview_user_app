@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import { getBusinessBySlug, getFullMenu } from '@/lib/api'
-import { Business } from '@/types/database'
+import { Business, Menu, MenuCategory, MenuItem } from '@/types/database'
 import MenuPage from '@/components/MenuPage'
 
 interface PageProps {
@@ -11,7 +11,11 @@ interface PageProps {
 
 async function getBusinessData(slug: string): Promise<{
   business: Business | null
-  menuData: any
+  menuData: {
+    menus: Menu[]
+    categories: MenuCategory[]
+    items: MenuItem[]
+  } | null
 }> {
   const business = await getBusinessBySlug(slug)
 

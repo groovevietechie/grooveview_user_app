@@ -32,7 +32,7 @@ export default function Home() {
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">Scan QR Code</h3>
               <p className="text-gray-600">
-                Use your phone's camera to scan the QR code at any participating restaurant
+                Use your phone’s camera to scan the QR code at any participating restaurant
               </p>
             </div>
 

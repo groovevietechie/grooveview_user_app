@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Business } from '@/types/database'
 import { useCartStore } from '@/store/cartStore'
+import { useTheme } from '@/contexts/ThemeContext'
 import { XMarkIcon, TrashIcon } from '@heroicons/react/24/outline'
 import Image from 'next/image'
 
@@ -15,7 +16,8 @@ interface CartSidebarProps {
 export default function CartSidebar({ business, onClose }: CartSidebarProps) {
   const router = useRouter()
   const { items, removeItem, updateQuantity, getTotal, clearCart } = useCartStore()
-  const [isProcessing, setIsProcessing] = useState(false)
+  const { primaryColor } = useTheme()
+  const [isProcessing] = useState(false)
 
   const total = getTotal()
 
@@ -127,7 +129,8 @@ export default function CartSidebar({ business, onClose }: CartSidebarProps) {
           <button
             onClick={handleCheckout}
             disabled={isProcessing}
-            className="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors font-medium"
+            style={isProcessing ? {} : { backgroundColor: primaryColor }}
+            className="w-full text-white py-3 px-4 rounded-md disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors font-medium"
           >
             {isProcessing ? 'Processing...' : 'Checkout'}
           </button>

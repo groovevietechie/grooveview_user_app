@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { useState } from 'react'
 import { MenuItem } from '@/types/database'
 import { useCartStore } from '@/store/cartStore'
+import { useTheme } from '@/contexts/ThemeContext'
 import { PlusIcon, MinusIcon } from '@heroicons/react/24/outline'
 
 interface MenuItemCardProps {
@@ -15,6 +16,7 @@ export default function MenuItemCard({ item }: MenuItemCardProps) {
   const [note, setNote] = useState('')
   const [showNote, setShowNote] = useState(false)
   const { addItem, items } = useCartStore()
+  const { primaryColor } = useTheme()
 
   // Check if item is already in cart
   const cartItem = items.find(cartItem => cartItem.menuItem.id === item.id)
@@ -86,7 +88,8 @@ export default function MenuItemCard({ item }: MenuItemCardProps) {
         <div className="mb-3">
           <button
             onClick={() => setShowNote(!showNote)}
-            className="text-sm text-blue-600 hover:text-blue-700"
+            style={{ color: primaryColor }}
+            className="text-sm font-medium"
           >
             {showNote ? 'Hide' : 'Add'} special instructions
           </button>
@@ -106,7 +109,8 @@ export default function MenuItemCard({ item }: MenuItemCardProps) {
         <button
           onClick={handleAddToCart}
           disabled={quantity === 0}
-          className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+          style={quantity === 0 ? {} : { backgroundColor: primaryColor }}
+          className="w-full text-white py-2 px-4 rounded-md disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
         >
           Add to Cart {quantity > 0 && `(${quantity})`}
         </button>
