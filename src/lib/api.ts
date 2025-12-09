@@ -110,6 +110,8 @@ export async function getFullMenu(businessId: string): Promise<{
 // Order API
 export async function submitOrder(orderData: OrderSubmission): Promise<string | null> {
   try {
+    console.log("[v0] Submitting order:", orderData)
+
     // Create order
     const { data: order, error: orderError } = await supabase
       .from("orders")
@@ -126,9 +128,16 @@ export async function submitOrder(orderData: OrderSubmission): Promise<string | 
       .single()
 
     if (orderError) {
-      console.error("Error creating order:", orderError)
+      console.error("[v0] Order creation failed:", {
+        message: orderError.message,
+        code: orderError.code,
+        details: orderError.details,
+        hint: orderError.hint,
+      })
       return null
     }
+
+    console.log("[v0] Order created successfully:", order.id)
 
     // Create order items
     const orderItems = orderData.items.map((item) => ({
@@ -139,18 +148,26 @@ export async function submitOrder(orderData: OrderSubmission): Promise<string | 
       item_note: item.note,
     }))
 
+    console.log("[v0] Creating order items:", orderItems)
+
     const { error: itemsError } = await supabase.from("order_items").insert(orderItems)
 
     if (itemsError) {
-      console.error("Error creating order items:", itemsError)
+      console.error("[v0] Order items creation failed:", {
+        message: itemsError.message,
+        code: itemsError.code,
+        details: itemsError.details,
+        hint: itemsError.hint,
+      })
       // Try to delete the order if items failed
       await supabase.from("orders").delete().eq("id", order.id)
       return null
     }
 
+    console.log("[v0] Order items created successfully")
     return order.id
   } catch (error) {
-    console.error("Error submitting order:", error)
+    console.error("[v0] Unexpected error during order submission:", error)
     return null
   }
 }

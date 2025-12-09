@@ -1,29 +1,31 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { Business, PaymentMethod } from '@/types/database'
-import { useCartStore } from '@/store/cartStore'
-import { useTheme } from '@/contexts/ThemeContext'
-import { submitOrder } from '@/lib/api'
-import { ArrowLeftIcon } from '@heroicons/react/24/outline'
+import type React from "react"
+
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import type { Business, PaymentMethod } from "@/types/database"
+import { useCartStore } from "@/store/cartStore"
+import { useTheme } from "@/contexts/ThemeContext"
+import { submitOrder } from "@/lib/api"
+import { ArrowLeftIcon } from "@heroicons/react/24/outline"
 
 interface CheckoutPageProps {
   business: Business
 }
 
-type OrderType = 'table' | 'home'
+type OrderType = "table" | "home"
 
 export default function CheckoutPage({ business }: CheckoutPageProps) {
   const router = useRouter()
   const { items, getTotal, clearCart } = useCartStore()
   const { primaryColor } = useTheme()
 
-  const [orderType, setOrderType] = useState<OrderType>('table')
-  const [tableNumber, setTableNumber] = useState('')
-  const [deliveryAddress, setDeliveryAddress] = useState('')
-  const [customerNote, setCustomerNote] = useState('')
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash')
+  const [orderType, setOrderType] = useState<OrderType>("table")
+  const [tableNumber, setTableNumber] = useState("")
+  const [deliveryAddress, setDeliveryAddress] = useState("")
+  const [customerNote, setCustomerNote] = useState("")
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cash")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const total = getTotal()
@@ -37,46 +39,51 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (orderType === 'table' && !tableNumber.trim()) {
-      alert('Please enter your table number')
+    if (orderType === "table" && !tableNumber.trim()) {
+      alert("Please enter your table number")
       return
     }
 
-    if (orderType === 'home' && !deliveryAddress.trim()) {
-      alert('Please enter your delivery address')
+    if (orderType === "home" && !deliveryAddress.trim()) {
+      alert("Please enter your delivery address")
       return
     }
 
     setIsSubmitting(true)
 
     try {
-      const seatLabel = orderType === 'table' ? `Table ${tableNumber}` : 'Home Delivery'
+      const seatLabel = orderType === "table" ? `Table ${tableNumber}` : "Home Delivery"
 
       const orderData = {
         businessId: business.id,
-        items: items.map(cartItem => ({
+        items: items.map((cartItem) => ({
           menuItemId: cartItem.menuItem.id,
           quantity: cartItem.quantity,
           unitPrice: cartItem.menuItem.price,
-          note: cartItem.note
+          note: cartItem.note,
         })),
         seatLabel,
         customerNote: customerNote.trim() || undefined,
         paymentMethod,
-        deliveryAddress: orderType === 'home' ? deliveryAddress : undefined
+        deliveryAddress: orderType === "home" ? deliveryAddress : undefined,
       }
 
+      console.log("[v0] Order data prepared:", orderData)
       const orderId = await submitOrder(orderData)
 
       if (orderId) {
+        console.log("[v0] Order placed successfully:", orderId)
         clearCart()
         router.push(`/b/${business.slug}/order/${orderId}`)
       } else {
-        alert('Failed to place order. Please try again.')
+        console.error("[v0] Order submission returned null - Check browser console for details")
+        alert(
+          "Failed to place order. Please check your connection and try again. If the problem persists, the restaurant may not have online ordering enabled.",
+        )
       }
     } catch (error) {
-      console.error('Order submission error:', error)
-      alert('An error occurred. Please try again.')
+      console.error("[v0] Order submission error:", error)
+      alert("An error occurred. Please try again.")
     } finally {
       setIsSubmitting(false)
     }
@@ -106,7 +113,7 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
                 <input
                   type="radio"
                   value="table"
-                  checked={orderType === 'table'}
+                  checked={orderType === "table"}
                   onChange={(e) => setOrderType(e.target.value as OrderType)}
                   style={{ accentColor: primaryColor }}
                 />
@@ -116,7 +123,7 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
                 <input
                   type="radio"
                   value="home"
-                  checked={orderType === 'home'}
+                  checked={orderType === "home"}
                   onChange={(e) => setOrderType(e.target.value as OrderType)}
                   style={{ accentColor: primaryColor }}
                 />
@@ -125,11 +132,9 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
             </div>
 
             {/* Table Number */}
-            {orderType === 'table' && (
+            {orderType === "table" && (
               <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Table Number *
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Table Number *</label>
                 <input
                   type="text"
                   value={tableNumber}
@@ -142,11 +147,9 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
             )}
 
             {/* Delivery Address */}
-            {orderType === 'home' && (
+            {orderType === "home" && (
               <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Delivery Address *
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Delivery Address *</label>
                 <textarea
                   value={deliveryAddress}
                   onChange={(e) => setDeliveryAddress(e.target.value)}
@@ -170,13 +173,9 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
                     <p className="text-sm text-gray-600">
                       ₦{cartItem.menuItem.price.toLocaleString()} × {cartItem.quantity}
                     </p>
-                    {cartItem.note && (
-                      <p className="text-sm text-gray-500 italic">Note: {cartItem.note}</p>
-                    )}
+                    {cartItem.note && <p className="text-sm text-gray-500 italic">Note: {cartItem.note}</p>}
                   </div>
-                  <p className="font-medium">
-                    ₦{(cartItem.menuItem.price * cartItem.quantity).toLocaleString()}
-                  </p>
+                  <p className="font-medium">₦{(cartItem.menuItem.price * cartItem.quantity).toLocaleString()}</p>
                 </div>
               ))}
               <div className="border-t pt-3 flex justify-between items-center">
@@ -188,9 +187,7 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
 
           {/* Customer Note */}
           <div className="bg-white rounded-lg shadow-sm border p-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Special Instructions (Optional)
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Special Instructions (Optional)</label>
             <textarea
               value={customerNote}
               onChange={(e) => setCustomerNote(e.target.value)}
@@ -209,19 +206,17 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
                 <input
                   type="radio"
                   value="cash"
-                  checked={paymentMethod === 'cash'}
+                  checked={paymentMethod === "cash"}
                   onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
                   style={{ accentColor: primaryColor }}
                 />
-                <span>
-                  {orderType === 'table' ? 'Pay in place (cash)' : 'Pay on delivery (cash)'}
-                </span>
+                <span>{orderType === "table" ? "Pay in place (cash)" : "Pay on delivery (cash)"}</span>
               </label>
               <label className="flex items-center gap-3">
                 <input
                   type="radio"
                   value="card"
-                  checked={paymentMethod === 'card'}
+                  checked={paymentMethod === "card"}
                   onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
                   style={{ accentColor: primaryColor }}
                 />
@@ -231,7 +226,7 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
                 <input
                   type="radio"
                   value="mobile"
-                  checked={paymentMethod === 'mobile'}
+                  checked={paymentMethod === "mobile"}
                   onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
                   style={{ accentColor: primaryColor }}
                 />
@@ -247,7 +242,7 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
             style={isSubmitting ? {} : { backgroundColor: primaryColor }}
             className="w-full text-white py-4 px-6 rounded-lg disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors font-semibold text-lg"
           >
-            {isSubmitting ? 'Placing Order...' : `Place Order - ₦${total.toLocaleString()}`}
+            {isSubmitting ? "Placing Order..." : `Place Order - ₦${total.toLocaleString()}`}
           </button>
         </form>
       </div>
