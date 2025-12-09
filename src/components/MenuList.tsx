@@ -1,32 +1,70 @@
-import { Menu, MenuCategory, MenuItem } from '@/types/database'
-import MenuCard from './MenuCard'
-import CategoryCard from './CategoryCard'
-import MenuItemCard from './MenuItemCard'
+"use client"
+
+import { useState } from "react"
+import type { Menu, MenuCategory, MenuItem } from "@/types/database"
+import MenuSelection from "./menu-flow/MenuSelection"
+import CategorySelection from "./menu-flow/CategorySelection"
+import ItemsGrid from "./menu-flow/ItemsGrid"
 
 interface MenuListProps {
   menus: Menu[]
   categories: MenuCategory[]
   items: MenuItem[]
+  themeColor: string
 }
 
-export default function MenuList({ menus, categories, items }: MenuListProps) {
+type FlowStep = "menus" | "categories" | "items"
+
+export default function MenuList({ menus, categories, items, themeColor }: MenuListProps) {
+  const [step, setStep] = useState<FlowStep>("menus")
+  const [selectedMenu, setSelectedMenu] = useState<Menu | null>(null)
+  const [selectedCategory, setSelectedCategory] = useState<MenuCategory | null>(null)
+
   // Group categories by menu
-  const categoriesByMenu = categories.reduce((acc, category) => {
-    if (!acc[category.menu_id]) {
-      acc[category.menu_id] = []
-    }
-    acc[category.menu_id].push(category)
-    return acc
-  }, {} as Record<string, MenuCategory[]>)
+  const categoriesByMenu = categories.reduce(
+    (acc, category) => {
+      if (!acc[category.menu_id]) {
+        acc[category.menu_id] = []
+      }
+      acc[category.menu_id].push(category)
+      return acc
+    },
+    {} as Record<string, MenuCategory[]>,
+  )
 
   // Group items by category
-  const itemsByCategory = items.reduce((acc, item) => {
-    if (!acc[item.category_id]) {
-      acc[item.category_id] = []
-    }
-    acc[item.category_id].push(item)
-    return acc
-  }, {} as Record<string, MenuItem[]>)
+  const itemsByCategory = items.reduce(
+    (acc, item) => {
+      if (!acc[item.category_id]) {
+        acc[item.category_id] = []
+      }
+      acc[item.category_id].push(item)
+      return acc
+    },
+    {} as Record<string, MenuItem[]>,
+  )
+
+  const handleMenuSelect = (menu: Menu) => {
+    setSelectedMenu(menu)
+    setSelectedCategory(null)
+    setStep("categories")
+  }
+
+  const handleCategorySelect = (category: MenuCategory) => {
+    setSelectedCategory(category)
+    setStep("items")
+  }
+
+  const handleBackToMenus = () => {
+    setSelectedMenu(null)
+    setSelectedCategory(null)
+    setStep("menus")
+  }
+
+  const handleBackToCategories = () => {
+    setSelectedCategory(null)
+    setStep("categories")
+  }
 
   if (menus.length === 0) {
     return (
@@ -37,44 +75,27 @@ export default function MenuList({ menus, categories, items }: MenuListProps) {
   }
 
   return (
-    <div className="space-y-8">
-      {menus.map((menu) => {
-        const menuCategories = categoriesByMenu[menu.id] || []
+    <div className="w-full">
+      {step === "menus" && <MenuSelection menus={menus} onSelectMenu={handleMenuSelect} themeColor={themeColor} />}
 
-        return (
-          <div key={menu.id} className="space-y-6">
-            {/* Menu Header */}
-            <MenuCard menu={menu} />
+      {step === "categories" && selectedMenu && (
+        <CategorySelection
+          menu={selectedMenu}
+          categories={categoriesByMenu[selectedMenu.id] || []}
+          onSelectCategory={handleCategorySelect}
+          onBack={handleBackToMenus}
+          themeColor={themeColor}
+        />
+      )}
 
-            {/* Categories and Items */}
-            <div className="space-y-6">
-              {menuCategories.map((category) => {
-                const categoryItems = itemsByCategory[category.id] || []
-
-                return (
-                  <div key={category.id} className="space-y-4">
-                    <CategoryCard category={category} />
-
-                    {categoryItems.length > 0 ? (
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {categoryItems.map((item) => (
-                          <MenuItemCard key={item.id} item={item} />
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-gray-500 text-sm italic">No items available in this category</p>
-                    )}
-                  </div>
-                )
-              })}
-
-              {menuCategories.length === 0 && (
-                <p className="text-gray-500 text-sm italic">No categories available in this menu</p>
-              )}
-            </div>
-          </div>
-        )
-      })}
+      {step === "items" && selectedCategory && (
+        <ItemsGrid
+          category={selectedCategory}
+          items={itemsByCategory[selectedCategory.id] || []}
+          onBack={handleBackToCategories}
+          themeColor={themeColor}
+        />
+      )}
     </div>
   )
 }
