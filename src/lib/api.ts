@@ -7,7 +7,6 @@ export async function getBusinessBySlug(slug: string): Promise<Business | null> 
     .from('businesses')
     .select('*')
     .eq('slug', slug)
-    .eq('is_active', true)
     .single()
 
   if (error) {
