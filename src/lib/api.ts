@@ -1,36 +1,29 @@
-import { supabase } from './supabase'
-import { Business, Menu, MenuCategory, MenuItem, OrderSubmission } from '@/types/database'
+import { supabase } from "./supabase"
+import type { Business, Menu, MenuCategory, MenuItem, OrderSubmission } from "@/types/database"
 
 // Business API
 export async function getBusinessBySlug(slug: string): Promise<Business | null> {
-  console.log('Querying for slug:', slug)
-  const { data, error } = await supabase
-    .from('businesses')
-    .select('*')
-    .eq('slug', slug)
-    .single()
+  const { data, error } = await supabase.from("businesses").select("*").eq("slug", slug).single()
 
   if (error) {
-    console.error('Error fetching business:', error)
-    console.log('Available error details:', error.details, error.hint, error.message)
+    console.error("[GrooveVie API] Error fetching business:", error.message)
     return null
   }
 
-  console.log('Business data retrieved:', data ? { id: data.id, name: data.name, is_active: data.is_active } : 'null')
   return data
 }
 
 // Menu API
 export async function getMenusByBusinessId(businessId: string): Promise<Menu[]> {
   const { data, error } = await supabase
-    .from('menus')
-    .select('*')
-    .eq('business_id', businessId)
-    .eq('is_active', true)
-    .order('display_order', { ascending: true })
+    .from("menus")
+    .select("*")
+    .eq("business_id", businessId)
+    .eq("is_active", true)
+    .order("display_order", { ascending: true })
 
   if (error) {
-    console.error('Error fetching menus:', error)
+    console.error("Error fetching menus:", error)
     return []
   }
 
@@ -40,13 +33,13 @@ export async function getMenusByBusinessId(businessId: string): Promise<Menu[]> 
 // Menu Categories API
 export async function getCategoriesByMenuId(menuId: string): Promise<MenuCategory[]> {
   const { data, error } = await supabase
-    .from('menu_categories')
-    .select('*')
-    .eq('menu_id', menuId)
-    .order('display_order', { ascending: true })
+    .from("menu_categories")
+    .select("*")
+    .eq("menu_id", menuId)
+    .order("display_order", { ascending: true })
 
   if (error) {
-    console.error('Error fetching categories:', error)
+    console.error("Error fetching categories:", error)
     return []
   }
 
@@ -56,14 +49,14 @@ export async function getCategoriesByMenuId(menuId: string): Promise<MenuCategor
 // Menu Items API
 export async function getItemsByCategoryId(categoryId: string): Promise<MenuItem[]> {
   const { data, error } = await supabase
-    .from('menu_items')
-    .select('*')
-    .eq('category_id', categoryId)
-    .eq('is_available', true)
-    .order('display_order', { ascending: true })
+    .from("menu_items")
+    .select("*")
+    .eq("category_id", categoryId)
+    .eq("is_available", true)
+    .order("display_order", { ascending: true })
 
   if (error) {
-    console.error('Error fetching items:', error)
+    console.error("Error fetching items:", error)
     return []
   }
 
@@ -82,35 +75,35 @@ export async function getFullMenu(businessId: string): Promise<{
     return { menus: [], categories: [], items: [] }
   }
 
-  const menuIds = menus.map(menu => menu.id)
+  const menuIds = menus.map((menu) => menu.id)
   const { data: categories, error: categoriesError } = await supabase
-    .from('menu_categories')
-    .select('*')
-    .in('menu_id', menuIds)
-    .order('display_order', { ascending: true })
+    .from("menu_categories")
+    .select("*")
+    .in("menu_id", menuIds)
+    .order("display_order", { ascending: true })
 
   if (categoriesError) {
-    console.error('Error fetching categories:', categoriesError)
+    console.error("[GrooveVie API] Error fetching categories:", categoriesError.message)
     return { menus, categories: [], items: [] }
   }
 
-  const categoryIds = categories?.map(cat => cat.id) || []
+  const categoryIds = categories?.map((cat) => cat.id) || []
   const { data: items, error: itemsError } = await supabase
-    .from('menu_items')
-    .select('*')
-    .in('category_id', categoryIds)
-    .eq('is_available', true)
-    .order('display_order', { ascending: true })
+    .from("menu_items")
+    .select("*")
+    .in("category_id", categoryIds)
+    .eq("is_available", true)
+    .order("display_order", { ascending: true })
 
   if (itemsError) {
-    console.error('Error fetching items:', itemsError)
+    console.error("[GrooveVie API] Error fetching items:", itemsError.message)
     return { menus, categories: categories || [], items: [] }
   }
 
   return {
     menus,
     categories: categories || [],
-    items: items || []
+    items: items || [],
   }
 }
 
@@ -119,47 +112,45 @@ export async function submitOrder(orderData: OrderSubmission): Promise<string | 
   try {
     // Create order
     const { data: order, error: orderError } = await supabase
-      .from('orders')
+      .from("orders")
       .insert({
         business_id: orderData.businessId,
         seat_label: orderData.seatLabel,
         customer_note: orderData.customerNote,
-        status: 'new',
+        status: "new",
         payment_method: orderData.paymentMethod,
-        payment_status: 'pending',
-        total_amount: orderData.items.reduce((total, item) => total + (item.unitPrice * item.quantity), 0)
+        payment_status: "pending",
+        total_amount: orderData.items.reduce((total, item) => total + item.unitPrice * item.quantity, 0),
       })
       .select()
       .single()
 
     if (orderError) {
-      console.error('Error creating order:', orderError)
+      console.error("Error creating order:", orderError)
       return null
     }
 
     // Create order items
-    const orderItems = orderData.items.map(item => ({
+    const orderItems = orderData.items.map((item) => ({
       order_id: order.id,
       menu_item_id: item.menuItemId,
       quantity: item.quantity,
       unit_price: item.unitPrice,
-      item_note: item.note
+      item_note: item.note,
     }))
 
-    const { error: itemsError } = await supabase
-      .from('order_items')
-      .insert(orderItems)
+    const { error: itemsError } = await supabase.from("order_items").insert(orderItems)
 
     if (itemsError) {
-      console.error('Error creating order items:', itemsError)
+      console.error("Error creating order items:", itemsError)
       // Try to delete the order if items failed
-      await supabase.from('orders').delete().eq('id', order.id)
+      await supabase.from("orders").delete().eq("id", order.id)
       return null
     }
 
     return order.id
   } catch (error) {
-    console.error('Error submitting order:', error)
+    console.error("Error submitting order:", error)
     return null
   }
 }

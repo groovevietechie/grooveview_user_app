@@ -1,12 +1,12 @@
-import { notFound } from 'next/navigation'
-import { getBusinessBySlug, getFullMenu } from '@/lib/api'
-import { Business, Menu, MenuCategory, MenuItem } from '@/types/database'
-import MenuPage from '@/components/MenuPage'
+import { notFound } from "next/navigation"
+import { getBusinessBySlug, getFullMenu } from "@/lib/api"
+import type { Business, Menu, MenuCategory, MenuItem } from "@/types/database"
+import MenuPage from "@/components/MenuPage"
 
 interface PageProps {
-  params: {
+  params: Promise<{
     slug: string
-  }
+  }>
 }
 
 async function getBusinessData(slug: string): Promise<{
@@ -17,23 +17,20 @@ async function getBusinessData(slug: string): Promise<{
     items: MenuItem[]
   } | null
 }> {
-  console.log('Looking for business with slug:', slug)
   const business = await getBusinessBySlug(slug)
-  console.log('Business found:', business ? business.name : 'null')
 
   if (!business) {
-    console.log('No business found for slug:', slug)
     return { business: null, menuData: null }
   }
 
   const menuData = await getFullMenu(business.id)
-  console.log('Menu data:', menuData ? 'found' : 'null')
 
   return { business, menuData }
 }
 
 export default async function BusinessPage({ params }: PageProps) {
-  const { business, menuData } = await getBusinessData(params.slug)
+  const { slug } = await params
+  const { business, menuData } = await getBusinessData(slug)
 
   if (!business) {
     notFound()
@@ -47,9 +44,7 @@ export default async function BusinessPage({ params }: PageProps) {
           <p className="text-gray-600 mb-6">
             {business.name} is currently not accepting orders. Please check back later.
           </p>
-          <div className="text-sm text-gray-500">
-            Contact the business for more information.
-          </div>
+          <div className="text-sm text-gray-500">Contact the business for more information.</div>
         </div>
       </div>
     )
@@ -68,32 +63,28 @@ export default async function BusinessPage({ params }: PageProps) {
     )
   }
 
-  return (
-    <MenuPage
-      business={business}
-      menuData={menuData}
-    />
-  )
+  return <MenuPage business={business} menuData={menuData} />
 }
 
 export async function generateMetadata({ params }: PageProps) {
-  const { business } = await getBusinessData(params.slug)
+  const { slug } = await params
+  const { business } = await getBusinessData(slug)
 
   if (!business) {
     return {
-      title: 'Business Not Found'
+      title: "Business Not Found",
     }
   }
 
   if (!business.is_active) {
     return {
       title: `${business.name} - Temporarily Unavailable`,
-      description: `${business.name} is currently not accepting orders`
+      description: `${business.name} is currently not accepting orders`,
     }
   }
 
   return {
     title: `${business.name} - Menu`,
-    description: `Order food from ${business.name}`
+    description: `Order food from ${business.name}`,
   }
 }
