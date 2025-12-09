@@ -31,7 +31,7 @@ async function getBusinessData(slug: string): Promise<{
 export default async function BusinessPage({ params }: PageProps) {
   const { business, menuData } = await getBusinessData(params.slug)
 
-  if (!business) {
+  if (!business || !menuData) {
     notFound()
   }
 
