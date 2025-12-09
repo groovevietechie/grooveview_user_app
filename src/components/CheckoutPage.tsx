@@ -74,7 +74,7 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
       if (orderId) {
         console.log("[v0] Order placed successfully:", orderId)
         clearCart()
-        router.push(`/b/${business.slug}/order/${orderId}`)
+        router.push(`/b/${business.slug}/order/${orderId}?success=true`)
       } else {
         console.error("[v0] Order submission returned null - Check browser console for details")
         alert(

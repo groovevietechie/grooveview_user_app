@@ -1,12 +1,11 @@
 import { notFound } from "next/navigation"
 import { getBusinessBySlug } from "@/lib/api"
 import type { Business } from "@/types/database"
-import OrderConfirmationPage from "@/components/OrderConfirmationPage"
+import OrderTrackingPage from "@/components/OrderTrackingPage"
 
 interface PageProps {
   params: Promise<{
     slug: string
-    orderId: string
   }>
 }
 
@@ -15,15 +14,15 @@ async function getBusinessData(slug: string): Promise<Business | null> {
   return business
 }
 
-export default async function OrderConfirmation({ params }: PageProps) {
-  const { slug, orderId } = await params
+export default async function OrdersPage({ params }: PageProps) {
+  const { slug } = await params
   const business = await getBusinessData(slug)
 
   if (!business) {
     notFound()
   }
 
-  return <OrderConfirmationPage business={business} orderId={orderId} showSuccess={true} />
+  return <OrderTrackingPage business={business} />
 }
 
 export async function generateMetadata({ params }: PageProps) {
@@ -32,11 +31,11 @@ export async function generateMetadata({ params }: PageProps) {
 
   if (!business) {
     return {
-      title: "Order Confirmation",
+      title: "Orders Not Found",
     }
   }
 
   return {
-    title: `Order Confirmed - ${business.name}`,
+    title: `Order Tracking - ${business.name}`,
   }
 }

@@ -59,6 +59,9 @@ export interface Order {
   payment_method: PaymentMethod
   payment_status: PaymentStatus
   total_amount: number
+  estimated_ready_time?: string
+  estimated_delivery_time?: string
+  business_comment?: string
   created_at: string
   updated_at: string
 }
@@ -72,9 +75,9 @@ export interface OrderItem {
   item_note?: string
 }
 
-export type OrderStatus = 'new' | 'accepted' | 'preparing' | 'ready' | 'served' | 'cancelled'
-export type PaymentMethod = 'cash' | 'card' | 'mobile'
-export type PaymentStatus = 'pending' | 'paid' | 'failed'
+export type OrderStatus = "new" | "accepted" | "preparing" | "ready" | "served" | "cancelled"
+export type PaymentMethod = "cash" | "card" | "mobile"
+export type PaymentStatus = "pending" | "paid" | "failed"
 
 // Cart types
 export interface CartItem {

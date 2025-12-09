@@ -171,3 +171,27 @@ export async function submitOrder(orderData: OrderSubmission): Promise<string | 
     return null
   }
 }
+
+// Fetch orders with items for a business
+export async function getOrdersWithItems(businessId: string): Promise<any[]> {
+  try {
+    const { data: orders, error } = await supabase
+      .from("order_details")
+      .select("*")
+      .eq("business_id", businessId)
+      .order("created_at", { ascending: false })
+
+    if (error) {
+      console.error("[v0] Error fetching orders:", error)
+      return []
+    }
+
+    return (orders || []).map((order: any) => ({
+      ...order,
+      items: order.items ? (typeof order.items === "string" ? JSON.parse(order.items) : order.items) : [],
+    }))
+  } catch (error) {
+    console.error("[v0] Error in getOrdersWithItems:", error)
+    return []
+  }
+}
