@@ -53,8 +53,7 @@ export default function CartSidebar({ business, onClose }: CartSidebarProps) {
 
   return (
     <div
-      style={{ backgroundColor: "transparent" }}
-      className="rounded-2xl shadow-lg border h-fit overflow-hidden animate-slide-in"
+      className="bg-transparent rounded-2xl shadow-lg border h-fit overflow-hidden animate-slide-in"
     >
       {/* Header */}
       <div style={{ backgroundColor: primaryColor }} className="p-4 flex items-center justify-between">
