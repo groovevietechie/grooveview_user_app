@@ -17,7 +17,7 @@ export default function MenuHeader({ business }: MenuHeaderProps) {
   const pathname = usePathname()
   const textColor = getContrastColor(primaryColor)
 
-  const isMenuPage = pathname === `/b/${business.slug}`
+  const isMenuPage = pathname === `/b/${business.slug}` || pathname?.endsWith(`/b/${business.slug}`)
   const showHomeButton = !isMenuPage
 
   return (

@@ -41,14 +41,14 @@ export default function MenuSelection({ menus, onSelectMenu, themeColor }: MenuS
       <div className="relative mb-6" style={{ backgroundColor: inputBgColor }}>
         <MagnifyingGlassIcon
           style={{ color: themeColor }}
-          className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none"
+          className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none"
         />
         <input
           type="text"
           placeholder="Search menus..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-10 pr-4 py-3 rounded-lg border-2 outline-none transition-colors"
+          className="w-full pl-10 pr-4 py-2 rounded-full border-2 outline-none transition-colors text-sm"
           style={{
             borderColor: themeColor,
             backgroundColor: "rgba(255, 255, 255, 0.6)",

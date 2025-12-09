@@ -7,7 +7,7 @@ import { useTheme } from "@/contexts/ThemeContext"
 import MenuHeader from "./MenuHeader"
 import MenuList from "./MenuList"
 import CartSidebar from "./CartSidebar"
-import FloatingOrderButton from "./FloatingOrderButton" // Import FloatingOrderButton component
+import FloatingOrderButton from "./FloatingOrderButton"
 import { ShoppingCartIcon } from "@heroicons/react/24/outline"
 
 interface MenuPageProps {
@@ -21,18 +21,19 @@ interface MenuPageProps {
 
 export default function MenuPage({ business, menuData }: MenuPageProps) {
   const [isCartOpen, setIsCartOpen] = useState(false)
-  const [showFloatingButton, setShowFloatingButton] = useState(false) // Add state for floating button
+  const [showFloatingButton, setShowFloatingButton] = useState(false)
   const { getItemCount, setBusinessId } = useCartStore()
   const { setPrimaryColor } = useTheme()
 
   useEffect(() => {
     setBusinessId(business.id)
     setPrimaryColor(business.theme_color_hex)
+
     const checkRecentOrder = () => {
-      // This flag is set after successful order submission
       const hasRecentOrder = sessionStorage.getItem(`${business.id}_recent_order`) === "true"
       setShowFloatingButton(hasRecentOrder)
     }
+
     checkRecentOrder()
   }, [business.id, business.theme_color_hex, setBusinessId, setPrimaryColor])
 

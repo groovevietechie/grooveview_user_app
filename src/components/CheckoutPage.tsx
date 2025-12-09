@@ -73,6 +73,8 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
 
       if (orderId) {
         console.log("[v0] Order placed successfully:", orderId)
+        sessionStorage.setItem(`${business.id}_recent_order`, "true")
+        sessionStorage.setItem(`${business.id}_last_order_id`, orderId)
         clearCart()
         router.push(`/b/${business.slug}/order/${orderId}?success=true`)
       } else {
