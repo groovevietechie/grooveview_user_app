@@ -1,10 +1,10 @@
 "use client"
 
 import type React from "react"
-
+import { useState, useMemo } from "react"
 import Image from "next/image"
 import type { Menu, MenuCategory } from "@/types/database"
-import { ChevronLeftIcon } from "@heroicons/react/24/outline"
+import { ChevronLeftIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline"
 import { getContrastColor, lightenColor } from "@/lib/color-utils"
 
 interface CategorySelectionProps {
@@ -22,8 +22,21 @@ export default function CategorySelection({
   onBack,
   themeColor,
 }: CategorySelectionProps) {
+  const [searchQuery, setSearchQuery] = useState("")
+
+  const filteredCategories = useMemo(() => {
+    if (!searchQuery.trim()) return categories
+    const query = searchQuery.toLowerCase()
+    return categories.filter(
+      (category) =>
+        category.name.toLowerCase().includes(query) ||
+        (category.description && category.description.toLowerCase().includes(query)),
+    )
+  }, [categories, searchQuery])
+
   const textColor = getContrastColor(themeColor)
   const bgColor = lightenColor(themeColor, 90)
+  const inputBgColor = lightenColor(themeColor, 95)
 
   return (
     <div className="w-full space-y-4">
@@ -44,13 +57,32 @@ export default function CategorySelection({
         </div>
       </div>
 
-      {categories.length === 0 ? (
+      <div className="relative mb-6" style={{ backgroundColor: inputBgColor }}>
+        <MagnifyingGlassIcon
+          style={{ color: themeColor }}
+          className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none"
+        />
+        <input
+          type="text"
+          placeholder="Search categories..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full pl-10 pr-4 py-3 rounded-lg border-2 outline-none transition-colors"
+          style={{
+            borderColor: themeColor,
+            backgroundColor: "rgba(255, 255, 255, 0.6)",
+          }}
+        />
+      </div>
+
+      {filteredCategories.length === 0 ? (
         <div className="text-center py-12 bg-white rounded-lg border">
-          <p className="text-gray-500">No categories available</p>
+          <MagnifyingGlassIcon className="w-8 h-8 text-gray-400 mx-auto mb-3" />
+          <p className="text-gray-500">No categories match "{searchQuery}"</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {categories.map((category) => (
+          {filteredCategories.map((category) => (
             <button
               key={category.id}
               onClick={() => onSelectCategory(category)}

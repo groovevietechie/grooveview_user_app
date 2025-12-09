@@ -1,13 +1,13 @@
-import { notFound } from 'next/navigation'
-import { getBusinessBySlug } from '@/lib/api'
-import { Business } from '@/types/database'
-import OrderConfirmationPage from '@/components/OrderConfirmationPage'
+import { notFound } from "next/navigation"
+import { getBusinessBySlug } from "@/lib/api"
+import type { Business } from "@/types/database"
+import OrderConfirmationPage from "@/components/OrderConfirmationPage"
 
 interface PageProps {
-  params: {
+  params: Promise<{
     slug: string
     orderId: string
-  }
+  }>
 }
 
 async function getBusinessData(slug: string): Promise<Business | null> {
@@ -16,21 +16,23 @@ async function getBusinessData(slug: string): Promise<Business | null> {
 }
 
 export default async function OrderConfirmation({ params }: PageProps) {
-  const business = await getBusinessData(params.slug)
+  const { slug, orderId } = await params
+  const business = await getBusinessData(slug)
 
   if (!business) {
     notFound()
   }
 
-  return <OrderConfirmationPage business={business} orderId={params.orderId} />
+  return <OrderConfirmationPage business={business} orderId={orderId} />
 }
 
 export async function generateMetadata({ params }: PageProps) {
-  const business = await getBusinessData(params.slug)
+  const { slug } = await params
+  const business = await getBusinessData(slug)
 
   if (!business) {
     return {
-      title: 'Order Confirmation'
+      title: "Order Confirmation",
     }
   }
 

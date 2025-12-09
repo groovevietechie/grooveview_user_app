@@ -1,9 +1,10 @@
 "use client"
 
+import { useState, useMemo } from "react"
 import type { MenuCategory, MenuItem } from "@/types/database"
-import { ChevronLeftIcon } from "@heroicons/react/24/outline"
-import MenuItemCard from "../MenuItemCard"
+import { ChevronLeftIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline"
 import { lightenColor } from "@/lib/color-utils"
+import MenuItemCard from "../MenuItemCard"
 
 interface ItemsGridProps {
   category: MenuCategory
@@ -13,7 +14,19 @@ interface ItemsGridProps {
 }
 
 export default function ItemsGrid({ category, items, onBack, themeColor }: ItemsGridProps) {
+  const [searchQuery, setSearchQuery] = useState("")
+
+  const filteredItems = useMemo(() => {
+    if (!searchQuery.trim()) return items
+    const query = searchQuery.toLowerCase()
+    return items.filter(
+      (item) =>
+        item.name.toLowerCase().includes(query) || (item.description && item.description.toLowerCase().includes(query)),
+    )
+  }, [items, searchQuery])
+
   const bgColor = lightenColor(themeColor, 95)
+  const inputBgColor = lightenColor(themeColor, 90)
 
   return (
     <div className="w-full space-y-4">
@@ -34,13 +47,32 @@ export default function ItemsGrid({ category, items, onBack, themeColor }: Items
         </div>
       </div>
 
-      {items.length === 0 ? (
+      <div className="relative mb-6" style={{ backgroundColor: inputBgColor }}>
+        <MagnifyingGlassIcon
+          style={{ color: themeColor }}
+          className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none"
+        />
+        <input
+          type="text"
+          placeholder="Search items..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full pl-10 pr-4 py-3 rounded-lg border-2 outline-none transition-colors"
+          style={{
+            borderColor: themeColor,
+            backgroundColor: "rgba(255, 255, 255, 0.6)",
+          }}
+        />
+      </div>
+
+      {filteredItems.length === 0 ? (
         <div className="text-center py-12 bg-white rounded-lg border">
-          <p className="text-gray-500">No items available in this category</p>
+          <MagnifyingGlassIcon className="w-8 h-8 text-gray-400 mx-auto mb-3" />
+          <p className="text-gray-500">No items match "{searchQuery}"</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {items.map((item) => (
+          {filteredItems.map((item) => (
             <MenuItemCard key={item.id} item={item} themeColor={themeColor} />
           ))}
         </div>

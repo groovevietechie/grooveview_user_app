@@ -1,9 +1,11 @@
 "use client"
 
 import Image from "next/image"
+import { useRouter, usePathname } from "next/navigation"
 import type { Business } from "@/types/database"
 import { useTheme } from "@/contexts/ThemeContext"
 import { getContrastColor } from "@/lib/color-utils"
+import { HomeIcon } from "@heroicons/react/24/outline"
 
 interface MenuHeaderProps {
   business: Business
@@ -11,7 +13,12 @@ interface MenuHeaderProps {
 
 export default function MenuHeader({ business }: MenuHeaderProps) {
   const { primaryColor } = useTheme()
+  const router = useRouter()
+  const pathname = usePathname()
   const textColor = getContrastColor(primaryColor)
+
+  const isMenuPage = pathname === `/b/${business.slug}`
+  const showHomeButton = !isMenuPage
 
   return (
     <header style={{ backgroundColor: primaryColor }} className="shadow-lg">
@@ -45,6 +52,18 @@ export default function MenuHeader({ business }: MenuHeaderProps) {
               </p>
             )}
           </div>
+
+          {showHomeButton && (
+            <button
+              onClick={() => router.push(`/b/${business.slug}`)}
+              style={{ color: textColor }}
+              className="p-2 hover:bg-white hover:bg-opacity-20 rounded-lg transition-colors"
+              title="Back to menu"
+              aria-label="Back to menu"
+            >
+              <HomeIcon className="w-6 h-6" />
+            </button>
+          )}
         </div>
       </div>
     </header>

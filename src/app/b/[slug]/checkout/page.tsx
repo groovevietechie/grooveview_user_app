@@ -1,12 +1,12 @@
-import { notFound } from 'next/navigation'
-import { getBusinessBySlug } from '@/lib/api'
-import { Business } from '@/types/database'
-import CheckoutPage from '@/components/CheckoutPage'
+import { notFound } from "next/navigation"
+import { getBusinessBySlug } from "@/lib/api"
+import type { Business } from "@/types/database"
+import CheckoutPage from "@/components/CheckoutPage"
 
 interface PageProps {
-  params: {
+  params: Promise<{
     slug: string
-  }
+  }>
 }
 
 async function getBusinessData(slug: string): Promise<Business | null> {
@@ -15,7 +15,8 @@ async function getBusinessData(slug: string): Promise<Business | null> {
 }
 
 export default async function Checkout({ params }: PageProps) {
-  const business = await getBusinessData(params.slug)
+  const { slug } = await params
+  const business = await getBusinessData(slug)
 
   if (!business) {
     notFound()
@@ -25,11 +26,12 @@ export default async function Checkout({ params }: PageProps) {
 }
 
 export async function generateMetadata({ params }: PageProps) {
-  const business = await getBusinessData(params.slug)
+  const { slug } = await params
+  const business = await getBusinessData(slug)
 
   if (!business) {
     return {
-      title: 'Business Not Found'
+      title: "Business Not Found",
     }
   }
 
