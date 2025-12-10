@@ -4,8 +4,9 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import type { Business, Order } from "@/types/database"
 import { useTheme } from "@/contexts/ThemeContext"
-import { getOrdersWithItems } from "@/lib/api"
+import { getOrdersByIds } from "@/lib/api"
 import { getContrastColor, lightenColor, darkenColor } from "@/lib/color-utils"
+import { getDeviceOrders } from "@/lib/order-storage"
 import {
   CheckCircleIcon,
   ClockIcon,
@@ -66,7 +67,18 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
 
   const loadOrders = async () => {
     try {
-      const fetchedOrders = await getOrdersWithItems(business.id)
+      // Get order IDs stored on this device for this business
+      const deviceOrderIds = getDeviceOrders(business.id)
+      console.log("[v0] Loading orders for device:", deviceOrderIds)
+
+      if (deviceOrderIds.length === 0) {
+        setOrders([])
+        setLoading(false)
+        return
+      }
+
+      // Fetch only the orders that belong to this device
+      const fetchedOrders = await getOrdersByIds(deviceOrderIds)
       setOrders(fetchedOrders)
       if (fetchedOrders.length > 0 && !selectedOrder) {
         setSelectedOrder(fetchedOrders[0])

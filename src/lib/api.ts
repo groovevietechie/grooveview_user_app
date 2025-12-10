@@ -173,12 +173,14 @@ export async function submitOrder(orderData: OrderSubmission): Promise<string | 
 }
 
 // Fetch orders with items for a business
-export async function getOrdersWithItems(businessId: string): Promise<any[]> {
+export async function getOrdersByIds(orderIds: string[]): Promise<any[]> {
+  if (orderIds.length === 0) return []
+
   try {
     const { data: orders, error } = await supabase
       .from("order_details")
       .select("*")
-      .eq("business_id", businessId)
+      .in("id", orderIds)
       .order("created_at", { ascending: false })
 
     if (error) {
@@ -191,7 +193,13 @@ export async function getOrdersWithItems(businessId: string): Promise<any[]> {
       items: order.items ? (typeof order.items === "string" ? JSON.parse(order.items) : order.items) : [],
     }))
   } catch (error) {
-    console.error("[v0] Error in getOrdersWithItems:", error)
+    console.error("[v0] Error in getOrdersByIds:", error)
     return []
   }
+}
+
+// Deprecated function for backward compatibility
+export async function getOrdersWithItems(businessId: string): Promise<any[]> {
+  console.warn("[v0] getOrdersWithItems is deprecated. Use getOrdersByIds with device-specific order IDs instead.")
+  return []
 }

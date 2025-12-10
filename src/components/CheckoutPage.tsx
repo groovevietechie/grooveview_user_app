@@ -8,6 +8,7 @@ import type { Business, PaymentMethod } from "@/types/database"
 import { useCartStore } from "@/store/cartStore"
 import { useTheme } from "@/contexts/ThemeContext"
 import { submitOrder } from "@/lib/api"
+import { saveDeviceOrder } from "@/lib/order-storage"
 import { ArrowLeftIcon } from "@heroicons/react/24/outline"
 
 interface CheckoutPageProps {
@@ -73,6 +74,7 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
 
       if (orderId) {
         console.log("[v0] Order placed successfully:", orderId)
+        saveDeviceOrder(business.id, orderId)
         sessionStorage.setItem(`${business.id}_recent_order`, "true")
         sessionStorage.setItem(`${business.id}_last_order_id`, orderId)
         clearCart()
