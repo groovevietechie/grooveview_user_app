@@ -224,12 +224,12 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
                   <h2 className="font-bold text-gray-900 text-lg">Your Orders</h2>
                   <p className="text-xs text-gray-500 mt-1">Tap to view details</p>
                 </div>
-                <div className="divide-y max-h-[600px] overflow-y-auto" style={{ divideColor: themeShades.lightest }}>
+                <div className="divide-y max-h-[600px] overflow-y-auto">
                   {orders.map((order) => (
                     <button
                       key={order.id}
                       onClick={() => setSelectedOrder(order)}
-                      className={`w-full text-left p-5 transition-all duration-200 ${
+                      className={`w-full text-left p-5 transition-all duration-200 border-b ${
                         selectedOrder?.id === order.id ? "border-l-4 shadow-inner" : "hover:bg-gray-50"
                       }`}
                       style={
@@ -237,8 +237,11 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
                           ? {
                               backgroundColor: themeShades.lightest,
                               borderLeftColor: primaryColor,
+                              borderBottomColor: themeShades.light,
                             }
-                          : {}
+                          : {
+                              borderBottomColor: themeShades.lightest,
+                            }
                       }
                     >
                       <div className="flex items-start justify-between mb-2">
