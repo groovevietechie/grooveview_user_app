@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import type { Business, Order } from "@/types/database"
 import { useTheme } from "@/contexts/ThemeContext"
 import { getOrdersWithItems } from "@/lib/api"
+import { getContrastColor, lightenColor, darkenColor } from "@/lib/color-utils"
 import {
   CheckCircleIcon,
   ClockIcon,
@@ -46,6 +47,17 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
   const [loading, setLoading] = useState(true)
   const [selectedOrder, setSelectedOrder] = useState<OrderWithItems | null>(null)
 
+  const themeShades = {
+    lightest: lightenColor(primaryColor, 90),
+    lighter: lightenColor(primaryColor, 70),
+    light: lightenColor(primaryColor, 50),
+    medium: lightenColor(primaryColor, 30),
+    base: primaryColor,
+    dark: darkenColor(primaryColor, 20),
+    darker: darkenColor(primaryColor, 40),
+  }
+  const contrastColor = getContrastColor(primaryColor)
+
   useEffect(() => {
     loadOrders()
     const interval = setInterval(loadOrders, 5000) // Poll every 5 seconds
@@ -67,24 +79,24 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
   }
 
   const getStatusColor = (status: string, isCompleted: boolean) => {
-    if (isCompleted) return "text-green-600"
-    if (status === "cancelled") return "text-red-600"
-    return "text-gray-400"
+    if (isCompleted) return themeShades.dark
+    if (status === "cancelled") return "#dc2626"
+    return "#9ca3af"
   }
 
   const getStatusBgColor = (status: string, isCompleted: boolean) => {
-    if (isCompleted) return "bg-green-100"
-    if (status === "cancelled") return "bg-red-100"
-    return "bg-gray-100"
+    if (isCompleted) return themeShades.lighter
+    if (status === "cancelled") return "#fee2e2"
+    return "#f3f4f6"
   }
 
   const formatCurrency = (amount: number) => `₦${amount.toLocaleString()}`
 
   const getPaymentStatusBadge = (status: string) => {
-    const colors: { [key: string]: string } = {
-      paid: "bg-green-100 text-green-800",
-      pending: "bg-yellow-100 text-yellow-800",
-      failed: "bg-red-100 text-red-800",
+    const colors: { [key: string]: { bg: string; text: string } } = {
+      paid: { bg: themeShades.lightest, text: themeShades.darker },
+      pending: { bg: "#fef3c7", text: "#92400e" },
+      failed: { bg: "#fee2e2", text: "#991b1b" },
     }
     return colors[status] || colors.pending
   }
@@ -112,16 +124,29 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
-      {/* Header */}
-      <div className="sticky top-0 z-40 backdrop-blur-xl bg-white/80 border-b border-gray-200 shadow-sm">
+    <div
+      className="min-h-screen"
+      style={{
+        background: `linear-gradient(135deg, ${themeShades.lightest} 0%, #ffffff 50%, ${themeShades.lightest} 100%)`,
+      }}
+    >
+      <div
+        className="sticky top-0 z-40 backdrop-blur-xl border-b shadow-sm"
+        style={{
+          backgroundColor: `${primaryColor}15`,
+          borderColor: themeShades.light,
+        }}
+      >
         <div className="max-w-7xl mx-auto px-4 py-5 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
               onClick={() => router.back()}
-              className="p-2.5 hover:bg-gray-100 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95"
+              className="p-2.5 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95"
               title="Go back"
-              style={{ color: primaryColor }}
+              style={{
+                color: primaryColor,
+                backgroundColor: themeShades.lightest,
+              }}
             >
               <ArrowLeftIcon className="w-6 h-6" />
             </button>
@@ -130,19 +155,19 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
               <p className="text-sm text-gray-500 font-medium mt-0.5">{business.name}</p>
             </div>
           </div>
-          <div className="text-right">
-            <div
-              className="inline-flex flex-col items-end px-5 py-3 rounded-2xl border-2"
-              style={{
-                borderColor: `${primaryColor}30`,
-                backgroundColor: `${primaryColor}08`,
-              }}
-            >
-              <p className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Active Orders</p>
-              <p className="text-3xl font-bold" style={{ color: primaryColor }}>
-                {orders.length}
-              </p>
-            </div>
+          <div
+            className="inline-flex flex-col items-end px-5 py-3 rounded-2xl border-2"
+            style={{
+              borderColor: themeShades.medium,
+              backgroundColor: themeShades.lightest,
+            }}
+          >
+            <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: themeShades.dark }}>
+              Active Orders
+            </p>
+            <p className="text-3xl font-bold" style={{ color: primaryColor }}>
+              {orders.length}
+            </p>
           </div>
         </div>
       </div>
@@ -151,22 +176,31 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
         {loading && (
           <div className="flex justify-center items-center py-12">
             <div className="animate-spin">
-              <div className="w-12 h-12 border-4 border-gray-200 border-t-blue-500 rounded-full"></div>
+              <div
+                className="w-12 h-12 border-4 rounded-full"
+                style={{
+                  borderColor: themeShades.lighter,
+                  borderTopColor: primaryColor,
+                }}
+              ></div>
             </div>
           </div>
         )}
 
         {!loading && orders.length === 0 && (
           <div className="text-center py-20">
-            <div className="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
-              <ShoppingBagIcon className="w-12 h-12 text-gray-400" />
+            <div
+              className="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner"
+              style={{ backgroundColor: themeShades.lightest }}
+            >
+              <ShoppingBagIcon className="w-12 h-12" style={{ color: themeShades.medium }} />
             </div>
             <p className="text-2xl font-bold text-gray-700 mb-2">No orders yet</p>
             <p className="text-gray-500 mb-6">Start exploring our menu to place your first order</p>
             <button
               onClick={() => router.push(`/b/${business.slug}`)}
-              style={{ backgroundColor: primaryColor }}
-              className="text-white px-8 py-3.5 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 active:scale-95"
+              style={{ backgroundColor: primaryColor, color: contrastColor }}
+              className="px-8 py-3.5 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 active:scale-95"
             >
               Browse Menu
             </button>
@@ -176,27 +210,45 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
         {!loading && orders.length > 0 && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-1">
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-                <div className="p-5 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+              <div
+                className="bg-white rounded-2xl shadow-sm border overflow-hidden"
+                style={{ borderColor: themeShades.light }}
+              >
+                <div
+                  className="p-5 border-b"
+                  style={{
+                    background: `linear-gradient(135deg, ${themeShades.lightest} 0%, #ffffff 100%)`,
+                    borderColor: themeShades.light,
+                  }}
+                >
                   <h2 className="font-bold text-gray-900 text-lg">Your Orders</h2>
                   <p className="text-xs text-gray-500 mt-1">Tap to view details</p>
                 </div>
-                <div className="divide-y divide-gray-100 max-h-[600px] overflow-y-auto">
+                <div className="divide-y max-h-[600px] overflow-y-auto" style={{ divideColor: themeShades.lightest }}>
                   {orders.map((order) => (
                     <button
                       key={order.id}
                       onClick={() => setSelectedOrder(order)}
                       className={`w-full text-left p-5 transition-all duration-200 ${
-                        selectedOrder?.id === order.id
-                          ? "bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 shadow-inner"
-                          : "hover:bg-gray-50"
+                        selectedOrder?.id === order.id ? "border-l-4 shadow-inner" : "hover:bg-gray-50"
                       }`}
-                      style={selectedOrder?.id === order.id ? { borderLeftColor: primaryColor } : {}}
+                      style={
+                        selectedOrder?.id === order.id
+                          ? {
+                              backgroundColor: themeShades.lightest,
+                              borderLeftColor: primaryColor,
+                            }
+                          : {}
+                      }
                     >
                       <div className="flex items-start justify-between mb-2">
                         <p className="font-semibold text-gray-900 text-sm">{order.seat_label}</p>
                         <span
-                          className={`text-xs px-2 py-1 rounded-full font-medium ${getPaymentStatusBadge(order.payment_status)}`}
+                          className="text-xs px-2 py-1 rounded-full font-medium"
+                          style={{
+                            backgroundColor: getPaymentStatusBadge(order.payment_status).bg,
+                            color: getPaymentStatusBadge(order.payment_status).text,
+                          }}
                         >
                           {order.payment_status === "paid"
                             ? "Paid"
@@ -207,16 +259,14 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
                       </div>
                       <p className="text-xs text-gray-600 mb-2">{new Date(order.created_at).toLocaleTimeString()}</p>
                       <div className="flex items-center justify-between">
-                        <span
-                          className={`text-sm font-semibold ${order.status === "served" ? "text-green-600" : "text-gray-700"}`}
-                        >
+                        <span className="text-sm font-semibold text-gray-700">
                           {formatCurrency(order.total_amount)}
                         </span>
                         <span
-                          className={`text-xs px-2 py-1 rounded font-medium capitalize`}
+                          className="text-xs px-2 py-1 rounded font-medium capitalize"
                           style={{
-                            backgroundColor: `${primaryColor}20`,
-                            color: primaryColor,
+                            backgroundColor: themeShades.lighter,
+                            color: themeShades.darker,
                           }}
                         >
                           {order.status}
@@ -230,8 +280,17 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
 
             {selectedOrder && (
               <div className="lg:col-span-2">
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
-                  <div className="p-8 border-b border-gray-200 bg-gradient-to-br from-gray-50 via-white to-gray-50">
+                <div
+                  className="bg-white rounded-2xl shadow-lg border overflow-hidden"
+                  style={{ borderColor: themeShades.light }}
+                >
+                  <div
+                    className="p-8 border-b"
+                    style={{
+                      background: `linear-gradient(135deg, ${themeShades.lightest} 0%, #ffffff 50%, ${themeShades.lightest} 100%)`,
+                      borderColor: themeShades.light,
+                    }}
+                  >
                     <h3 className="font-bold text-gray-900 text-xl mb-8">Order Progress</h3>
                     <div className="relative">
                       <div className="flex items-center justify-between relative z-10">
@@ -244,25 +303,26 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
                           return (
                             <div key={step.key} className="flex flex-col items-center flex-1">
                               <div
-                                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all mb-2 ${getStatusBgColor(
-                                  step.key,
-                                  isCompleted,
-                                )}`}
-                                style={
-                                  isCurrent
-                                    ? {
-                                        backgroundColor: primaryColor,
-                                        boxShadow: `0 0 0 4px ${primaryColor}22`,
-                                      }
-                                    : {}
-                                }
+                                className="w-10 h-10 rounded-full flex items-center justify-center transition-all mb-2"
+                                style={{
+                                  backgroundColor: isCurrent
+                                    ? primaryColor
+                                    : isCompleted
+                                      ? themeShades.lighter
+                                      : themeShades.lightest,
+                                  boxShadow: isCurrent ? `0 0 0 4px ${themeShades.lighter}` : "none",
+                                }}
                               >
                                 {isCompleted ? (
                                   <CheckCircleIconSolid
-                                    className={`w-5 h-5 ${getStatusColor(step.key, isCompleted)}`}
+                                    className="w-5 h-5"
+                                    style={{ color: isCurrent ? contrastColor : getStatusColor(step.key, isCompleted) }}
                                   />
                                 ) : (
-                                  <step.icon className={`w-5 h-5 ${getStatusColor(step.key, isCompleted)}`} />
+                                  <step.icon
+                                    className="w-5 h-5"
+                                    style={{ color: getStatusColor(step.key, isCompleted) }}
+                                  />
                                 )}
                               </div>
                               <p className="text-xs text-center text-gray-700 font-medium max-w-16">{step.label}</p>
@@ -270,8 +330,10 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
                           )
                         })}
                       </div>
-                      {/* Progress Bar */}
-                      <div className="absolute top-5 left-0 right-0 h-1 bg-gray-200 rounded-full -z-10">
+                      <div
+                        className="absolute top-5 left-0 right-0 h-1 rounded-full -z-10"
+                        style={{ backgroundColor: themeShades.lightest }}
+                      >
                         <div
                           className="h-full rounded-full transition-all duration-500"
                           style={{
@@ -306,32 +368,47 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
                       </div>
                     </div>
 
-                    {/* Estimated Times */}
                     {(selectedOrder.estimated_ready_time || selectedOrder.estimated_delivery_time) && (
-                      <div className="border-t border-gray-200 pt-6 mb-6">
+                      <div className="border-t pt-6 mb-6" style={{ borderColor: themeShades.lightest }}>
                         <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                          <CalendarIcon className="w-4 h-4" />
+                          <CalendarIcon className="w-4 h-4" style={{ color: primaryColor }} />
                           Estimated Times
                         </h4>
                         <div className="grid grid-cols-2 gap-4">
                           {selectedOrder.estimated_ready_time && (
-                            <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                              <p className="text-xs text-blue-600 mb-1 font-medium">Ready by</p>
-                              <p className="text-sm font-semibold text-blue-900">
+                            <div
+                              className="p-3 rounded-lg border"
+                              style={{
+                                backgroundColor: themeShades.lightest,
+                                borderColor: themeShades.light,
+                              }}
+                            >
+                              <p className="text-xs mb-1 font-medium" style={{ color: themeShades.dark }}>
+                                Ready by
+                              </p>
+                              <p className="text-sm font-semibold" style={{ color: themeShades.darker }}>
                                 {formatTime(selectedOrder.estimated_ready_time)}
                               </p>
-                              <p className="text-xs text-blue-700 mt-1">
+                              <p className="text-xs mt-1" style={{ color: primaryColor }}>
                                 {getTimeRemaining(selectedOrder.estimated_ready_time)}
                               </p>
                             </div>
                           )}
                           {selectedOrder.estimated_delivery_time && (
-                            <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-                              <p className="text-xs text-green-600 mb-1 font-medium">Delivery by</p>
-                              <p className="text-sm font-semibold text-green-900">
+                            <div
+                              className="p-3 rounded-lg border"
+                              style={{
+                                backgroundColor: themeShades.lightest,
+                                borderColor: themeShades.medium,
+                              }}
+                            >
+                              <p className="text-xs mb-1 font-medium" style={{ color: themeShades.dark }}>
+                                Delivery by
+                              </p>
+                              <p className="text-sm font-semibold" style={{ color: themeShades.darker }}>
                                 {formatTime(selectedOrder.estimated_delivery_time)}
                               </p>
-                              <p className="text-xs text-green-700 mt-1">
+                              <p className="text-xs mt-1 font-semibold" style={{ color: primaryColor }}>
                                 {getTimeRemaining(selectedOrder.estimated_delivery_time)}
                               </p>
                             </div>
@@ -341,11 +418,15 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
                     )}
 
                     {/* Items */}
-                    <div className="border-t border-gray-200 pt-6">
+                    <div className="border-t pt-6" style={{ borderColor: themeShades.lightest }}>
                       <h4 className="font-semibold text-gray-900 mb-4">Order Items</h4>
                       <div className="space-y-3">
                         {selectedOrder.items?.map((item) => (
-                          <div key={item.id} className="flex justify-between items-start p-3 bg-gray-50 rounded-lg">
+                          <div
+                            key={item.id}
+                            className="flex justify-between items-start p-3 rounded-lg"
+                            style={{ backgroundColor: themeShades.lightest }}
+                          >
                             <div className="flex-1">
                               <p className="font-medium text-gray-900">{item.name}</p>
                               <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
@@ -363,25 +444,30 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
 
                     {/* Customer Note */}
                     {selectedOrder.customer_note && (
-                      <div className="border-t border-gray-200 mt-6 pt-6">
+                      <div className="border-t mt-6 pt-6" style={{ borderColor: themeShades.lightest }}>
                         <h4 className="font-semibold text-gray-900 mb-2">Special Instructions</h4>
-                        <p className="text-gray-600 bg-blue-50 p-3 rounded-lg italic">
+                        <p
+                          className="p-3 rounded-lg italic"
+                          style={{
+                            backgroundColor: themeShades.lightest,
+                            color: themeShades.darker,
+                          }}
+                        >
                           "{selectedOrder.customer_note}"
                         </p>
                       </div>
                     )}
 
-                    {/* Business Comment */}
                     {selectedOrder.business_comment && (
-                      <div className="border-t border-gray-200 mt-6 pt-6">
+                      <div className="border-t mt-6 pt-6" style={{ borderColor: themeShades.lightest }}>
                         <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
-                          <ChatBubbleLeftIcon className="w-4 h-4" />
+                          <ChatBubbleLeftIcon className="w-4 h-4" style={{ color: primaryColor }} />
                           Message from {business.name}
                         </h4>
                         <div
                           className="p-4 rounded-lg border-l-4"
                           style={{
-                            backgroundColor: `${primaryColor}10`,
+                            backgroundColor: themeShades.lightest,
                             borderLeftColor: primaryColor,
                           }}
                         >
@@ -390,20 +476,31 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
                       </div>
                     )}
 
-                    {/* Total */}
-                    <div className="border-t border-gray-200 mt-6 pt-6 flex justify-between items-center">
+                    <div
+                      className="border-t mt-6 pt-6 flex justify-between items-center"
+                      style={{ borderColor: themeShades.light }}
+                    >
                       <p className="text-lg font-semibold text-gray-900">Total Amount</p>
                       <p className="text-2xl font-bold" style={{ color: primaryColor }}>
                         {formatCurrency(selectedOrder.total_amount)}
                       </p>
                     </div>
 
-                    {/* Business Contact */}
                     {(selectedOrder.status === "preparing" || selectedOrder.status === "ready") && (
-                      <div className="mt-6 p-4 bg-amber-50 rounded-lg border border-amber-200">
-                        <p className="text-sm text-amber-800">Need help? Contact {business.name}</p>
+                      <div
+                        className="mt-6 p-4 rounded-lg border"
+                        style={{
+                          backgroundColor: themeShades.lightest,
+                          borderColor: themeShades.light,
+                        }}
+                      >
+                        <p className="text-sm" style={{ color: themeShades.darker }}>
+                          Need help? Contact {business.name}
+                        </p>
                         {business.phone && (
-                          <p className="text-sm font-semibold text-amber-900 mt-1">📞 {business.phone}</p>
+                          <p className="text-sm font-semibold mt-1" style={{ color: primaryColor }}>
+                            📞 {business.phone}
+                          </p>
                         )}
                       </div>
                     )}
