@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react"
 import type { MenuCategory, MenuItem } from "@/types/database"
-import { ChevronLeftIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline"
+import { ChevronLeftIcon, MagnifyingGlassIcon, ShoppingBagIcon } from "@heroicons/react/24/outline"
 import { lightenColor } from "@/lib/color-utils"
 import MenuItemCard from "../MenuItemCard"
 
@@ -25,55 +25,74 @@ export default function ItemsGrid({ category, items, onBack, themeColor }: Items
     )
   }, [items, searchQuery])
 
-  const bgColor = lightenColor(themeColor, 95)
-  const inputBgColor = lightenColor(themeColor, 90)
-
   return (
-    <div className="w-full space-y-4">
-      {/* Header with back button */}
-      <div className="flex items-center gap-3 mb-6">
+    <div className="w-full space-y-6 pb-8">
+      <div className="flex items-start gap-4 mb-8">
         <button
           onClick={onBack}
-          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          className="p-3 hover:bg-gray-100 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95 mt-1"
           aria-label="Go back to categories"
+          style={{ color: themeColor }}
         >
-          <ChevronLeftIcon className="w-6 h-6 text-gray-700" />
+          <ChevronLeftIcon className="w-6 h-6" />
         </button>
-        <div>
-          <h1 className="text-2xl font-bold" style={{ color: themeColor }}>
-            {category.name}
-          </h1>
-          {category.description && <p className="text-gray-600 text-sm mt-1">{category.description}</p>}
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-2">
+            <ShoppingBagIcon className="w-7 h-7" style={{ color: themeColor }} />
+            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">{category.name}</h1>
+          </div>
+          {category.description && (
+            <p className="text-gray-500 text-base leading-relaxed mt-2">{category.description}</p>
+          )}
+          <div className="mt-3">
+            <span
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold"
+              style={{ backgroundColor: lightenColor(themeColor, 90), color: themeColor }}
+            >
+              {items.length} {items.length === 1 ? "Item" : "Items"}
+            </span>
+          </div>
         </div>
       </div>
 
-      <div className="relative mb-6" style={{ backgroundColor: inputBgColor }}>
-        <MagnifyingGlassIcon
-          style={{ color: themeColor }}
-          className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none"
-        />
-        <input
-          type="text"
-          placeholder="Search items..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 rounded-full border-2 outline-none transition-colors text-sm"
-          style={{
-            borderColor: themeColor,
-            backgroundColor: "rgba(255, 255, 255, 0.6)",
-          }}
-        />
+      <div className="relative mb-8">
+        <div className="absolute inset-0 bg-gradient-to-r from-gray-100 to-gray-50 rounded-full blur-sm opacity-60"></div>
+        <div className="relative">
+          <MagnifyingGlassIcon
+            style={{ color: themeColor }}
+            className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none"
+          />
+          <input
+            type="text"
+            placeholder="Search items..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-14 pr-6 py-3.5 rounded-full border-2 outline-none transition-all text-sm font-medium bg-white/80 backdrop-blur-sm shadow-sm hover:shadow-md focus:shadow-lg"
+            style={{
+              borderColor: searchQuery ? themeColor : "#E5E7EB",
+            }}
+          />
+        </div>
       </div>
 
       {filteredItems.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-lg border">
-          <MagnifyingGlassIcon className="w-8 h-8 text-gray-400 mx-auto mb-3" />
-          <p className="text-gray-500">No items match "{searchQuery}"</p>
+        <div className="text-center py-16 bg-gradient-to-br from-gray-50 to-white rounded-2xl border border-gray-100 shadow-sm">
+          <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <MagnifyingGlassIcon className="w-10 h-10 text-gray-400" />
+          </div>
+          <p className="text-gray-600 font-medium text-lg">No items found</p>
+          <p className="text-gray-400 text-sm mt-1">Try adjusting your search</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredItems.map((item) => (
-            <MenuItemCard key={item.id} item={item} themeColor={themeColor} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {filteredItems.map((item, index) => (
+            <div
+              key={item.id}
+              style={{ animationDelay: `${index * 50}ms` }}
+              className="animate-in fade-in slide-in-from-bottom-4 duration-500"
+            >
+              <MenuItemCard item={item} themeColor={themeColor} />
+            </div>
           ))}
         </div>
       )}

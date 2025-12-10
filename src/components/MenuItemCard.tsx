@@ -6,7 +6,8 @@ import Image from "next/image"
 import { useState } from "react"
 import type { MenuItem } from "@/types/database"
 import { useCartStore } from "@/store/cartStore"
-import { PlusIcon, MinusIcon } from "@heroicons/react/24/outline"
+import { PlusIcon, MinusIcon, ChatBubbleLeftIcon } from "@heroicons/react/24/outline"
+import { CheckCircleIcon } from "@heroicons/react/24/solid"
 import { getContrastColor, lightenColor } from "@/lib/color-utils"
 
 interface MenuItemCardProps {
@@ -21,9 +22,8 @@ export default function MenuItemCard({ item, themeColor }: MenuItemCardProps) {
   const { addItem, items } = useCartStore()
 
   const contrastColor = getContrastColor(themeColor)
-  const lightBg = lightenColor(themeColor, 95)
+  const lightBg = lightenColor(themeColor, 96)
 
-  // Check if item is already in cart
   const cartItem = items.find((cartItem) => cartItem.menuItem.id === item.id)
   const currentQuantity = cartItem?.quantity || 0
 
@@ -40,98 +40,139 @@ export default function MenuItemCard({ item, themeColor }: MenuItemCardProps) {
   const decrementQuantity = () => setQuantity((prev) => Math.max(0, prev - 1))
 
   return (
-    <div className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow border border-gray-200">
-      {/* Item Image */}
-      {item.image_url && (
-        <div className="relative h-48 bg-gray-100">
+    <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 border border-gray-200 group">
+      {item.image_url ? (
+        <div className="relative h-52 bg-gradient-to-br from-gray-100 to-gray-50 overflow-hidden">
           <Image
             src={item.image_url || "/placeholder.svg"}
             alt={item.name}
             fill
-            className="object-cover hover:scale-105 transition-transform duration-200"
+            className="object-cover group-hover:scale-110 transition-transform duration-500"
           />
-        </div>
-      )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
-      <div className="p-4">
-        {/* Item Info */}
-        <div className="mb-4">
-          <h4 className="font-bold text-gray-900 text-base leading-tight">{item.name}</h4>
-          {item.description && <p className="text-gray-600 text-xs mt-2 line-clamp-2">{item.description}</p>}
-          <div className="mt-3 text-lg font-bold" style={{ color: themeColor }}>
+          <div
+            className="absolute top-3 right-3 px-3 py-1.5 rounded-full backdrop-blur-md font-bold text-sm shadow-lg"
+            style={{
+              backgroundColor: `${themeColor}F0`,
+              color: contrastColor,
+            }}
+          >
             ₦{item.price.toLocaleString()}
           </div>
         </div>
+      ) : (
+        <div className="h-52 flex flex-col items-center justify-center" style={{ backgroundColor: lightBg }}>
+          <div
+            className="w-16 h-16 rounded-full flex items-center justify-center mb-3"
+            style={{ backgroundColor: `${themeColor}20` }}
+          >
+            <span className="text-2xl">🍽️</span>
+          </div>
+          <div
+            className="px-4 py-2 rounded-full font-bold text-sm"
+            style={{
+              backgroundColor: `${themeColor}`,
+              color: contrastColor,
+            }}
+          >
+            ₦{item.price.toLocaleString()}
+          </div>
+        </div>
+      )}
 
-        {/* Quantity Selector */}
+      <div className="p-5">
+        <div className="mb-4">
+          <h4 className="font-bold text-gray-900 text-lg leading-tight mb-2">{item.name}</h4>
+          {item.description && <p className="text-gray-500 text-sm leading-relaxed line-clamp-2">{item.description}</p>}
+        </div>
+
         <div
-          className="flex items-center gap-1 mb-4 p-2 rounded-lg border-2"
-          style={{ borderColor: lightBg, backgroundColor: lightBg }}
+          className="flex items-center gap-2 mb-4 p-2.5 rounded-xl border-2 transition-all duration-200"
+          style={{
+            borderColor: quantity > 0 ? themeColor : "#E5E7EB",
+            backgroundColor: quantity > 0 ? lightBg : "#F9FAFB",
+          }}
         >
           <button
             onClick={decrementQuantity}
-            className="w-7 h-7 rounded-full flex items-center justify-center hover:opacity-70 disabled:opacity-50 transition-opacity"
-            style={{ backgroundColor: themeColor, color: contrastColor }}
+            className="w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 disabled:opacity-40 disabled:hover:scale-100"
+            style={{
+              backgroundColor: quantity > 0 ? themeColor : "#E5E7EB",
+              color: quantity > 0 ? contrastColor : "#9CA3AF",
+            }}
             disabled={quantity === 0}
             title="Decrease quantity"
             aria-label="Decrease quantity"
           >
-            <MinusIcon className="w-4 h-4" />
+            <MinusIcon className="w-5 h-5" />
           </button>
 
-          <span className="flex-1 text-center font-semibold text-gray-900">{quantity}</span>
+          <div className="flex-1 text-center">
+            <span className="font-bold text-xl text-gray-900">{quantity}</span>
+          </div>
 
           <button
             onClick={incrementQuantity}
-            className="w-7 h-7 rounded-full flex items-center justify-center hover:opacity-70 transition-opacity"
+            className="w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95"
             style={{ backgroundColor: themeColor, color: contrastColor }}
             title="Increase quantity"
             aria-label="Increase quantity"
           >
-            <PlusIcon className="w-4 h-4" />
+            <PlusIcon className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Special Instructions */}
-        <div className="mb-3">
+        <div className="mb-4">
           <button
             onClick={() => setShowNote(!showNote)}
-            className="text-xs font-medium transition-opacity hover:opacity-70"
+            className="flex items-center gap-1.5 text-sm font-semibold transition-all duration-200 hover:gap-2"
             style={{ color: themeColor }}
           >
-            {showNote ? "✕ Hide" : "+ Add"} special instructions
+            <ChatBubbleLeftIcon className="w-4 h-4" />
+            {showNote ? "Hide" : "Add"} special instructions
           </button>
           {showNote && (
             <textarea
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              placeholder="Any special requests..."
-              className="w-full mt-2 p-2 border rounded-md text-xs resize-none focus:outline-none focus:ring-2"
-              style={{ "--tw-ring-color": themeColor } as React.CSSProperties}
-              rows={2}
+              placeholder="Any special requests? (Optional)"
+              className="w-full mt-3 p-3 border-2 rounded-xl text-sm resize-none focus:outline-none focus:ring-4 transition-all duration-200"
+              style={
+                {
+                  borderColor: note ? themeColor : "#E5E7EB",
+                  "--tw-ring-color": `${themeColor}40`,
+                } as React.CSSProperties
+              }
+              rows={3}
               maxLength={200}
             />
           )}
         </div>
 
-        {/* Add to Cart Button */}
         <button
           onClick={handleAddToCart}
           disabled={quantity === 0}
           style={{
-            backgroundColor: quantity === 0 ? "#D1D5DB" : themeColor,
-            color: quantity === 0 ? "#6B7280" : contrastColor,
+            backgroundColor: quantity === 0 ? "#E5E7EB" : themeColor,
+            color: quantity === 0 ? "#9CA3AF" : contrastColor,
           }}
-          className="w-full font-semibold py-2 px-4 rounded-lg disabled:cursor-not-allowed transition-opacity hover:opacity-90"
+          className="w-full font-bold py-3.5 px-4 rounded-xl disabled:cursor-not-allowed transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] hover:shadow-lg disabled:hover:scale-100 disabled:hover:shadow-none"
         >
-          Add to Cart {quantity > 0 && `(${quantity})`}
+          {quantity === 0 ? "Select Quantity" : `Add ${quantity} to Cart`}
         </button>
 
-        {/* Current cart quantity indicator */}
         {currentQuantity > 0 && (
-          <p className="text-xs font-medium mt-2 text-center" style={{ color: themeColor }}>
-            ✓ {currentQuantity} in cart
-          </p>
+          <div
+            className="mt-3 flex items-center justify-center gap-1.5 text-sm font-semibold py-2 rounded-lg"
+            style={{
+              backgroundColor: `${themeColor}15`,
+              color: themeColor,
+            }}
+          >
+            <CheckCircleIcon className="w-4 h-4" />
+            {currentQuantity} in cart
+          </div>
         )}
       </div>
     </div>
