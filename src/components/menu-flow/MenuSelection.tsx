@@ -33,8 +33,8 @@ export default function MenuSelection({ menus, onSelectMenu, themeColor }: MenuS
     <div className="w-full space-y-6 pb-8">
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-2">
-          <SparklesIcon className="w-7 h-7" style={{ color: themeColor }} />
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Discover Our Menus</h1>
+          <SparklesIcon className="w-4 h-4" style={{ color: themeColor }} />
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Discover Our Menus</h1>
         </div>
         <p className="text-gray-500 text-base mt-2 leading-relaxed">Explore our carefully curated collections</p>
       </div>
