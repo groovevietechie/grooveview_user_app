@@ -80,9 +80,6 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
       // Fetch only the orders that belong to this device
       const fetchedOrders = await getOrdersByIds(deviceOrderIds)
       setOrders(fetchedOrders)
-      if (fetchedOrders.length > 0 && !selectedOrder) {
-        setSelectedOrder(fetchedOrders[0])
-      }
     } catch (error) {
       console.error("[v0] Error loading orders:", error)
     } finally {
