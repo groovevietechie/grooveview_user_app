@@ -163,7 +163,7 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
               <ArrowLeftIcon className="w-6 h-6" />
             </button>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Order Tracking</h1>
+              <h1 className="text-xl font-bold text-gray-900 tracking-tight">Order Tracking</h1>
               <p className="text-sm text-gray-500 font-medium mt-0.5">{business.name}</p>
             </div>
           </div>
@@ -236,60 +236,114 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
                   <h2 className="font-bold text-gray-900 text-lg">Your Orders</h2>
                   <p className="text-xs text-gray-500 mt-1">Tap to view details</p>
                 </div>
-                <div className="divide-y max-h-[600px] overflow-y-auto">
-                  {orders.map((order) => (
-                    <button
-                      key={order.id}
-                      onClick={() => setSelectedOrder(order)}
-                      className={`w-full text-left p-5 transition-all duration-200 border-b ${
-                        selectedOrder?.id === order.id ? "border-l-4 shadow-inner" : "hover:bg-gray-50"
-                      }`}
-                      style={
-                        selectedOrder?.id === order.id
-                          ? {
-                              backgroundColor: themeShades.lightest,
-                              borderLeftColor: primaryColor,
-                              borderBottomColor: themeShades.light,
-                            }
-                          : {
-                              borderBottomColor: themeShades.lightest,
-                            }
-                      }
-                    >
-                      <div className="flex items-start justify-between mb-2">
-                        <p className="font-semibold text-gray-900 text-sm">{order.seat_label}</p>
-                        <span
-                          className="text-xs px-2 py-1 rounded-full font-medium"
-                          style={{
-                            backgroundColor: getPaymentStatusBadge(order.payment_status).bg,
-                            color: getPaymentStatusBadge(order.payment_status).text,
-                          }}
-                        >
-                          {order.payment_status === "paid"
-                            ? "Paid"
-                            : order.payment_status === "pending"
-                              ? "Pending"
-                              : "Failed"}
-                        </span>
-                      </div>
-                      <p className="text-xs text-gray-600 mb-2">{new Date(order.created_at).toLocaleTimeString()}</p>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-semibold text-gray-700">
-                          {formatCurrency(order.total_amount)}
-                        </span>
-                        <span
-                          className="text-xs px-2 py-1 rounded font-medium capitalize"
-                          style={{
-                            backgroundColor: themeShades.lighter,
-                            color: themeShades.darker,
-                          }}
-                        >
-                          {order.status}
-                        </span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
+                {orders.length > 1 ? (
+                  <div className="flex flex-row gap-4 overflow-x-auto pb-4">
+                    {orders.map((order) => (
+                      <button
+                        key={order.id}
+                        onClick={() => setSelectedOrder(order)}
+                        className={`flex-shrink-0 min-w-[280px] text-left p-4 transition-all duration-200 rounded-lg border-2 ${
+                          selectedOrder?.id === order.id ? "shadow-lg" : "hover:bg-gray-50 border-gray-200"
+                        }`}
+                        style={
+                          selectedOrder?.id === order.id
+                            ? {
+                                backgroundColor: themeShades.lightest,
+                                borderColor: primaryColor,
+                              }
+                            : {}
+                        }
+                      >
+                        <div className="flex items-start justify-between mb-2">
+                          <p className="font-semibold text-gray-900 text-sm">{order.seat_label}</p>
+                          <span
+                            className="text-xs px-2 py-1 rounded-full font-medium"
+                            style={{
+                              backgroundColor: getPaymentStatusBadge(order.payment_status).bg,
+                              color: getPaymentStatusBadge(order.payment_status).text,
+                            }}
+                          >
+                            {order.payment_status === "paid"
+                              ? "Paid"
+                              : order.payment_status === "pending"
+                                ? "Pending"
+                                : "Failed"}
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-600 mb-2">{new Date(order.created_at).toLocaleTimeString()}</p>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-semibold text-gray-700">
+                            {formatCurrency(order.total_amount)}
+                          </span>
+                          <span
+                            className="text-xs px-2 py-1 rounded font-medium capitalize"
+                            style={{
+                              backgroundColor: themeShades.lighter,
+                              color: themeShades.darker,
+                            }}
+                          >
+                            {order.status}
+                          </span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="divide-y max-h-[600px] overflow-y-auto">
+                    {orders.map((order) => (
+                      <button
+                        key={order.id}
+                        onClick={() => setSelectedOrder(order)}
+                        className={`w-full text-left p-5 transition-all duration-200 border-b ${
+                          selectedOrder?.id === order.id ? "border-l-4 shadow-inner" : "hover:bg-gray-50"
+                        }`}
+                        style={
+                          selectedOrder?.id === order.id
+                            ? {
+                                backgroundColor: themeShades.lightest,
+                                borderLeftColor: primaryColor,
+                                borderBottomColor: themeShades.light,
+                              }
+                            : {
+                                borderBottomColor: themeShades.lightest,
+                              }
+                        }
+                      >
+                        <div className="flex items-start justify-between mb-2">
+                          <p className="font-semibold text-gray-900 text-sm">{order.seat_label}</p>
+                          <span
+                            className="text-xs px-2 py-1 rounded-full font-medium"
+                            style={{
+                              backgroundColor: getPaymentStatusBadge(order.payment_status).bg,
+                              color: getPaymentStatusBadge(order.payment_status).text,
+                            }}
+                          >
+                            {order.payment_status === "paid"
+                              ? "Paid"
+                              : order.payment_status === "pending"
+                                ? "Pending"
+                                : "Failed"}
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-600 mb-2">{new Date(order.created_at).toLocaleTimeString()}</p>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-semibold text-gray-700">
+                            {formatCurrency(order.total_amount)}
+                          </span>
+                          <span
+                            className="text-xs px-2 py-1 rounded font-medium capitalize"
+                            style={{
+                              backgroundColor: themeShades.lighter,
+                              color: themeShades.darker,
+                            }}
+                          >
+                            {order.status}
+                          </span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
