@@ -65,6 +65,16 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
     return () => clearInterval(interval)
   }, [])
 
+  // Update selectedOrder when orders are refreshed to reflect latest status
+  useEffect(() => {
+    if (selectedOrder) {
+      const updatedOrder = orders.find(o => o.id === selectedOrder.id)
+      if (updatedOrder) {
+        setSelectedOrder(updatedOrder)
+      }
+    }
+  }, [orders, selectedOrder])
+
   const loadOrders = async () => {
     try {
       // Get order IDs stored on this device for this business
