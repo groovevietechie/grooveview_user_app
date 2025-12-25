@@ -38,8 +38,17 @@ export default async function BusinessPage({ params }: PageProps) {
 
   if (!business.is_active) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center p-8 bg-white rounded-lg shadow-md max-w-md">
+      <div 
+        className="min-h-screen flex items-center justify-center relative"
+        style={{
+          backgroundImage: 'url(/menu_page_background.jpeg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      >
+        <div className="absolute inset-0 bg-black opacity-30"></div>
+        <div className="text-center p-8 bg-white rounded-lg shadow-md max-w-md relative z-10">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Business Temporarily Unavailable</h1>
           <p className="text-gray-600 mb-6">
             {business.name} is currently not accepting orders. Please check back later.
@@ -52,8 +61,17 @@ export default async function BusinessPage({ params }: PageProps) {
 
   if (!menuData) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center p-8 bg-white rounded-lg shadow-md max-w-md">
+      <div 
+        className="min-h-screen flex items-center justify-center relative"
+        style={{
+          backgroundImage: 'url(/menu_page_background.jpeg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      >
+        <div className="absolute inset-0 bg-black opacity-30"></div>
+        <div className="text-center p-8 bg-white rounded-lg shadow-md max-w-md relative z-10">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Menu Not Available</h1>
           <p className="text-gray-600 mb-6">
             The menu for {business.name} is currently not available. Please try again later.

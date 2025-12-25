@@ -40,26 +40,40 @@ export default function MenuPage({ business, menuData }: MenuPageProps) {
   const itemCount = getItemCount()
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <MenuHeader business={business} />
+    <div 
+      className="min-h-screen relative"
+      style={{
+        backgroundImage: 'url(/menu_page_background.jpeg)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}
+    >
+      {/* Background overlay for opacity */}
+      <div className="absolute inset-0 bg-white opacity-70"></div>
+      
+      {/* Content wrapper */}
+      <div className="relative z-10">
+        {/* Header */}
+        <MenuHeader business={business} />
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex gap-6">
-          {/* Menu Content */}
-          <div className="flex-1">
-            <MenuList
-              menus={menuData.menus}
-              categories={menuData.categories}
-              items={menuData.items}
-              themeColor={business.theme_color_hex}
-            />
-          </div>
+        {/* Main Content */}
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="flex gap-6">
+            {/* Menu Content */}
+            <div className="flex-1">
+              <MenuList
+                menus={menuData.menus}
+                categories={menuData.categories}
+                items={menuData.items}
+                themeColor={business.theme_color_hex}
+              />
+            </div>
 
-          {/* Desktop Cart Sidebar */}
-          <div className="hidden lg:block w-80 flex-shrink-0">
-            <CartSidebar business={business} />
+            {/* Desktop Cart Sidebar */}
+            <div className="hidden lg:block w-80 flex-shrink-0">
+              <CartSidebar business={business} />
+            </div>
           </div>
         </div>
       </div>
