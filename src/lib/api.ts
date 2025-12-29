@@ -202,7 +202,7 @@ export async function submitServiceBooking(bookingData: ServiceBookingSubmission
         p_business_id: bookingData.businessId,
         p_customer_name: bookingData.customerName,
         p_customer_phone: bookingData.customerPhone,
-        p_service_type: bookingData.serviceType,
+        p_service_type: bookingData.serviceType || 'custom',
         p_event_date: bookingData.eventDate,
         p_number_of_participants: bookingData.numberOfParticipants,
         p_total_amount: bookingData.totalAmount,

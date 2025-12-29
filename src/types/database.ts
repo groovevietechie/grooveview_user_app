@@ -83,7 +83,7 @@ export type PaymentStatus = "pending" | "paid" | "failed"
 export interface ServiceConfiguration {
   id: string
   business_id: string
-  service_type: string
+  service_type: string | null
   title: string
   description?: string
   is_active: boolean
@@ -114,7 +114,7 @@ export interface ServiceBooking {
   customer_name: string
   customer_phone: string
   customer_email?: string
-  service_type: string
+  service_type: string | null
   status: ServiceStatus
   booking_date: string
   event_date: string
@@ -130,7 +130,7 @@ export interface ServiceBookingSubmission {
   customerName: string
   customerPhone: string
   customerEmail?: string
-  serviceType: string
+  serviceType: string | null
   eventDate: string
   numberOfParticipants: number
   totalAmount: number
@@ -146,25 +146,10 @@ export interface ServiceCartItem {
 }
 
 export type ServiceStatus = "pending" | "confirmed" | "inProgress" | "completed" | "cancelled"
-  number_of_participants: number
-  total_amount: number
-  service_details: Record<string, unknown>
-  special_requests?: string
-  created_at: string
-  updated_at: string
-}
-
-export type ServiceStatus = "pending" | "confirmed" | "inProgress" | "completed" | "cancelled"
 
 // Service Cart Types
-export interface ServiceCartItem {
-  serviceOption: ServiceOption
-  quantity: number
-  note?: string
-}
-
 export interface ServiceCart {
-  serviceType: string
+  serviceType: string | null
   items: ServiceCartItem[]
   bookingDetails: {
     customerName: string

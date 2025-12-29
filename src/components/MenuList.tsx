@@ -25,7 +25,6 @@ export default function MenuList({ business, menus, categories, items, themeColo
   const [selectedMainCategory, setSelectedMainCategory] = useState<MainCategory | null>(null)
   const [selectedMenu, setSelectedMenu] = useState<Menu | null>(null)
   const [selectedCategory, setSelectedCategory] = useState<MenuCategory | null>(null)
-  const [cameFromSearch, setCameFromSearch] = useState(false) // Track if user came from search
 
   // Group categories by menu
   const categoriesByMenu = categories.reduce(
@@ -86,16 +85,30 @@ export default function MenuList({ business, menus, categories, items, themeColo
       setSelectedMainCategory(null)
     } else {
       setSelectedMainCategory(category)
-      if (category === "services") {
-        setStep("services")
-      } else {
-        // Stay on main categories and show filtered categories in the categories section
-      }
+      // Always go to menus step to show the appropriate content
+      setStep("menus")
     }
   }
 
   const handleMenuCategorySelect = (category: MenuCategory) => {
     setSelectedCategory(category)
+    // Ensure we have a main category set for proper back navigation
+    if (!selectedMainCategory) {
+      // Try to determine main category from the menu
+      const menu = menus.find(m => m.id === category.menu_id)
+      if (menu) {
+        const menuName = menu.name.toLowerCase()
+        const menuDesc = menu.description?.toLowerCase() || ""
+        
+        // Determine category based on keywords
+        if (["drink", "beverage", "cocktail", "beer", "wine", "bar", "alcohol"].some(keyword => 
+          menuName.includes(keyword) || menuDesc.includes(keyword))) {
+          setSelectedMainCategory("drinks")
+        } else {
+          setSelectedMainCategory("food") // Default to food
+        }
+      }
+    }
     setStep("items")
   }
 
@@ -107,6 +120,23 @@ export default function MenuList({ business, menus, categories, items, themeColo
 
   const handleCategorySelect = (category: MenuCategory) => {
     setSelectedCategory(category)
+    // Ensure we have a main category set for proper back navigation
+    if (!selectedMainCategory) {
+      // Try to determine main category from the menu
+      const menu = menus.find(m => m.id === category.menu_id)
+      if (menu) {
+        const menuName = menu.name.toLowerCase()
+        const menuDesc = menu.description?.toLowerCase() || ""
+        
+        // Determine category based on keywords
+        if (["drink", "beverage", "cocktail", "beer", "wine", "bar", "alcohol"].some(keyword => 
+          menuName.includes(keyword) || menuDesc.includes(keyword))) {
+          setSelectedMainCategory("drinks")
+        } else {
+          setSelectedMainCategory("food") // Default to food
+        }
+      }
+    }
     setStep("items")
   }
 
@@ -114,34 +144,24 @@ export default function MenuList({ business, menus, categories, items, themeColo
     setSelectedMainCategory(null)
     setSelectedMenu(null)
     setSelectedCategory(null)
-    setCameFromSearch(false)
     setStep("mainCategories")
   }
 
   const handleBackToMenus = () => {
     setSelectedMenu(null)
     setSelectedCategory(null)
-    setCameFromSearch(false)
     setStep("menus")
   }
 
   const handleBackToCategories = () => {
     setSelectedCategory(null)
-    setCameFromSearch(false)
     setStep("categories")
   }
 
-  // New function to handle back from items - goes to menus if came from search
+  // Function to handle back from items - ALWAYS goes to main categories page
   const handleBackFromItems = () => {
-    if (cameFromSearch && selectedMainCategory) {
-      // If user came from search, go back to menu selection
-      setSelectedCategory(null)
-      setCameFromSearch(false)
-      setStep("menus")
-    } else {
-      // Otherwise, go back to categories as usual
-      handleBackToCategories()
-    }
+    // Always go back to main categories page (where all menus and categories are displayed)
+    handleBackToMainCategories()
   }
 
   const handleServiceBookingComplete = (bookingId: string) => {
@@ -172,7 +192,6 @@ export default function MenuList({ business, menus, categories, items, themeColo
             onSelectItem={(item, category) => {
               // When an item is selected from search, navigate directly to the items view
               setSelectedCategory(category)
-              setCameFromSearch(true) // Mark that user came from search
               setStep("items")
             }}
             themeColor={themeColor}
@@ -190,10 +209,15 @@ export default function MenuList({ business, menus, categories, items, themeColo
             onSelectItem={(item, category) => {
               // When an item is selected from search, navigate directly to the items view
               setSelectedCategory(category)
-              setCameFromSearch(true) // Mark that user came from search
               setStep("items")
             }}
-            themeColor={themeColor} 
+            onSelectService={(service) => {
+              // When a service is selected, navigate to the service flow
+              setStep("services")
+            }}
+            themeColor={themeColor}
+            business={business}
+            showServices={selectedMainCategory === "services"}
           />
         )}
 

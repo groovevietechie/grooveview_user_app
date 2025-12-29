@@ -1,11 +1,12 @@
 "use client"
 
 import type React from "react"
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import Image from "next/image"
-import type { Menu, MenuCategory, MenuItem } from "@/types/database"
-import { MagnifyingGlassIcon, SparklesIcon, ArrowRightIcon } from "@heroicons/react/24/outline"
+import type { Menu, MenuCategory, MenuItem, ServiceConfiguration, Business } from "@/types/database"
+import { MagnifyingGlassIcon, SparklesIcon, ArrowRightIcon, CogIcon } from "@heroicons/react/24/outline"
 import { lightenColor } from "@/lib/color-utils"
+import { getServiceConfigurations } from "@/lib/api"
 
 interface MenuSelectionProps {
   menus: Menu[]
@@ -13,7 +14,10 @@ interface MenuSelectionProps {
   items?: MenuItem[]
   onSelectMenu: (menu: Menu) => void
   onSelectItem?: (item: MenuItem, category: MenuCategory) => void
+  onSelectService?: (service: ServiceConfiguration) => void
   themeColor: string
+  business?: Business
+  showServices?: boolean
 }
 
 export default function MenuSelection({ 
@@ -22,16 +26,36 @@ export default function MenuSelection({
   items = [], 
   onSelectMenu, 
   onSelectItem, 
-  themeColor 
+  onSelectService,
+  themeColor,
+  business,
+  showServices = false
 }: MenuSelectionProps) {
   const [searchQuery, setSearchQuery] = useState("")
+  const [services, setServices] = useState<ServiceConfiguration[]>([])
+  const [servicesLoading, setServicesLoading] = useState(false)
 
-  // Enhanced search that includes menu items
-  const { filteredMenus, searchedItems } = useMemo(() => {
+  // Load services when showServices is true
+  useEffect(() => {
+    if (showServices && business) {
+      setServicesLoading(true)
+      getServiceConfigurations(business.id)
+        .then(setServices)
+        .catch(error => {
+          console.error("Failed to load services:", error)
+          setServices([])
+        })
+        .finally(() => setServicesLoading(false))
+    }
+  }, [showServices, business])
+
+  // Enhanced search that includes menu items and services
+  const { filteredMenus, searchedItems, filteredServices } = useMemo(() => {
     if (!searchQuery.trim()) {
       return { 
         filteredMenus: menus, 
-        searchedItems: [] 
+        searchedItems: [],
+        filteredServices: services
       }
     }
 
@@ -42,6 +66,14 @@ export default function MenuSelection({
       (menu) =>
         menu.name.toLowerCase().includes(query) || 
         (menu.description && menu.description.toLowerCase().includes(query))
+    )
+
+    // Filter services
+    const filteredServices = services.filter(
+      (service) =>
+        service.title.toLowerCase().includes(query) ||
+        (service.service_type && service.service_type.toLowerCase().includes(query)) ||
+        (service.description && service.description.toLowerCase().includes(query))
     )
 
     // Search through menu items
@@ -64,10 +96,13 @@ export default function MenuSelection({
       }
     })
 
-    return { filteredMenus, searchedItems }
-  }, [menus, categories, items, searchQuery])
+    return { filteredMenus, searchedItems, filteredServices }
+  }, [menus, categories, items, services, searchQuery])
 
-  const hasNoResults = searchQuery.trim() && filteredMenus.length === 0 && searchedItems.length === 0
+  const hasNoResults = searchQuery.trim() && 
+    filteredMenus.length === 0 && 
+    searchedItems.length === 0 && 
+    filteredServices.length === 0
 
   const handleItemSelect = (item: MenuItem, category: MenuCategory) => {
     if (onSelectItem) {
@@ -75,11 +110,56 @@ export default function MenuSelection({
     }
   }
 
+  const handleServiceSelect = (service: ServiceConfiguration) => {
+    if (onSelectService) {
+      onSelectService(service)
+    }
+  }
+
+  // Get service type display info
+  const getServiceTypeInfo = (serviceType: string | null) => {
+    // Handle null or empty service type
+    if (!serviceType) {
+      return {
+        name: 'Custom Service',
+        description: 'Custom service offering',
+        image: null,
+        fallbackColor: themeColor
+      }
+    }
+
+    switch (serviceType) {
+      case 'roomBooking':
+        return {
+          name: 'Room Booking',
+          description: 'Book private rooms for your events',
+          image: '/service-room.jpg',
+          fallbackColor: '#4F46E5'
+        }
+      case 'partyBooking':
+        return {
+          name: 'Party Booking', 
+          description: 'Complete party packages with all amenities',
+          image: '/service-party.jpg',
+          fallbackColor: '#7C3AED'
+        }
+      default:
+        return {
+          name: serviceType.charAt(0).toUpperCase() + serviceType.slice(1),
+          description: 'Custom service offering',
+          image: null,
+          fallbackColor: themeColor
+        }
+    }
+  }
+
   return (
     <div className="w-full space-y-2 pb-2">
       <div className="mb-2">
         <div className="flex items-center gap-2 mb-2">
-          <h2 className="text-xl font-bold text-gray-900 tracking-tight">Discover Our Menu</h2>
+          <h2 className="text-xl font-bold text-gray-900 tracking-tight">
+            {showServices ? "Our Services" : "Discover Our Menu"}
+          </h2>
         </div>
         </div>
 
@@ -92,7 +172,7 @@ export default function MenuSelection({
           />
           <input
             type="text"
-            placeholder="Search menus or items..."
+            placeholder={showServices ? "Search services..." : "Search menus or items..."}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-14 pr-6 py-3.5 rounded-full border-2 outline-none transition-all text-sm font-medium bg-white/80 backdrop-blur-sm shadow-sm hover:shadow-md focus:shadow-lg"
@@ -116,8 +196,69 @@ export default function MenuSelection({
             </div>
           ) : (
             <div className="space-y-6">
+              {/* Services Results */}
+              {showServices && filteredServices.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                    <CogIcon className="w-5 h-5" style={{ color: themeColor }} />
+                    Services ({filteredServices.length})
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {filteredServices.map((service) => {
+                      const serviceInfo = getServiceTypeInfo(service.service_type)
+                      return (
+                        <button
+                          key={service.id}
+                          onClick={() => handleServiceSelect(service)}
+                          className="group text-left p-4 bg-white border border-gray-200 rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-offset-2 active:scale-[0.98]"
+                          style={
+                            {
+                              "--tw-ring-color": `${themeColor}40`,
+                            } as React.CSSProperties
+                          }
+                        >
+                          <div className="flex items-start gap-3">
+                            {serviceInfo.image ? (
+                              <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                                <Image
+                                  src={serviceInfo.image}
+                                  alt={service.title}
+                                  fill
+                                  className="object-cover group-hover:scale-110 transition-transform duration-300"
+                                />
+                              </div>
+                            ) : (
+                              <div 
+                                className="w-16 h-16 rounded-lg flex items-center justify-center flex-shrink-0"
+                                style={{ backgroundColor: lightenColor(serviceInfo.fallbackColor, 95) }}
+                              >
+                                <CogIcon className="w-8 h-8 opacity-40" style={{ color: serviceInfo.fallbackColor }} />
+                              </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-semibold text-gray-900 group-hover:translate-x-1 transition-transform duration-300">
+                                {service.title}
+                              </h4>
+                              <p className="text-sm text-gray-500 mt-1">
+                                {serviceInfo.name}
+                              </p>
+                              {service.description && (
+                                <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                                  {service.description}
+                                </p>
+                              )}
+                            </div>
+                            <ArrowRightIcon className="w-5 h-5 text-gray-400 group-hover:text-gray-600 group-hover:translate-x-1 transition-all duration-300 flex-shrink-0" />
+                          </div>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+
               {/* Menu Items Results */}
-              {searchedItems.length > 0 && (
+              {!showServices && searchedItems.length > 0 && (
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
                     <SparklesIcon className="w-5 h-5" style={{ color: themeColor }} />
@@ -180,7 +321,7 @@ export default function MenuSelection({
               )}
 
               {/* Menu Results */}
-              {filteredMenus.length > 0 && (
+              {!showServices && filteredMenus.length > 0 && (
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
                     <MagnifyingGlassIcon className="w-5 h-5" style={{ color: themeColor }} />
@@ -245,70 +386,151 @@ export default function MenuSelection({
         </div>
       )}
 
-      {/* Default Menu Grid (when not searching) */}
+      {/* Default Menu/Services Grid (when not searching) */}
       {!searchQuery.trim() && (
         <>
-          {menus.length === 0 ? (
-            <div className="text-center py-16 bg-gradient-to-br from-gray-50 to-white rounded-2xl border border-gray-100 shadow-sm">
-              <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <MagnifyingGlassIcon className="w-10 h-10 text-gray-400" />
-              </div>
-              <p className="text-gray-600 font-medium text-lg">No menus available</p>
-              <p className="text-gray-400 text-sm mt-1">Check back later for updates</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-5">
-              {menus.map((menu) => (
-                <button
-                  key={menu.id}
-                  onClick={() => onSelectMenu(menu)}
-                  className="group text-left transition-all duration-300 hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-offset-2 active:scale-[0.98]"
-                  style={
-                    {
-                      "--tw-ring-color": `${themeColor}40`,
-                    } as React.CSSProperties
-                  }
-                >
-                  <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300">
-                    {menu.image_url ? (
-                      <div className="relative h-44 overflow-hidden bg-gradient-to-br from-gray-100 to-gray-50">
-                        <Image
-                          src={menu.image_url || "/placeholder.svg"}
-                          alt={menu.name}
-                          fill
-                          className="object-cover group-hover:scale-110 transition-transform duration-500"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                      </div>
-                    ) : (
-                      <div
-                        className="h-44 flex items-center justify-center"
-                        style={{ backgroundColor: lightenColor(themeColor, 95) }}
-                      >
-                        <SparklesIcon className="w-16 h-16 opacity-20" style={{ color: themeColor }} />
-                      </div>
-                    )}
-
-                    <div className="p-5">
-                      <h3
-                        className="font-bold text-lg leading-tight mb-2 group-hover:translate-x-1 transition-transform duration-300"
-                        style={{ color: themeColor }}
-                      >
-                        {menu.name}
-                      </h3>
-                      {menu.description && (
-                        <p className="text-gray-600 text-sm leading-relaxed line-clamp-2">{menu.description}</p>
-                      )}
-                    </div>
-
-                    <div
-                      className="h-1.5 w-0 group-hover:w-full transition-all duration-500 ease-out"
-                      style={{ backgroundColor: themeColor }}
-                    />
+          {showServices ? (
+            // Services Grid
+            <>
+              {servicesLoading ? (
+                <div className="text-center py-16 bg-gradient-to-br from-gray-50 to-white rounded-2xl border border-gray-100 shadow-sm">
+                  <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+                    <CogIcon className="w-10 h-10 text-gray-400" />
                   </div>
-                </button>
-              ))}
-            </div>
+                  <p className="text-gray-600 font-medium text-lg">Loading services...</p>
+                </div>
+              ) : services.length === 0 ? (
+                <div className="text-center py-16 bg-gradient-to-br from-gray-50 to-white rounded-2xl border border-gray-100 shadow-sm">
+                  <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <CogIcon className="w-10 h-10 text-gray-400" />
+                  </div>
+                  <p className="text-gray-600 font-medium text-lg">No services available</p>
+                  <p className="text-gray-400 text-sm mt-1">Check back later for updates</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  {services.map((service) => {
+                    const serviceInfo = getServiceTypeInfo(service.service_type)
+                    return (
+                      <button
+                        key={service.id}
+                        onClick={() => handleServiceSelect(service)}
+                        className="group text-left transition-all duration-300 hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-offset-2 active:scale-[0.98]"
+                        style={
+                          {
+                            "--tw-ring-color": `${themeColor}40`,
+                          } as React.CSSProperties
+                        }
+                      >
+                        <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300">
+                          {serviceInfo.image ? (
+                            <div className="relative h-44 overflow-hidden bg-gradient-to-br from-gray-100 to-gray-50">
+                              <Image
+                                src={serviceInfo.image}
+                                alt={service.title}
+                                fill
+                                className="object-cover group-hover:scale-110 transition-transform duration-500"
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                            </div>
+                          ) : (
+                            <div
+                              className="h-44 flex items-center justify-center"
+                              style={{ backgroundColor: lightenColor(serviceInfo.fallbackColor, 95) }}
+                            >
+                              <CogIcon className="w-12 h-12 opacity-20" style={{ color: serviceInfo.fallbackColor }} />
+                            </div>
+                          )}
+
+                          <div className="p-5">
+                            <h3
+                              className="font-bold text-lg leading-tight mb-2 group-hover:translate-x-1 transition-transform duration-300"
+                              style={{ color: themeColor }}
+                            >
+                              {service.title}
+                            </h3>
+                            <p className="text-gray-600 text-sm leading-relaxed line-clamp-2">
+                              {service.description || serviceInfo.description}
+                            </p>
+                          </div>
+
+                          <div
+                            className="h-1.5 w-0 group-hover:w-full transition-all duration-500 ease-out"
+                            style={{ backgroundColor: themeColor }}
+                          />
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+            </>
+          ) : (
+            // Menus Grid
+            <>
+              {menus.length === 0 ? (
+                <div className="text-center py-16 bg-gradient-to-br from-gray-50 to-white rounded-2xl border border-gray-100 shadow-sm">
+                  <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <MagnifyingGlassIcon className="w-10 h-10 text-gray-400" />
+                  </div>
+                  <p className="text-gray-600 font-medium text-lg">No menus available</p>
+                  <p className="text-gray-400 text-sm mt-1">Check back later for updates</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-5">
+                  {menus.map((menu) => (
+                    <button
+                      key={menu.id}
+                      onClick={() => onSelectMenu(menu)}
+                      className="group text-left transition-all duration-300 hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-offset-2 active:scale-[0.98]"
+                      style={
+                        {
+                          "--tw-ring-color": `${themeColor}40`,
+                        } as React.CSSProperties
+                      }
+                    >
+                      <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300">
+                        {menu.image_url ? (
+                          <div className="relative h-44 overflow-hidden bg-gradient-to-br from-gray-100 to-gray-50">
+                            <Image
+                              src={menu.image_url || "/placeholder.svg"}
+                              alt={menu.name}
+                              fill
+                              className="object-cover group-hover:scale-110 transition-transform duration-500"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                          </div>
+                        ) : (
+                          <div
+                            className="h-44 flex items-center justify-center"
+                            style={{ backgroundColor: lightenColor(themeColor, 95) }}
+                          >
+                            <SparklesIcon className="w-16 h-16 opacity-20" style={{ color: themeColor }} />
+                          </div>
+                        )}
+
+                        <div className="p-5">
+                          <h3
+                            className="font-bold text-lg leading-tight mb-2 group-hover:translate-x-1 transition-transform duration-300"
+                            style={{ color: themeColor }}
+                          >
+                            {menu.name}
+                          </h3>
+                          {menu.description && (
+                            <p className="text-gray-600 text-sm leading-relaxed line-clamp-2">{menu.description}</p>
+                          )}
+                        </div>
+
+                        <div
+                          className="h-1.5 w-0 group-hover:w-full transition-all duration-500 ease-out"
+                          style={{ backgroundColor: themeColor }}
+                        />
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </>
       )}

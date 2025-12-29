@@ -9,14 +9,14 @@ interface ServiceStore extends ServiceCart {
   clearServiceCart: () => void
   getServiceTotal: () => number
   getServiceItemCount: () => number
-  setServiceType: (serviceType: string) => void
+  setServiceType: (serviceType: string | null) => void
   updateBookingDetails: (details: Partial<ServiceCart['bookingDetails']>) => void
   setBusinessId: (businessId: string) => void
   businessId: string
 }
 
 export const useServiceStore = create<ServiceStore>((set, get) => ({
-  serviceType: '',
+  serviceType: null,
   businessId: '',
   items: [],
   bookingDetails: {
@@ -103,7 +103,7 @@ export const useServiceStore = create<ServiceStore>((set, get) => ({
     return get().items.reduce((total, cartItem) => total + cartItem.quantity, 0)
   },
 
-  setServiceType: (serviceType: string) => {
+  setServiceType: (serviceType: string | null) => {
     set({ serviceType })
   },
 
