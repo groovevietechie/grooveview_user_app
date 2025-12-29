@@ -3,10 +3,12 @@
 import { useState, useEffect } from "react"
 import type { Business, Menu, MenuCategory, MenuItem } from "@/types/database"
 import { useCartStore } from "@/store/cartStore"
+import { useServiceStore } from "@/store/serviceStore"
 import { useTheme } from "@/contexts/ThemeContext"
 import MenuHeader from "./MenuHeader"
 import MenuList from "./MenuList"
 import CartSidebar from "./CartSidebar"
+import ServiceSidebar from "./ServiceSidebar"
 import FloatingOrderButton from "./FloatingOrderButton"
 import { ShoppingCartIcon } from "@heroicons/react/24/outline"
 
@@ -22,11 +24,14 @@ interface MenuPageProps {
 export default function MenuPage({ business, menuData }: MenuPageProps) {
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [showFloatingButton, setShowFloatingButton] = useState(false)
+  const [currentMode, setCurrentMode] = useState<"menu" | "service">("menu")
   const { getItemCount, setBusinessId } = useCartStore()
+  const { getServiceItemCount, setBusinessId: setServiceBusinessId } = useServiceStore()
   const { setPrimaryColor } = useTheme()
 
   useEffect(() => {
     setBusinessId(business.id)
+    setServiceBusinessId(business.id)
     setPrimaryColor(business.theme_color_hex)
 
     const checkRecentOrder = () => {
@@ -35,9 +40,18 @@ export default function MenuPage({ business, menuData }: MenuPageProps) {
     }
 
     checkRecentOrder()
-  }, [business.id, business.theme_color_hex, setBusinessId, setPrimaryColor])
+  }, [business.id, business.theme_color_hex, setBusinessId, setServiceBusinessId, setPrimaryColor])
 
   const itemCount = getItemCount()
+  const serviceItemCount = getServiceItemCount()
+
+  // Determine which sidebar to show based on current mode and item counts
+  const getSidebarContent = () => {
+    if (serviceItemCount > 0) {
+      return <ServiceSidebar business={business} />
+    }
+    return <CartSidebar business={business} />
+  }
 
   return (
     <div 
@@ -63,6 +77,7 @@ export default function MenuPage({ business, menuData }: MenuPageProps) {
             {/* Menu Content */}
             <div className="flex-1">
               <MenuList
+                business={business}
                 menus={menuData.menus}
                 categories={menuData.categories}
                 items={menuData.items}
@@ -70,9 +85,9 @@ export default function MenuPage({ business, menuData }: MenuPageProps) {
               />
             </div>
 
-            {/* Desktop Cart Sidebar */}
+            {/* Desktop Cart/Service Sidebar */}
             <div className="hidden lg:block w-80 flex-shrink-0">
-              <CartSidebar business={business} />
+              {getSidebarContent()}
             </div>
           </div>
         </div>

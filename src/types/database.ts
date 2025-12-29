@@ -79,6 +79,103 @@ export type OrderStatus = "new" | "accepted" | "preparing" | "ready" | "served" 
 export type PaymentMethod = "cash" | "card" | "mobile"
 export type PaymentStatus = "pending" | "paid" | "failed"
 
+// Service Types
+export interface ServiceConfiguration {
+  id: string
+  business_id: string
+  service_type: string
+  title: string
+  description?: string
+  is_active: boolean
+  pricing_structure: Record<string, unknown>
+  available_options: string[]
+  metadata: Record<string, unknown>
+  created_at: string
+  updated_at: string
+}
+
+export interface ServiceOption {
+  id: string
+  business_id: string
+  name: string
+  category: string
+  price: number
+  is_active: boolean
+  description?: string
+  image_url?: string
+  metadata: Record<string, unknown>
+  created_at: string
+  updated_at: string
+}
+
+export interface ServiceBooking {
+  id: string
+  business_id: string
+  customer_name: string
+  customer_phone: string
+  customer_email?: string
+  service_type: string
+  status: ServiceStatus
+  booking_date: string
+  event_date: string
+  number_of_participants: number
+  total_amount: number
+  service_details: Record<string, unknown>
+  created_at: string
+  updated_at: string
+}
+
+export interface ServiceBookingSubmission {
+  businessId: string
+  customerName: string
+  customerPhone: string
+  customerEmail?: string
+  serviceType: string
+  eventDate: string
+  numberOfParticipants: number
+  totalAmount: number
+  items: ServiceCartItem[]
+  specialRequests?: string
+  bookingDetails: Record<string, unknown>
+}
+
+export interface ServiceCartItem {
+  serviceOption: ServiceOption
+  quantity: number
+  note?: string
+}
+
+export type ServiceStatus = "pending" | "confirmed" | "inProgress" | "completed" | "cancelled"
+  number_of_participants: number
+  total_amount: number
+  service_details: Record<string, unknown>
+  special_requests?: string
+  created_at: string
+  updated_at: string
+}
+
+export type ServiceStatus = "pending" | "confirmed" | "inProgress" | "completed" | "cancelled"
+
+// Service Cart Types
+export interface ServiceCartItem {
+  serviceOption: ServiceOption
+  quantity: number
+  note?: string
+}
+
+export interface ServiceCart {
+  serviceType: string
+  items: ServiceCartItem[]
+  bookingDetails: {
+    customerName: string
+    customerPhone: string
+    customerEmail?: string
+    eventDate: string
+    numberOfParticipants: number
+    specialRequests?: string
+  }
+}
+
 // Cart types
 export interface CartItem {
   menuItem: MenuItem
