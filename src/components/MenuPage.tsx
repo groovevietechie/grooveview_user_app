@@ -64,7 +64,7 @@ export default function MenuPage({ business, menuData }: MenuPageProps) {
       }}
     >
       {/* Background overlay for opacity */}
-      <div className="absolute inset-0 bg-white opacity-70"></div>
+      <div className="absolute inset-0 bg-white opacity-10"></div>
       
       {/* Content wrapper */}
       <div className="relative z-10">
@@ -72,8 +72,8 @@ export default function MenuPage({ business, menuData }: MenuPageProps) {
         <MenuHeader business={business} />
 
         {/* Main Content */}
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          <div className="flex gap-6">
+        <div className="max-w-4xl mx-auto px-2 py-4">
+          <div className="flex gap-2">
             {/* Menu Content */}
             <div className="flex-1">
               <MenuList

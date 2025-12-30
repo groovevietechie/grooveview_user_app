@@ -112,9 +112,12 @@ export async function getServiceConfigurations(businessId: string): Promise<Serv
   try {
     console.log("[API] Fetching service configurations for business:", businessId)
 
-    // Try to use the optimized function first
     const { data, error } = await supabase
-      .rpc("get_business_services", { p_business_id: businessId })
+      .from("service_configurations")
+      .select("*")
+      .eq("business_id", businessId)
+      .eq("is_active", true)
+      .order("created_at", { ascending: true })
 
     if (error) {
       console.error("[API] Service configurations fetch failed:", error)
@@ -122,44 +125,28 @@ export async function getServiceConfigurations(businessId: string): Promise<Serv
     }
 
     console.log("[API] Service configurations fetched:", data?.length || 0)
-    
-    // Transform the function result to ServiceConfiguration format
+
+    // Transform to match ServiceConfiguration interface
     return (data || []).map((item: any) => ({
-      id: item.config_id,
-      business_id: businessId,
+      id: item.id,
+      business_id: item.business_id,
       service_type: item.service_type,
       title: item.title,
       description: item.description,
-      is_active: true, // Only active configs are returned
+      is_active: item.is_active,
       pricing_structure: item.pricing_structure,
-      available_options: item.available_options,
+      available_options: item.available_options || [],
       metadata: {
         terms: item.terms,
         conditions: item.conditions,
-        custom_fields: item.custom_fields,
-        options: item.options,
+        custom_fields: item.custom_fields || {},
       },
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+      created_at: item.created_at,
+      updated_at: item.updated_at,
     }))
   } catch (error) {
     console.error("[API] Error fetching service configurations:", error)
-    
-    // Fallback to direct query
-    try {
-      const { data, error: fallbackError } = await supabase
-        .from("service_configurations")
-        .select("*")
-        .eq("business_id", businessId)
-        .eq("is_active", true)
-        .order("service_type", { ascending: true })
-
-      if (fallbackError) throw fallbackError
-      return data || []
-    } catch (fallbackError) {
-      console.error("[API] Fallback service configurations fetch failed:", fallbackError)
-      throw fallbackError
-    }
+    return []
   }
 }
 

@@ -4,7 +4,7 @@ import type React from "react"
 import { useState, useMemo, useEffect } from "react"
 import Image from "next/image"
 import type { Menu, MenuCategory, MenuItem, ServiceConfiguration, Business } from "@/types/database"
-import { MagnifyingGlassIcon, SparklesIcon, ArrowRightIcon, CogIcon } from "@heroicons/react/24/outline"
+import { MagnifyingGlassIcon, SparklesIcon, ArrowRightIcon, CogIcon, ChevronLeftIcon } from "@heroicons/react/24/outline"
 import { lightenColor } from "@/lib/color-utils"
 import { getServiceConfigurations } from "@/lib/api"
 
@@ -13,11 +13,14 @@ interface MenuSelectionProps {
   categories?: MenuCategory[]
   items?: MenuItem[]
   onSelectMenu: (menu: Menu) => void
+  onSelectCategory?: (category: MenuCategory) => void
   onSelectItem?: (item: MenuItem, category: MenuCategory) => void
   onSelectService?: (service: ServiceConfiguration) => void
   themeColor: string
   business?: Business
   showServices?: boolean
+  onBack?: () => void
+  selectedMenu?: Menu | null
 }
 
 export default function MenuSelection({ 
@@ -25,11 +28,14 @@ export default function MenuSelection({
   categories = [], 
   items = [], 
   onSelectMenu, 
+  onSelectCategory,
   onSelectItem, 
   onSelectService,
   themeColor,
   business,
-  showServices = false
+  showServices = false,
+  onBack,
+  selectedMenu
 }: MenuSelectionProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [services, setServices] = useState<ServiceConfiguration[]>([])
@@ -76,7 +82,7 @@ export default function MenuSelection({
         (service.description && service.description.toLowerCase().includes(query))
     )
 
-    // Search through menu items
+    // Search througksh menu items
     const searchedItems: { item: MenuItem; category: MenuCategory; menu: Menu }[] = []
     
     items.forEach(item => {
@@ -155,12 +161,29 @@ export default function MenuSelection({
 
   return (
     <div className="w-full space-y-2 pb-2">
-      <div className="mb-2">
+      {/* Back button */}
+      {onBack && (
         <div className="flex items-center gap-2 mb-2">
+          <button
+            onClick={onBack}
+            className="p-3 hover:bg-gray-100 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95"
+            aria-label="Go back"
+            style={{ color: themeColor }}
+          >
+            <ChevronLeftIcon className="w-6 h-6" />
+          </button>
+        </div>
+      )}
+
+      <div className="mb-1">
+        <div className="flex items-center gap-1 mb-1">
           <h2 className="text-xl font-bold text-gray-900 tracking-tight">
-            {showServices ? "Our Services" : "Discover Our Menu"}
+            {selectedMenu ? selectedMenu.name : showServices ? "Our Services" : "Discover Our Menu"}
           </h2>
         </div>
+        {selectedMenu && selectedMenu.description && (
+          <p className="text-gray-600 text-sm leading-relaxed">{selectedMenu.description}</p>
+        )}
         </div>
 
         <div className="relative mb-4">
@@ -264,7 +287,7 @@ export default function MenuSelection({
                     <SparklesIcon className="w-5 h-5" style={{ color: themeColor }} />
                     Menu Items ({searchedItems.length})
                   </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {searchedItems.map(({ item, category, menu }) => (
                       <button
                         key={`${item.id}-${category.id}`}
@@ -327,7 +350,7 @@ export default function MenuSelection({
                     <MagnifyingGlassIcon className="w-5 h-5" style={{ color: themeColor }} />
                     Menus ({filteredMenus.length})
                   </h3>
-                  <div className="grid grid-cols-2 gap-5">
+                  <div className="grid grid-cols-2 gap-3">
                     {filteredMenus.map((menu) => (
                       <button
                         key={menu.id}
@@ -533,6 +556,80 @@ export default function MenuSelection({
             </>
           )}
         </>
+      )}
+
+      {/* Categories Section - Show categories for selected menu or all categories */}
+      {!searchQuery.trim() && !showServices && categories.length > 0 && (
+        <div className="mt-8 space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-gray-900">
+              {selectedMenu ? `${selectedMenu.name} Categories` : "Categories"}
+            </h3>
+            {selectedMenu && (
+              <button
+                onClick={() => {
+                  // Clear the selected menu by calling onSelectMenu with null
+                  // This should be handled in the parent component
+                  if (onBack) onBack()
+                }}
+                className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                Show all menus
+              </button>
+            )}
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            {categories.map((category) => (
+              <button
+                key={category.id}
+                onClick={() => onSelectCategory && onSelectCategory(category)}
+                className="group bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 text-left hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-offset-2 active:scale-[0.98]"
+                style={
+                  {
+                    "--tw-ring-color": `${themeColor}40`,
+                  } as React.CSSProperties
+                }
+              >
+                <div className="relative h-24 overflow-hidden">
+                  {category.image_url ? (
+                    <Image
+                      src={category.image_url}
+                      alt={category.name}
+                      fill
+                      className="object-cover group-hover:scale-110 transition-transform duration-500"
+                    />
+                  ) : (
+                    <div 
+                      className="w-full h-full flex items-center justify-center"
+                      style={{ backgroundColor: lightenColor(themeColor, 95) }}
+                    >
+                      <SparklesIcon 
+                        className="w-8 h-8 opacity-30" 
+                        style={{ color: themeColor }} 
+                      />
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+                  <div className="absolute bottom-2 left-3 right-3">
+                    <h4 className="text-white font-bold text-sm leading-tight">
+                      {category.name}
+                    </h4>
+                    {category.description && (
+                      <p className="text-white/80 text-xs mt-1 line-clamp-1">
+                        {category.description}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <div
+                  className="h-1 w-0 group-hover:w-full transition-all duration-500 ease-out"
+                  style={{ backgroundColor: themeColor }}
+                />
+              </button>
+            ))}
+          </div>
+        </div>
       )}
     </div>
   )

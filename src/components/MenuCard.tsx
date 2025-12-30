@@ -7,14 +7,14 @@ interface MenuCardProps {
 
 export default function MenuCard({ menu }: MenuCardProps) {
   return (
-    <div className="bg-white rounded-lg shadow-sm border p-6">
-      <div className="flex items-start gap-4">
+    <div className="bg-white rounded-lg shadow-sm border p-2">
+      <div className="flex items-start gap-2">
         {menu.image_url && (
           <Image
             src={menu.image_url}
             alt={menu.name}
-            width={80}
-            height={80}
+            width={60}
+            height={60}
             className="rounded-lg object-cover flex-shrink-0"
           />
         )}

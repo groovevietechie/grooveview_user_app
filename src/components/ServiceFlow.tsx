@@ -68,8 +68,9 @@ export default function ServiceFlow({ business, themeColor, onBookingComplete }:
 
   const handleServiceTypeSelect = async (serviceConfig: ServiceConfiguration) => {
     setSelectedServiceConfig(serviceConfig)
-    setServiceType(serviceConfig.service_type)
-    await loadServiceOptions(serviceConfig.service_type)
+    const serviceType = serviceConfig.service_type || 'default'
+    setServiceType(serviceType)
+    await loadServiceOptions(serviceType)
     setStep("serviceOptions")
   }
 
