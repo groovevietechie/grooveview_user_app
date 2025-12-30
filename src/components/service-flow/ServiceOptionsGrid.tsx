@@ -77,6 +77,15 @@ export default function ServiceOptionsGrid({
           {serviceConfiguration.description && (
             <p className="text-gray-600 mt-1">{serviceConfiguration.description}</p>
           )}
+          {serviceConfiguration.base_price > 0 && (
+            <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <p className="text-sm text-yellow-800">
+                <span className="font-semibold">Base Price: </span>
+                {formatPrice(serviceConfiguration.base_price)}
+                <span className="text-xs text-yellow-600 ml-1">(minimum service cost)</span>
+              </p>
+            </div>
+          )}
         </div>
       </div>
 

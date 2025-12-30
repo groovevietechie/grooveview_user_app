@@ -134,7 +134,10 @@ export async function getServiceConfigurations(businessId: string): Promise<Serv
       title: item.title,
       description: item.description,
       is_active: item.is_active,
-      pricing_structure: item.pricing_structure,
+      base_price: item.pricing_structure?.base_price || 0,
+      pricing_structure: {
+        durations: item.pricing_structure?.durations || []
+      },
       available_options: item.available_options || [],
       metadata: {
         terms: item.terms,
@@ -203,6 +206,15 @@ export async function submitServiceBooking(bookingData: ServiceBookingSubmission
             total_price: item.serviceOption.price * item.quantity,
             note: item.note,
           })),
+          pre_order_enabled: bookingData.preOrderEnabled,
+          pre_order_items: bookingData.preOrderEnabled ? bookingData.preOrderItems.map(item => ({
+            id: item.menuItem.id,
+            name: item.menuItem.name,
+            quantity: item.quantity,
+            unit_price: item.menuItem.price,
+            total_price: item.menuItem.price * item.quantity,
+            note: item.note,
+          })) : [],
           special_requests: bookingData.specialRequests,
           booking_details: bookingData.bookingDetails,
         },

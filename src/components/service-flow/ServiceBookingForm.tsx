@@ -6,6 +6,7 @@ import { useServiceStore } from "@/store/serviceStore"
 import { submitServiceBooking } from "@/lib/api"
 import { ArrowLeftIcon, CalendarIcon, UserGroupIcon, PhoneIcon, EnvelopeIcon, UserIcon } from "@heroicons/react/24/outline"
 import { getContrastColor } from "@/lib/color-utils"
+import PreOrderSelector from "./PreOrderSelector"
 
 interface ServiceBookingFormProps {
   business: Business
@@ -22,13 +23,23 @@ export default function ServiceBookingForm({
   onBookingComplete, 
   themeColor 
 }: ServiceBookingFormProps) {
-  const { 
-    items, 
-    bookingDetails, 
-    updateBookingDetails, 
-    getServiceTotal, 
+  const {
+    items,
+    selectedDuration,
+    preOrderEnabled,
+    preOrderItems,
+    bookingDetails,
+    updateBookingDetails,
+    getServiceTotal,
     clearServiceCart,
-    businessId 
+    setSelectedDuration,
+    setPreOrderEnabled,
+    addPreOrderItem,
+    removePreOrderItem,
+    updatePreOrderQuantity,
+    updatePreOrderNote,
+    getPreOrderTotal,
+    businessId
   } = useServiceStore()
   
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -63,6 +74,10 @@ export default function ServiceBookingForm({
       newErrors.items = "Please select at least one service option"
     }
 
+    if (serviceConfiguration.pricing_structure.durations.length > 0 && !selectedDuration) {
+      newErrors.duration = "Please select a service duration"
+    }
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -85,13 +100,16 @@ export default function ServiceBookingForm({
         serviceType: serviceConfiguration.service_type,
         eventDate: new Date(bookingDetails.eventDate).toISOString(),
         numberOfParticipants: bookingDetails.numberOfParticipants,
-        totalAmount: getServiceTotal(),
+        totalAmount: getServiceTotal(serviceConfiguration.base_price),
         items: items,
+        preOrderEnabled: preOrderEnabled,
+        preOrderItems: preOrderEnabled ? preOrderItems : [],
         specialRequests: bookingDetails.specialRequests || undefined,
         bookingDetails: {
           serviceConfiguration: serviceConfiguration.id,
           businessName: business.name,
           businessAddress: business.address,
+          selectedDuration: selectedDuration,
         }
       }
 
@@ -118,7 +136,7 @@ export default function ServiceBookingForm({
     }).format(price)
   }
 
-  const total = getServiceTotal()
+  const total = getServiceTotal(serviceConfiguration.base_price)
 
   return (
     <div className="w-full max-w-2xl mx-auto space-y-6">
@@ -143,6 +161,17 @@ export default function ServiceBookingForm({
           Booking Summary
         </h3>
         <div className="space-y-3">
+          {/* Base Price */}
+          {serviceConfiguration.base_price > 0 && (
+            <div className="flex justify-between items-center">
+              <span className="font-medium">Base Service Price</span>
+              <span className="font-semibold">
+                {formatPrice(serviceConfiguration.base_price)}
+              </span>
+            </div>
+          )}
+
+          {/* Selected Options */}
           {items.map((item) => (
             <div key={item.serviceOption.id} className="flex justify-between items-center">
               <div>
@@ -157,8 +186,44 @@ export default function ServiceBookingForm({
               </span>
             </div>
           ))}
+
+          {/* Pre-ordered Items */}
+          {preOrderEnabled && preOrderItems.length > 0 && (
+            <>
+              <div className="border-t border-gray-200 pt-3 mt-3">
+                <h5 className="font-medium text-sm text-gray-700 mb-2">Pre-ordered Food & Drinks</h5>
+              </div>
+              {preOrderItems.map((item) => (
+                <div key={item.menuItem.id} className="flex justify-between items-center">
+                  <div>
+                    <span className="font-medium">{item.menuItem.name}</span>
+                    <span className="text-gray-500 ml-2">x{item.quantity}</span>
+                    {item.note && (
+                      <p className="text-sm text-gray-500 mt-1">Note: {item.note}</p>
+                    )}
+                  </div>
+                  <span className="font-semibold">
+                    {formatPrice(item.menuItem.price * item.quantity)}
+                  </span>
+                </div>
+              ))}
+            </>
+          )}
+
+          {/* Duration Multiplier */}
+          {selectedDuration && (
+            <div className="flex justify-between items-center text-green-600">
+              <span className="font-medium">
+                Duration: {selectedDuration.label} ({selectedDuration.hours} hours)
+              </span>
+              <span className="font-semibold">
+                ×{selectedDuration.multiplier}
+              </span>
+            </div>
+          )}
+
           <div className="border-t pt-3 flex justify-between items-center">
-            <span className="font-bold text-lg">Total</span>
+            <span className="font-bold text-lg">Total Amount</span>
             <span className="font-bold text-xl" style={{ color: themeColor }}>
               {formatPrice(total)}
             </span>
@@ -273,6 +338,64 @@ export default function ServiceBookingForm({
             )}
           </div>
         </div>
+
+        {/* Service Duration */}
+        {serviceConfiguration.pricing_structure.durations.length > 0 && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Service Duration *
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {serviceConfiguration.pricing_structure.durations.map((duration, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() => setSelectedDuration(duration)}
+                  className={`p-4 border rounded-lg text-left transition-all ${
+                    selectedDuration?.label === duration.label
+                      ? 'border-blue-500 bg-blue-50 text-blue-700'
+                      : 'border-gray-300 hover:border-gray-400'
+                  }`}
+                >
+                  <div className="font-semibold">{duration.label}</div>
+                  <div className="text-sm text-gray-600">{duration.hours} hours</div>
+                  <div className="text-sm font-medium text-green-600">
+                    {duration.multiplier}x rate
+                  </div>
+                </button>
+              ))}
+            </div>
+            {errors.duration && (
+              <p className="text-red-500 text-sm mt-1">{errors.duration}</p>
+            )}
+          </div>
+        )}
+
+        {/* Pre-Order Toggle */}
+        <div>
+          <label className="flex items-center space-x-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={preOrderEnabled}
+              onChange={(e) => setPreOrderEnabled(e.target.checked)}
+              className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+            />
+            <span className="text-sm font-medium text-gray-700">
+              Pre-order Food and Drinks for the event
+            </span>
+          </label>
+          <p className="text-xs text-gray-500 mt-1 ml-8">
+            Select food and beverages to be prepared and served during your event
+          </p>
+        </div>
+
+        {/* Pre-Order Selection */}
+        {preOrderEnabled && (
+          <PreOrderSelector
+            businessId={businessId}
+            themeColor={themeColor}
+          />
+        )}
 
         {/* Special Requests */}
         <div>

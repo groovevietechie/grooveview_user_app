@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { ServiceCart, ServiceCartItem, ServiceOption } from '@/types/database'
+import type { ServiceCart, ServiceCartItem, ServiceOption, MenuItem } from '@/types/database'
 
 interface ServiceStore extends ServiceCart {
   addServiceItem: (item: ServiceOption, quantity?: number, note?: string) => void
@@ -7,11 +7,20 @@ interface ServiceStore extends ServiceCart {
   updateServiceQuantity: (itemId: string, quantity: number) => void
   updateServiceNote: (itemId: string, note: string) => void
   clearServiceCart: () => void
-  getServiceTotal: () => number
+  getServiceTotal: (basePrice?: number) => number
   getServiceItemCount: () => number
   setServiceType: (serviceType: string | null) => void
   updateBookingDetails: (details: Partial<ServiceCart['bookingDetails']>) => void
   setBusinessId: (businessId: string) => void
+  setSelectedDuration: (duration: { label: string; hours: number; multiplier: number }) => void
+  // Pre-order functionality
+  setPreOrderEnabled: (enabled: boolean) => void
+  addPreOrderItem: (item: MenuItem, quantity?: number, note?: string) => void
+  removePreOrderItem: (itemId: string) => void
+  updatePreOrderQuantity: (itemId: string, quantity: number) => void
+  updatePreOrderNote: (itemId: string, note: string) => void
+  getPreOrderTotal: () => number
+  getPreOrderItemCount: () => number
   businessId: string
 }
 
@@ -19,6 +28,9 @@ export const useServiceStore = create<ServiceStore>((set, get) => ({
   serviceType: null,
   businessId: '',
   items: [],
+  selectedDuration: undefined,
+  preOrderEnabled: false,
+  preOrderItems: [],
   bookingDetails: {
     customerName: '',
     customerPhone: '',
@@ -80,8 +92,11 @@ export const useServiceStore = create<ServiceStore>((set, get) => ({
   },
 
   clearServiceCart: () => {
-    set({ 
+    set({
       items: [],
+      selectedDuration: undefined,
+      preOrderEnabled: false,
+      preOrderItems: [],
       bookingDetails: {
         customerName: '',
         customerPhone: '',
@@ -93,10 +108,28 @@ export const useServiceStore = create<ServiceStore>((set, get) => ({
     })
   },
 
-  getServiceTotal: () => {
-    return get().items.reduce((total, cartItem) => {
-      return total + (cartItem.serviceOption.price * cartItem.quantity)
+  getServiceTotal: (basePrice = 0) => {
+    const state = get()
+    let total = basePrice
+
+    // Add selected options
+    total += state.items.reduce((sum, cartItem) => {
+      return sum + (cartItem.serviceOption.price * cartItem.quantity)
     }, 0)
+
+    // Add pre-order items if enabled
+    if (state.preOrderEnabled) {
+      total += state.preOrderItems.reduce((sum, preOrderItem) => {
+        return sum + (preOrderItem.menuItem.price * preOrderItem.quantity)
+      }, 0)
+    }
+
+    // Apply duration multiplier if selected
+    if (state.selectedDuration) {
+      total *= state.selectedDuration.multiplier
+    }
+
+    return total
   },
 
   getServiceItemCount: () => {
@@ -115,5 +148,74 @@ export const useServiceStore = create<ServiceStore>((set, get) => ({
 
   setBusinessId: (businessId: string) => {
     set({ businessId })
+  },
+
+  setSelectedDuration: (duration: { label: string; hours: number; multiplier: number }) => {
+    set({ selectedDuration: duration })
+  },
+
+  setPreOrderEnabled: (enabled: boolean) => {
+    set({ preOrderEnabled: enabled })
+  },
+
+  addPreOrderItem: (item: MenuItem, quantity = 1, note = '') => {
+    set((state) => {
+      const existingItem = state.preOrderItems.find(preOrderItem => preOrderItem.menuItem.id === item.id)
+
+      if (existingItem) {
+        return {
+          preOrderItems: state.preOrderItems.map(preOrderItem =>
+            preOrderItem.menuItem.id === item.id
+              ? { ...preOrderItem, quantity: preOrderItem.quantity + quantity, note: note || preOrderItem.note }
+              : preOrderItem
+          )
+        }
+      }
+
+      return {
+        preOrderItems: [...state.preOrderItems, { menuItem: item, quantity, note }]
+      }
+    })
+  },
+
+  removePreOrderItem: (itemId: string) => {
+    set((state) => ({
+      preOrderItems: state.preOrderItems.filter(preOrderItem => preOrderItem.menuItem.id !== itemId)
+    }))
+  },
+
+  updatePreOrderQuantity: (itemId: string, quantity: number) => {
+    if (quantity <= 0) {
+      get().removePreOrderItem(itemId)
+      return
+    }
+
+    set((state) => ({
+      preOrderItems: state.preOrderItems.map(preOrderItem =>
+        preOrderItem.menuItem.id === itemId
+          ? { ...preOrderItem, quantity }
+          : preOrderItem
+      )
+    }))
+  },
+
+  updatePreOrderNote: (itemId: string, note: string) => {
+    set((state) => ({
+      preOrderItems: state.preOrderItems.map(preOrderItem =>
+        preOrderItem.menuItem.id === itemId
+          ? { ...preOrderItem, note }
+          : preOrderItem
+      )
+    }))
+  },
+
+  getPreOrderTotal: () => {
+    return get().preOrderItems.reduce((total, preOrderItem) => {
+      return total + (preOrderItem.menuItem.price * preOrderItem.quantity)
+    }, 0)
+  },
+
+  getPreOrderItemCount: () => {
+    return get().preOrderItems.reduce((total, preOrderItem) => total + preOrderItem.quantity, 0)
   },
 }))

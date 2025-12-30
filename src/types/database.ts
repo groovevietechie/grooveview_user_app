@@ -87,7 +87,14 @@ export interface ServiceConfiguration {
   title: string
   description?: string
   is_active: boolean
-  pricing_structure: Record<string, unknown>
+  base_price: number
+  pricing_structure: {
+    durations: Array<{
+      label: string
+      hours: number
+      multiplier: number
+    }>
+  }
   available_options: string[]
   metadata: Record<string, unknown>
   created_at: string
@@ -135,6 +142,8 @@ export interface ServiceBookingSubmission {
   numberOfParticipants: number
   totalAmount: number
   items: ServiceCartItem[]
+  preOrderEnabled: boolean
+  preOrderItems: PreOrderItem[]
   specialRequests?: string
   bookingDetails: Record<string, unknown>
 }
@@ -151,6 +160,13 @@ export type ServiceStatus = "pending" | "confirmed" | "inProgress" | "completed"
 export interface ServiceCart {
   serviceType: string | null
   items: ServiceCartItem[]
+  selectedDuration?: {
+    label: string
+    hours: number
+    multiplier: number
+  }
+  preOrderEnabled: boolean
+  preOrderItems: PreOrderItem[]
   bookingDetails: {
     customerName: string
     customerPhone: string
@@ -159,6 +175,12 @@ export interface ServiceCart {
     numberOfParticipants: number
     specialRequests?: string
   }
+}
+
+export interface PreOrderItem {
+  menuItem: MenuItem
+  quantity: number
+  note?: string
 }
 
 // Cart types
