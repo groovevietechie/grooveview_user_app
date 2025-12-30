@@ -153,15 +153,19 @@ export async function getServiceConfigurations(businessId: string): Promise<Serv
   }
 }
 
-export async function getServiceOptions(businessId: string, category?: string): Promise<ServiceOption[]> {
+export async function getServiceOptions(businessId: string, serviceType?: string | null, category?: string): Promise<ServiceOption[]> {
   try {
-    console.log("[API] Fetching service options for business:", businessId, "category:", category)
+    console.log("[API] Fetching service options for business:", businessId, "serviceType:", serviceType, "category:", category)
 
     let query = supabase
       .from("service_options")
       .select("*")
       .eq("business_id", businessId)
       .eq("is_active", true)
+
+    if (serviceType) {
+      query = query.eq("service_type", serviceType)
+    }
 
     if (category) {
       query = query.eq("category", category)
@@ -179,6 +183,47 @@ export async function getServiceOptions(businessId: string, category?: string): 
   } catch (error) {
     console.error("[API] Error fetching service options:", error)
     throw error
+  }
+}
+
+// Get service options from custom_fields of service configuration
+export async function getServiceOptionsFromCustomFields(serviceConfigId: string): Promise<ServiceOption[]> {
+  try {
+    console.log("[API] Fetching service options from custom_fields for service config:", serviceConfigId)
+
+    const { data, error } = await supabase
+      .from("service_configurations")
+      .select("custom_fields")
+      .eq("id", serviceConfigId)
+      .single()
+
+    if (error) {
+      console.error("[API] Service configuration fetch failed:", error)
+      throw error
+    }
+
+    const customFields = data?.custom_fields as any
+    const serviceOptions = customFields?.serviceOptions || []
+
+    console.log("[API] Service options from custom_fields fetched:", serviceOptions.length)
+
+    // Transform custom_fields service options to ServiceOption format
+    return serviceOptions.map((option: any, index: number) => ({
+      id: `${serviceConfigId}_option_${index}`,
+      business_id: "", // Will be set by caller
+      name: option.name,
+      category: option.category || "Service Option",
+      price: option.price || 0,
+      is_active: true,
+      description: option.description,
+      image_url: option.image_url,
+      metadata: option.metadata || {},
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }))
+  } catch (error) {
+    console.error("[API] Error fetching service options from custom_fields:", error)
+    return []
   }
 }
 

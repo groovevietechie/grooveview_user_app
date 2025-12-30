@@ -64,10 +64,19 @@ export default function ServiceFlow({ business, themeColor, initialService, onBo
   const loadServiceOptions = async (serviceType: string) => {
     try {
       setLoading(true)
-      const options = await getServiceOptions(business.id)
-      // Filter options that are relevant to this service type
-      // For now, we'll show all options, but you could filter based on service type
-      setServiceOptions(options)
+      const allOptions = await getServiceOptions(business.id)
+
+      // Filter options based on service configuration's available_options
+      let filteredOptions = allOptions
+      if (selectedServiceConfig?.available_options && selectedServiceConfig.available_options.length > 0) {
+        // Filter options whose names are in the available_options array
+        filteredOptions = allOptions.filter(option =>
+          selectedServiceConfig.available_options.includes(option.name) ||
+          selectedServiceConfig.available_options.includes(option.id)
+        )
+      }
+
+      setServiceOptions(filteredOptions)
     } catch (err) {
       console.error("Error loading service options:", err)
       setError("Failed to load service options. Please try again.")
