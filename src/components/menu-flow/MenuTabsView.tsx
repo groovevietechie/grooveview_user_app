@@ -202,7 +202,7 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
 
         {/* Tabs */}
         {!searchQuery.trim() && (
-          <div className="flex gap-2 overflow-x-auto pb-2 mb-6">
+          <div className="flex gap-2 justify-center overflow-x-auto pb-2 mb-6">
             {tabs.map((tab) => (
               <button
                 key={tab.id}

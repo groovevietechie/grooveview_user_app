@@ -13,13 +13,14 @@ import { ErrorBoundary, ServiceErrorFallback } from "./ErrorBoundary"
 interface ServiceFlowProps {
   business: Business
   themeColor: string
+  initialService?: any
   onBookingComplete?: (bookingId: string) => void
 }
 
 type FlowStep = "serviceTypes" | "serviceOptions" | "bookingForm" | "success"
 
-export default function ServiceFlow({ business, themeColor, onBookingComplete }: ServiceFlowProps) {
-  const [step, setStep] = useState<FlowStep>("serviceTypes")
+export default function ServiceFlow({ business, themeColor, initialService, onBookingComplete }: ServiceFlowProps) {
+  const [step, setStep] = useState<FlowStep>(initialService ? "serviceOptions" : "serviceTypes")
   const [serviceConfigurations, setServiceConfigurations] = useState<ServiceConfiguration[]>([])
   const [serviceOptions, setServiceOptions] = useState<ServiceOption[]>([])
   const [selectedServiceConfig, setSelectedServiceConfig] = useState<ServiceConfiguration | null>(null)
@@ -31,8 +32,17 @@ export default function ServiceFlow({ business, themeColor, onBookingComplete }:
 
   useEffect(() => {
     setBusinessId(business.id)
-    loadServiceConfigurations()
-  }, [business.id, setBusinessId])
+    if (initialService) {
+      // If we have an initial service, set it and load its options
+      setSelectedServiceConfig(initialService)
+      const serviceType = initialService.service_type || 'default'
+      setServiceType(serviceType)
+      loadServiceOptions(serviceType)
+    } else {
+      // Otherwise load all service configurations
+      loadServiceConfigurations()
+    }
+  }, [business.id, initialService, setBusinessId])
 
   const loadServiceConfigurations = async () => {
     try {
@@ -75,10 +85,18 @@ export default function ServiceFlow({ business, themeColor, onBookingComplete }:
   }
 
   const handleBackToServiceTypes = () => {
-    setSelectedServiceConfig(null)
-    setServiceOptions([])
-    clearServiceCart()
-    setStep("serviceTypes")
+    if (initialService) {
+      // If we came from a specific service button, go back to menu
+      if (onBookingComplete) {
+        onBookingComplete("")
+      }
+    } else {
+      // Otherwise go back to service types selection
+      setSelectedServiceConfig(null)
+      setServiceOptions([])
+      clearServiceCart()
+      setStep("serviceTypes")
+    }
   }
 
   const handleProceedToBooking = () => {

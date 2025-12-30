@@ -20,6 +20,7 @@ type FlowStep = "menus" | "items" | "services"
 export default function MenuList({ business, menus, categories, items, themeColor }: MenuListProps) {
   const [step, setStep] = useState<FlowStep>("menus")
   const [selectedCategory, setSelectedCategory] = useState<MenuCategory | null>(null)
+  const [selectedService, setSelectedService] = useState<any>(null)
 
   // Group items by category
   const itemsByCategory = items.reduce(
@@ -40,10 +41,12 @@ export default function MenuList({ business, menus, categories, items, themeColo
 
   const handleBackToMenus = () => {
     setSelectedCategory(null)
+    setSelectedService(null)
     setStep("menus")
   }
 
   const handleServiceSelect = (service: any) => {
+    setSelectedService(service)
     setStep("services")
   }
 
@@ -88,6 +91,7 @@ export default function MenuList({ business, menus, categories, items, themeColo
           <ServiceFlow
             business={business}
             themeColor={themeColor}
+            initialService={selectedService}
             onBookingComplete={handleServiceBookingComplete}
           />
         )}
