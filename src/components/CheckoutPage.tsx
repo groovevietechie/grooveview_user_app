@@ -2,20 +2,20 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import type { Business, PaymentMethod } from "@/types/database"
 import { useCartStore } from "@/store/cartStore"
 import { useTheme } from "@/contexts/ThemeContext"
-import { submitOrder } from "@/lib/api"
+import { submitOrder, submitOrderWithTransfer } from "@/lib/api"
 import { saveDeviceOrder } from "@/lib/order-storage"
-import { ArrowLeftIcon } from "@heroicons/react/24/outline"
+import { ArrowLeftIcon, HomeIcon, BuildingOfficeIcon, TruckIcon, PhoneIcon } from "@heroicons/react/24/outline"
 
 interface CheckoutPageProps {
   business: Business
 }
 
-type OrderType = "table" | "home"
+type OrderType = "table" | "room" | "home"
 
 export default function CheckoutPage({ business }: CheckoutPageProps) {
   const router = useRouter()
@@ -24,18 +24,46 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
 
   const [orderType, setOrderType] = useState<OrderType>("table")
   const [tableNumber, setTableNumber] = useState("")
+  const [roomNumber, setRoomNumber] = useState("")
   const [deliveryAddress, setDeliveryAddress] = useState("")
+  const [deliveryPhone, setDeliveryPhone] = useState("")
   const [customerNote, setCustomerNote] = useState("")
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cash")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isRedirecting, setIsRedirecting] = useState(false)
+
+  // Handle empty cart redirect in useEffect to avoid render-time navigation
+  useEffect(() => {
+    if (items.length === 0 && !isRedirecting) {
+      setIsRedirecting(true)
+      router.push(`/b/${business.slug}`)
+    }
+  }, [items.length, business.slug, router, isRedirecting])
+
+  // Show loading state while redirecting
+  if (items.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p className="text-gray-600">Redirecting...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Update payment method when order type changes
+  const handleOrderTypeChange = (newOrderType: OrderType) => {
+    setOrderType(newOrderType)
+    // Set default payment method based on order type
+    if (newOrderType === "home") {
+      setPaymentMethod("transfer") // Home delivery only supports transfer
+    } else {
+      setPaymentMethod("cash") // Table and room default to cash
+    }
+  }
 
   const total = getTotal()
-
-  // Redirect if cart is empty
-  if (items.length === 0) {
-    router.push(`/b/${business.slug}`)
-    return null
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -45,15 +73,38 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
       return
     }
 
+    if (orderType === "room" && !roomNumber.trim()) {
+      alert("Please enter your room number/name")
+      return
+    }
+
     if (orderType === "home" && !deliveryAddress.trim()) {
       alert("Please enter your delivery address")
       return
     }
 
+    if (orderType === "home" && !deliveryPhone.trim()) {
+      alert("Please enter your phone number for delivery")
+      return
+    }
+
+    // Basic phone number validation for home delivery
+    if (orderType === "home" && deliveryPhone.trim()) {
+      const phoneRegex = /^[\+]?[\d\s\-\(\)]{10,}$/
+      if (!phoneRegex.test(deliveryPhone.trim())) {
+        alert("Please enter a valid phone number")
+        return
+      }
+    }
+
     setIsSubmitting(true)
 
     try {
-      const seatLabel = orderType === "table" ? `Table ${tableNumber}` : "Home Delivery"
+      const seatLabel = orderType === "table" 
+        ? `Table ${tableNumber}` 
+        : orderType === "room" 
+        ? `Room ${roomNumber}` 
+        : "Home Delivery"
 
       const orderData = {
         businessId: business.id,
@@ -64,26 +115,52 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
           note: cartItem.note,
         })),
         seatLabel,
-        customerNote: customerNote.trim() || undefined,
+        customerNote: orderType === "home" 
+          ? `Phone: ${deliveryPhone}${customerNote.trim() ? `\n\nSpecial Instructions: ${customerNote.trim()}` : ''}`
+          : customerNote.trim() || undefined,
         paymentMethod,
         deliveryAddress: orderType === "home" ? deliveryAddress : undefined,
       }
 
       console.log("[v0] Order data prepared:", orderData)
-      const orderId = await submitOrder(orderData)
-
-      if (orderId) {
-        console.log("[v0] Order placed successfully:", orderId)
-        saveDeviceOrder(business.id, orderId)
-        sessionStorage.setItem(`${business.id}_recent_order`, "true")
-        sessionStorage.setItem(`${business.id}_last_order_id`, orderId)
-        clearCart()
-        router.push(`/b/${business.slug}/order/${orderId}?success=true`)
+      
+      // Use enhanced submission for transfer payments
+      if (paymentMethod === "transfer") {
+        const result = await submitOrderWithTransfer(orderData)
+        
+        if (result) {
+          console.log("[v0] Transfer order placed successfully:", result.orderId)
+          saveDeviceOrder(business.id, result.orderId)
+          sessionStorage.setItem(`${business.id}_recent_order`, "true")
+          sessionStorage.setItem(`${business.id}_last_order_id`, result.orderId)
+          sessionStorage.setItem(`${business.id}_transfer_code`, result.transferCode)
+          sessionStorage.setItem(`${business.id}_transfer_amount`, result.totalAmount.toString())
+          sessionStorage.setItem(`${business.id}_order_type`, orderType)
+          clearCart()
+          
+          // Redirect to payment page with transfer details
+          router.push(`/b/${business.slug}/order/${result.orderId}/payment?code=${result.transferCode}&amount=${result.totalAmount}`)
+        } else {
+          console.error("[v0] Transfer order submission failed")
+          alert("Failed to place order. Please check your connection and try again.")
+        }
       } else {
-        console.error("[v0] Order submission returned null - Check browser console for details")
-        alert(
-          "Failed to place order. Please check your connection and try again. If the problem persists, the restaurant may not have online ordering enabled.",
-        )
+        // Use regular submission for cash payments
+        const orderId = await submitOrder(orderData)
+        
+        if (orderId) {
+          console.log("[v0] Order placed successfully:", orderId)
+          saveDeviceOrder(business.id, orderId)
+          sessionStorage.setItem(`${business.id}_recent_order`, "true")
+          sessionStorage.setItem(`${business.id}_last_order_id`, orderId)
+          clearCart()
+          router.push(`/b/${business.slug}/order/${orderId}?success=true`)
+        } else {
+          console.error("[v0] Order submission returned null - Check browser console for details")
+          alert(
+            "Failed to place order. Please check your connection and try again. If the problem persists, the restaurant may not have online ordering enabled.",
+          )
+        }
       }
     } catch (error) {
       console.error("[v0] Order submission error:", error)
@@ -113,25 +190,47 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
           <div className="bg-white rounded-lg shadow-sm border p-6">
             <h2 className="text-lg font-semibold mb-4">Order Type</h2>
             <div className="space-y-3">
-              <label className="flex items-center gap-3">
+              <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
                 <input
                   type="radio"
                   value="table"
                   checked={orderType === "table"}
-                  onChange={(e) => setOrderType(e.target.value as OrderType)}
+                  onChange={(e) => handleOrderTypeChange(e.target.value as OrderType)}
                   style={{ accentColor: primaryColor }}
                 />
-                <span>Dining in (Table order)</span>
+                <BuildingOfficeIcon className="w-5 h-5 text-gray-600" />
+                <div>
+                  <span className="font-medium">Dining in (Table order)</span>
+                  <p className="text-sm text-gray-500">Order for your table in the restaurant</p>
+                </div>
               </label>
-              <label className="flex items-center gap-3">
+              <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                <input
+                  type="radio"
+                  value="room"
+                  checked={orderType === "room"}
+                  onChange={(e) => handleOrderTypeChange(e.target.value as OrderType)}
+                  style={{ accentColor: primaryColor }}
+                />
+                <HomeIcon className="w-5 h-5 text-gray-600" />
+                <div>
+                  <span className="font-medium">Room service (Service order)</span>
+                  <p className="text-sm text-gray-500">Delivery to your hotel room</p>
+                </div>
+              </label>
+              <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
                 <input
                   type="radio"
                   value="home"
                   checked={orderType === "home"}
-                  onChange={(e) => setOrderType(e.target.value as OrderType)}
+                  onChange={(e) => handleOrderTypeChange(e.target.value as OrderType)}
                   style={{ accentColor: primaryColor }}
                 />
-                <span>Home delivery</span>
+                <TruckIcon className="w-5 h-5 text-gray-600" />
+                <div>
+                  <span className="font-medium">Home delivery</span>
+                  <p className="text-sm text-gray-500">Delivery to your home address</p>
+                </div>
               </label>
             </div>
 
@@ -150,18 +249,68 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
               </div>
             )}
 
-            {/* Delivery Address */}
+            {/* Room Number/Name */}
+            {orderType === "room" && (
+              <div className="mt-4 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Room Number/Name *</label>
+                  <input
+                    type="text"
+                    value={roomNumber}
+                    onChange={(e) => setRoomNumber(e.target.value)}
+                    placeholder="e.g., 101, A-205, Presidential Suite"
+                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                  <p className="text-sm text-gray-500 mt-1">
+                    Enter your room number or name for room service delivery
+                  </p>
+                </div>
+                
+                {/* Room Service Info */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <h4 className="font-medium text-blue-900 mb-2">Room Service Information</h4>
+                  <ul className="text-sm text-blue-800 space-y-1">
+                    <li>• Estimated delivery time: 20-30 minutes</li>
+                    <li>• Service available 24/7</li>
+                    <li>• Please ensure someone is available to receive the order</li>
+                    <li>• Contact reception if you need assistance</li>
+                  </ul>
+                </div>
+              </div>
+            )}
+
+            {/* Delivery Address and Phone */}
             {orderType === "home" && (
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Delivery Address *</label>
-                <textarea
-                  value={deliveryAddress}
-                  onChange={(e) => setDeliveryAddress(e.target.value)}
-                  placeholder="Enter your full delivery address"
-                  rows={3}
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                  required
-                />
+              <div className="mt-4 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Delivery Address *</label>
+                  <textarea
+                    value={deliveryAddress}
+                    onChange={(e) => setDeliveryAddress(e.target.value)}
+                    placeholder="Enter your full delivery address including landmarks"
+                    rows={3}
+                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <PhoneIcon className="w-4 h-4 inline mr-1" />
+                    Phone Number *
+                  </label>
+                  <input
+                    type="tel"
+                    value={deliveryPhone}
+                    onChange={(e) => setDeliveryPhone(e.target.value)}
+                    placeholder="e.g., +234 801 234 5678"
+                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                  <p className="text-sm text-gray-500 mt-1">
+                    We'll call you when we arrive for delivery
+                  </p>
+                </div>
               </div>
             )}
           </div>
@@ -191,52 +340,91 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
 
           {/* Customer Note */}
           <div className="bg-white rounded-lg shadow-sm border p-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Special Instructions (Optional)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {orderType === "room" 
+                ? "Special Instructions for Room Service (Optional)" 
+                : "Special Instructions (Optional)"}
+            </label>
             <textarea
               value={customerNote}
               onChange={(e) => setCustomerNote(e.target.value)}
-              placeholder="Any special requests for your order..."
+              placeholder={
+                orderType === "room" 
+                  ? "Any special requests for your room service order (e.g., 'Please knock softly', 'Leave outside door')..." 
+                  : "Any special requests for your order..."
+              }
               rows={3}
               className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
               maxLength={500}
             />
+            {orderType === "room" && (
+              <p className="text-sm text-gray-500 mt-2">
+                💡 Tip: Let us know if you prefer contactless delivery or have specific delivery preferences
+              </p>
+            )}
           </div>
 
           {/* Payment Method */}
           <div className="bg-white rounded-lg shadow-sm border p-6">
             <h2 className="text-lg font-semibold mb-4">Payment Method</h2>
-            <div className="space-y-3">
-              <label className="flex items-center gap-3">
-                <input
-                  type="radio"
-                  value="cash"
-                  checked={paymentMethod === "cash"}
-                  onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
-                  style={{ accentColor: primaryColor }}
-                />
-                <span>{orderType === "table" ? "Pay in place (cash)" : "Pay on delivery (cash)"}</span>
-              </label>
-              <label className="flex items-center gap-3">
-                <input
-                  type="radio"
-                  value="card"
-                  checked={paymentMethod === "card"}
-                  onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
-                  style={{ accentColor: primaryColor }}
-                />
-                <span>Pay in app (card)</span>
-              </label>
-              <label className="flex items-center gap-3">
-                <input
-                  type="radio"
-                  value="mobile"
-                  checked={paymentMethod === "mobile"}
-                  onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
-                  style={{ accentColor: primaryColor }}
-                />
-                <span>Pay in app (mobile)</span>
-              </label>
-            </div>
+            
+            {/* Table and Room Service Payment Options */}
+            {(orderType === "table" || orderType === "room") && (
+              <div className="space-y-3">
+                <label className="flex items-center gap-3">
+                  <input
+                    type="radio"
+                    value="cash"
+                    checked={paymentMethod === "cash"}
+                    onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
+                    style={{ accentColor: primaryColor }}
+                  />
+                  <span>
+                    {orderType === "table" ? "Pay in place (Cash / POS)" : "Pay on delivery (Cash)"}
+                  </span>
+                </label>
+                <label className="flex items-center gap-3">
+                  <input
+                    type="radio"
+                    value="transfer"
+                    checked={paymentMethod === "transfer"}
+                    onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
+                    style={{ accentColor: primaryColor }}
+                  />
+                  <span>Bank Transfer</span>
+                </label>
+                {paymentMethod === "transfer" && (
+                  <div className="ml-6 mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-sm text-blue-800">
+                      💡 You'll receive bank details and a transfer code after placing your order
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Home Delivery Payment Options */}
+            {orderType === "home" && (
+              <div className="space-y-3">
+                <label className="flex items-center gap-3">
+                  <input
+                    type="radio"
+                    value="transfer"
+                    checked={paymentMethod === "transfer"}
+                    onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
+                    style={{ accentColor: primaryColor }}
+                    disabled
+                  />
+                  <span>Bank Transfer (Required for home delivery)</span>
+                </label>
+                <div className="ml-6 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <p className="text-sm text-yellow-800">
+                    <strong>Home delivery requires advance payment via bank transfer.</strong><br />
+                    You'll receive bank details and a transfer code after placing your order.
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Submit Button */}

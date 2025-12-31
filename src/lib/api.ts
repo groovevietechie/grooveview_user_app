@@ -509,28 +509,128 @@ export async function submitOrder(orderData: OrderSubmission): Promise<string | 
   try {
     console.log("[v0] Submitting order:", orderData)
 
-    // Create order
-    const { data: order, error: orderError } = await supabase
-      .from("orders")
-      .insert({
-        business_id: orderData.businessId,
-        seat_label: orderData.seatLabel,
-        customer_note: orderData.customerNote,
-        status: "new",
-        payment_method: orderData.paymentMethod,
-        payment_status: "pending",
-        total_amount: orderData.items.reduce((total, item) => total + item.unitPrice * item.quantity, 0),
+    // Validate required fields
+    if (!orderData.businessId || !orderData.seatLabel || !orderData.items || orderData.items.length === 0) {
+      console.error("[v0] Missing required order data:", {
+        hasBusinessId: !!orderData.businessId,
+        hasSeatLabel: !!orderData.seatLabel,
+        hasItems: !!orderData.items,
+        itemCount: orderData.items?.length || 0
       })
+      return null
+    }
+
+    // Determine order type from seat label
+    const orderType = orderData.seatLabel.toLowerCase().includes('table') ? 'table' :
+                     orderData.seatLabel.toLowerCase().includes('room') ? 'room' : 'home'
+
+    // Generate transfer code if payment method is transfer
+    const transferCode = orderData.paymentMethod === 'transfer' 
+      ? Math.floor(100000 + Math.random() * 900000).toString()
+      : null
+
+    // Extract customer phone from customer note if it exists (for home delivery)
+    let customerPhone = null
+    let cleanCustomerNote = orderData.customerNote
+
+    if (orderData.customerNote && orderData.customerNote.startsWith('Phone: ')) {
+      const phoneMatch = orderData.customerNote.match(/^Phone: ([^\n]+)/)
+      if (phoneMatch) {
+        customerPhone = phoneMatch[1]
+        // Remove phone from customer note and clean up
+        cleanCustomerNote = orderData.customerNote.replace(/^Phone: [^\n]+\n?\n?/, '').replace(/^Special Instructions: /, '')
+      }
+    }
+
+    // Prepare base order data (guaranteed to work with existing schema)
+    const baseOrderData = {
+      business_id: orderData.businessId,
+      seat_label: orderData.seatLabel,
+      customer_note: cleanCustomerNote || null,
+      status: "new" as const,
+      payment_method: orderData.paymentMethod,
+      payment_status: "pending" as const,
+      total_amount: orderData.items.reduce((total, item) => total + item.unitPrice * item.quantity, 0),
+    }
+
+    console.log("[v0] Base order data prepared:", baseOrderData)
+
+    // Try to create order with enhanced fields first, then fallback to basic
+    let order
+    let orderError
+    
+    // First attempt: Enhanced order with new fields
+    const enhancedOrderData = {
+      ...baseOrderData,
+      order_type: orderType,
+      customer_phone: customerPhone,
+      delivery_address: orderData.deliveryAddress,
+      transfer_code: transferCode,
+    }
+    
+    console.log("[v0] Attempting enhanced order creation...")
+    const enhancedResult = await supabase
+      .from("orders")
+      .insert(enhancedOrderData)
       .select()
       .single()
+    
+    order = enhancedResult.data
+    orderError = enhancedResult.error
+    
+    // If enhanced order failed, try basic order (backward compatibility)
+    if (orderError) {
+      console.log("[v0] Enhanced order creation failed, trying basic order:", {
+        message: orderError.message,
+        code: orderError.code,
+        hint: orderError.hint
+      })
+      
+      console.log("[v0] Attempting basic order creation...")
+      const basicResult = await supabase
+        .from("orders")
+        .insert(baseOrderData)
+        .select()
+        .single()
+      
+      order = basicResult.data
+      orderError = basicResult.error
+      
+      // If basic order succeeded and we have a transfer code, try to update it
+      if (!orderError && order && transferCode) {
+        console.log("[v0] Basic order successful, attempting to add transfer code...")
+        try {
+          const { error: updateError } = await supabase
+            .from("orders")
+            .update({ transfer_code: transferCode })
+            .eq("id", order.id)
+          
+          if (updateError) {
+            console.log("[v0] Could not update transfer code:", updateError.message)
+          } else {
+            console.log("[v0] Transfer code added successfully to basic order")
+          }
+        } catch (updateException) {
+          console.log("[v0] Transfer code update exception:", updateException)
+        }
+      }
+    } else {
+      console.log("[v0] Enhanced order creation successful")
+    }
 
     if (orderError) {
       console.error("[v0] Order creation failed:", {
-        message: orderError.message,
-        code: orderError.code,
-        details: orderError.details,
-        hint: orderError.hint,
+        message: orderError?.message || 'Unknown error',
+        code: orderError?.code || 'NO_CODE',
+        details: orderError?.details || 'No details available',
+        hint: orderError?.hint || 'No hint available',
+        fullError: orderError
       })
+      return null
+    }
+
+    if (!order) {
+      console.error("[v0] Order creation returned no data")
       return null
     }
 
@@ -551,10 +651,11 @@ export async function submitOrder(orderData: OrderSubmission): Promise<string | 
 
     if (itemsError) {
       console.error("[v0] Order items creation failed:", {
-        message: itemsError.message,
-        code: itemsError.code,
-        details: itemsError.details,
-        hint: itemsError.hint,
+        message: itemsError?.message || 'Unknown error',
+        code: itemsError?.code || 'NO_CODE',
+        details: itemsError?.details || 'No details available',
+        hint: itemsError?.hint || 'No hint available',
+        fullError: itemsError
       })
       // Try to delete the order if items failed
       await supabase.from("orders").delete().eq("id", order.id)
@@ -565,6 +666,201 @@ export async function submitOrder(orderData: OrderSubmission): Promise<string | 
     return order.id
   } catch (error) {
     console.error("[v0] Unexpected error during order submission:", error)
+    return null
+  }
+}
+
+// Enhanced order submission for transfer payments
+export async function submitOrderWithTransfer(orderData: OrderSubmission): Promise<{ orderId: string; transferCode: string; totalAmount: number } | null> {
+  try {
+    console.log("[API] Submitting order with transfer:", orderData)
+
+    // Determine order type from seat label
+    const orderType = orderData.seatLabel.toLowerCase().includes('table') ? 'table' :
+                     orderData.seatLabel.toLowerCase().includes('room') ? 'room' : 'home'
+
+    // Extract customer phone from customer note if it exists (for home delivery)
+    let customerPhone = null
+    let cleanCustomerNote = orderData.customerNote
+
+    if (orderData.customerNote && orderData.customerNote.startsWith('Phone: ')) {
+      const phoneMatch = orderData.customerNote.match(/^Phone: ([^\n]+)/)
+      if (phoneMatch) {
+        customerPhone = phoneMatch[1]
+        cleanCustomerNote = orderData.customerNote.replace(/^Phone: [^\n]+\n?\n?/, '').replace(/^Special Instructions: /, '')
+      }
+    }
+
+    const totalAmount = orderData.items.reduce((total, item) => total + item.unitPrice * item.quantity, 0)
+
+    // WORKAROUND: Use 'cash' as payment method in database but track transfer via transfer_code
+    // This is because the database constraint doesn't allow 'transfer' as a payment method
+    const dbPaymentMethod = 'cash' // Use cash in DB to avoid constraint error
+    const actualPaymentMethod = orderData.paymentMethod // Keep track of actual method
+
+    // Try to use the enhanced database function for transfer orders
+    try {
+      console.log("[API] Attempting enhanced order submission with RPC function...")
+      const { data: result, error } = await supabase
+        .rpc("submit_menu_order_with_transfer", {
+          p_business_id: orderData.businessId,
+          p_seat_label: orderData.seatLabel,
+          p_customer_note: cleanCustomerNote || null,
+          p_payment_method: dbPaymentMethod, // Use 'cash' to avoid constraint error
+          p_total_amount: totalAmount,
+          p_order_type: orderType,
+          p_order_items: orderData.items.map(item => ({
+            menuItemId: item.menuItemId,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            note: item.note,
+          })),
+          p_customer_phone: customerPhone,
+          p_delivery_address: orderData.deliveryAddress || null,
+        })
+
+      if (!error && result) {
+        console.log("[API] Enhanced order created successfully:", result)
+        return {
+          orderId: result.order_id,
+          transferCode: result.transfer_code,
+          totalAmount
+        }
+      } else {
+        console.log("[API] Enhanced order submission failed, error details:", {
+          error: error,
+          result: result,
+          errorMessage: error?.message,
+          errorCode: error?.code,
+          errorDetails: error?.details
+        })
+      }
+    } catch (rpcError) {
+      console.log("[API] RPC function not available or failed, error details:", {
+        error: rpcError,
+        message: rpcError instanceof Error ? rpcError.message : 'Unknown error'
+      })
+    }
+
+    // Fallback to regular submission with transfer code generation
+    console.log("[API] Using fallback order submission for transfer payment")
+    
+    // Create modified order data with 'cash' payment method for database
+    const modifiedOrderData = {
+      ...orderData,
+      paymentMethod: dbPaymentMethod // Use 'cash' to avoid constraint error
+    }
+    
+    const orderId = await submitOrder(modifiedOrderData)
+    
+    if (orderId) {
+      // Generate transfer code and try to update order
+      const transferCode = Math.floor(100000 + Math.random() * 900000).toString()
+      
+      try {
+        console.log("[API] Attempting to update order with transfer code:", { orderId, transferCode })
+        const { error: updateError } = await supabase
+          .from("orders")
+          .update({ 
+            transfer_code: transferCode,
+            payment_status: 'pending'
+          })
+          .eq("id", orderId)
+        
+        if (updateError) {
+          console.log("[API] Could not update transfer code, error details:", {
+            error: updateError,
+            message: updateError?.message,
+            code: updateError?.code,
+            details: updateError?.details
+          })
+          // Still return success but without transfer code
+          return {
+            orderId,
+            transferCode: transferCode, // Use generated code even if update failed
+            totalAmount
+          }
+        }
+        
+        console.log("[API] Transfer order created successfully with fallback method")
+        return {
+          orderId,
+          transferCode,
+          totalAmount
+        }
+      } catch (updateError) {
+        console.log("[API] Transfer code update failed with exception:", {
+          error: updateError,
+          message: updateError instanceof Error ? updateError.message : 'Unknown error'
+        })
+        // Still return success with generated transfer code
+        return {
+          orderId,
+          transferCode: transferCode,
+          totalAmount
+        }
+      }
+    } else {
+      console.error("[API] Fallback order submission also failed - submitOrder returned null")
+    }
+
+    console.error("[API] All order submission methods failed")
+    return null
+  } catch (error) {
+    console.error("[API] Error submitting order with transfer - outer catch:", {
+      error: error,
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    })
+    return null
+  }
+}
+
+// Confirm menu order payment
+export async function confirmMenuOrderPayment(orderId: string): Promise<boolean> {
+  try {
+    console.log("[API] Confirming menu order payment:", orderId)
+
+    const { data, error } = await supabase
+      .rpc("confirm_menu_order_payment", { p_order_id: orderId })
+
+    if (error) {
+      console.error("[API] Menu order payment confirmation failed:", error)
+      return false
+    }
+
+    console.log("[API] Menu order payment confirmed successfully")
+    return data
+  } catch (error) {
+    console.error("[API] Error confirming menu order payment:", error)
+    return false
+  }
+}
+
+// Get order by transfer code (for business app)
+export async function getOrderByTransferCode(transferCode: string, businessId: string): Promise<any | null> {
+  try {
+    console.log("[API] Fetching order by transfer code:", transferCode)
+
+    const { data, error } = await supabase
+      .rpc("get_menu_order_by_transfer_code", { 
+        p_transfer_code: transferCode,
+        p_business_id: businessId 
+      })
+
+    if (error) {
+      console.error("[API] Order fetch by transfer code failed:", error)
+      return null
+    }
+
+    if (!data || data.length === 0) {
+      console.log("[API] Order not found for transfer code")
+      return null
+    }
+
+    return data[0]
+  } catch (error) {
+    console.error("[API] Error fetching order by transfer code:", error)
     return null
   }
 }

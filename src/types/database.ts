@@ -66,6 +66,11 @@ export interface Order {
   estimated_ready_time?: string
   estimated_delivery_time?: string
   business_comment?: string
+  order_type: OrderType
+  customer_phone?: string
+  delivery_address?: string
+  transfer_code?: string
+  payment_confirmed_at?: string
   created_at: string
   updated_at: string
 }
@@ -80,7 +85,8 @@ export interface OrderItem {
 }
 
 export type OrderStatus = "new" | "accepted" | "preparing" | "ready" | "served" | "cancelled"
-export type PaymentMethod = "cash" | "card" | "mobile"
+export type OrderType = "table" | "room" | "home"
+export type PaymentMethod = "cash" | "card" | "mobile" | "transfer"
 export type PaymentStatus = "pending" | "paid" | "failed"
 
 // Service Types
