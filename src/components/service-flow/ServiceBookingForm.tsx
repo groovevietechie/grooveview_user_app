@@ -4,7 +4,8 @@ import { useState } from "react"
 import type { Business, ServiceConfiguration } from "@/types/database"
 import { useServiceStore } from "@/store/serviceStore"
 import { submitServiceBooking } from "@/lib/api"
-import { ArrowLeftIcon, CalendarIcon, UserGroupIcon, PhoneIcon, EnvelopeIcon, UserIcon } from "@heroicons/react/24/outline"
+import BackButton from "@/components/BackButton"
+import { CalendarIcon, UserGroupIcon, PhoneIcon, EnvelopeIcon, UserIcon } from "@heroicons/react/24/outline"
 import { getContrastColor } from "@/lib/color-utils"
 import PreOrderSelector from "./PreOrderSelector"
 
@@ -142,13 +143,12 @@ export default function ServiceBookingForm({
     <div className="w-full max-w-2xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <button
-          onClick={onBack}
+        <BackButton 
+          onBack={onBack}
           className="p-2 rounded-full hover:bg-gray-100 transition-colors"
           style={{ color: themeColor }}
-        >
-          <ArrowLeftIcon className="w-6 h-6" />
-        </button>
+          label=""
+        />
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Complete Your Booking</h2>
           <p className="text-gray-600">{serviceConfiguration.title}</p>

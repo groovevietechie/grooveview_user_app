@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import type { Business, ServiceConfiguration, ServiceOption } from "@/types/database"
 import { useServiceStore } from "@/store/serviceStore"
 import { getServiceConfigurations, getServiceOptionsFromCustomFields } from "@/lib/api"
+import { useBackNavigation } from "@/hooks/useBackNavigation"
 import ServiceTypeSelection from "./service-flow/ServiceTypeSelection"
 import ServiceOptionsGrid from "./service-flow/ServiceOptionsGrid"
 import ServiceBookingForm from "./service-flow/ServiceBookingForm"
@@ -32,6 +33,27 @@ export default function ServiceFlow({ business, themeColor, initialService, onBo
   const [error, setError] = useState<string | null>(null)
 
   const { setBusinessId, setServiceType, clearServiceCart } = useServiceStore()
+
+  // Use the back navigation hook
+  useBackNavigation({
+    fallbackRoute: `/b/${business.slug}`,
+    onBack: () => {
+      // Custom back behavior for service flow
+      if (step === "payment") {
+        setStep("bookingForm")
+      } else if (step === "bookingForm") {
+        setStep("serviceOptions")
+      } else if (step === "serviceOptions") {
+        if (initialService && onBookingComplete) {
+          onBookingComplete("")
+        } else {
+          setStep("serviceTypes")
+        }
+      } else if (onBookingComplete) {
+        onBookingComplete("")
+      }
+    }
+  })
 
   useEffect(() => {
     setBusinessId(business.id)

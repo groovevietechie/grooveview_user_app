@@ -7,7 +7,9 @@ import { useTheme } from "@/contexts/ThemeContext"
 import { useCartStore } from "@/store/cartStore"
 import { submitOrder } from "@/lib/api"
 import { saveDeviceOrder } from "@/lib/order-storage"
-import { ClipboardDocumentIcon, CheckIcon, BanknotesIcon, ClockIcon, PhoneIcon, ArrowLeftIcon } from "@heroicons/react/24/outline"
+import { useBackNavigation } from "@/hooks/useBackNavigation"
+import BackButton from "@/components/BackButton"
+import { ClipboardDocumentIcon, CheckIcon, BanknotesIcon, ClockIcon, PhoneIcon } from "@heroicons/react/24/outline"
 
 interface MenuPaymentClientProps {
   business: Business
@@ -22,6 +24,11 @@ export default function MenuPaymentClient({
   const { primaryColor } = useTheme()
   const { clearCart } = useCartStore()
   
+  // Use the back navigation hook
+  useBackNavigation({
+    fallbackRoute: `/b/${business.slug}/checkout`
+  })
+  
   const [copiedField, setCopiedField] = useState<string | null>(null)
   const [timeRemaining, setTimeRemaining] = useState(30 * 60) // 30 minutes in seconds
   const [isConfirming, setIsConfirming] = useState(false)
@@ -33,11 +40,24 @@ export default function MenuPaymentClient({
     const code = Math.floor(100000 + Math.random() * 900000).toString()
     setTransferCode(code)
 
+    console.log("[MenuPayment] Checking for pending order data...")
+    console.log("[MenuPayment] Business ID:", business.id)
+    
     // Get pending order data
     const pendingOrder = sessionStorage.getItem(`${business.id}_pending_order`)
+    console.log("[MenuPayment] Raw pending order from session storage:", pendingOrder)
+    
     if (pendingOrder) {
-      setOrderData(JSON.parse(pendingOrder))
+      try {
+        const parsedOrderData = JSON.parse(pendingOrder)
+        console.log("[MenuPayment] Parsed order data:", parsedOrderData)
+        setOrderData(parsedOrderData)
+      } catch (parseError) {
+        console.error("[MenuPayment] Error parsing order data:", parseError)
+        router.push(`/b/${business.slug}/checkout`)
+      }
     } else {
+      console.log("[MenuPayment] No pending order found, redirecting to checkout")
       // No pending order, redirect back to checkout
       router.push(`/b/${business.slug}/checkout`)
     }
@@ -84,15 +104,39 @@ export default function MenuPaymentClient({
 
   const handlePaymentComplete = async () => {
     if (!orderData) {
+      console.error("[MenuPayment] No order data found in session storage")
       alert("Order data not found. Please try again.")
+      return
+    }
+
+    console.log("[MenuPayment] Order data from session storage:", orderData)
+    console.log("[MenuPayment] Business ID:", business.id)
+    console.log("[MenuPayment] Total amount:", totalAmount)
+
+    // Validate order data structure
+    const validation = {
+      hasBusinessId: !!orderData.businessId,
+      hasSeatLabel: !!orderData.seatLabel,
+      hasItems: !!orderData.items,
+      itemCount: orderData.items?.length || 0,
+      hasPaymentMethod: !!orderData.paymentMethod,
+      paymentMethod: orderData.paymentMethod
+    }
+    console.log("[MenuPayment] Order data validation:", validation)
+
+    if (!validation.hasBusinessId || !validation.hasSeatLabel || !validation.hasItems || validation.itemCount === 0) {
+      console.error("[MenuPayment] Invalid order data:", validation)
+      alert("Invalid order data. Please go back to checkout and try again.")
       return
     }
 
     setIsConfirming(true)
     try {
-      console.log("[MenuPayment] Placing order after payment confirmation:", orderData)
+      console.log("[MenuPayment] Calling submitOrder with data:", JSON.stringify(orderData, null, 2))
       
       const orderId = await submitOrder(orderData)
+      
+      console.log("[MenuPayment] submitOrder returned:", orderId)
       
       if (orderId) {
         console.log("[MenuPayment] Order placed successfully:", orderId)
@@ -113,11 +157,12 @@ export default function MenuPaymentClient({
         // Redirect to order confirmation
         router.push(`/b/${business.slug}/order/${orderId}?success=true`)
       } else {
-        alert("Failed to place order. Please try again or contact support.")
+        console.error("[MenuPayment] submitOrder returned null - check browser console for API errors")
+        alert("Failed to place order. Please check the browser console for details and try again or contact support.")
       }
     } catch (error) {
-      console.error("Error placing order:", error)
-      alert("An error occurred while placing your order. Please try again.")
+      console.error("[MenuPayment] Error placing order:", error)
+      alert(`An error occurred while placing your order: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again.`)
     } finally {
       setIsConfirming(false)
     }
@@ -143,13 +188,11 @@ export default function MenuPaymentClient({
       <div className="max-w-2xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-6">
-          <button
-            onClick={handleBack}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
-          >
-            <ArrowLeftIcon className="w-5 h-5" />
-            Back to Checkout
-          </button>
+          <BackButton 
+            label="Back to Checkout"
+            fallbackRoute={`/b/${business.slug}/checkout`}
+            className="mb-4"
+          />
         </div>
 
         <div className="max-w-md mx-auto space-y-6">

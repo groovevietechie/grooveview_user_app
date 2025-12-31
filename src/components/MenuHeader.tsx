@@ -3,6 +3,7 @@
 import Image from "next/image"
 import { useRouter, usePathname } from "next/navigation"
 import type { Business } from "@/types/database"
+import { useBackNavigation } from "@/hooks/useBackNavigation"
 import { HomeIcon } from "@heroicons/react/24/outline"
 
 interface MenuHeaderProps {
@@ -12,6 +13,11 @@ interface MenuHeaderProps {
 export default function MenuHeader({ business }: MenuHeaderProps) {
   const router = useRouter()
   const pathname = usePathname()
+
+  // Use the back navigation hook for the menu page
+  useBackNavigation({
+    fallbackRoute: '/'
+  })
 
   const isMenuPage = pathname === `/b/${business.slug}` || pathname?.endsWith(`/b/${business.slug}`)
   const showHomeButton = !isMenuPage

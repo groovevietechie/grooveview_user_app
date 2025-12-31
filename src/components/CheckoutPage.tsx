@@ -9,7 +9,9 @@ import { useCartStore } from "@/store/cartStore"
 import { useTheme } from "@/contexts/ThemeContext"
 import { submitOrder } from "@/lib/api"
 import { saveDeviceOrder } from "@/lib/order-storage"
-import { ArrowLeftIcon, HomeIcon, BuildingOfficeIcon, TruckIcon, PhoneIcon } from "@heroicons/react/24/outline"
+import { useBackNavigation } from "@/hooks/useBackNavigation"
+import BackButton from "@/components/BackButton"
+import { HomeIcon, BuildingOfficeIcon, TruckIcon, PhoneIcon } from "@heroicons/react/24/outline"
 
 interface CheckoutPageProps {
   business: Business
@@ -21,6 +23,11 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
   const router = useRouter()
   const { items, getTotal, clearCart } = useCartStore()
   const { primaryColor } = useTheme()
+  
+  // Use the back navigation hook
+  useBackNavigation({
+    fallbackRoute: `/b/${business.slug}`
+  })
 
   const [orderType, setOrderType] = useState<OrderType>("table")
   const [tableNumber, setTableNumber] = useState("")
@@ -186,13 +193,11 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
       <div className="max-w-2xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-6">
-          <button
-            onClick={() => router.back()}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
-          >
-            <ArrowLeftIcon className="w-5 h-5" />
-            Back to Menu
-          </button>
+          <BackButton 
+            label="Back to Menu"
+            fallbackRoute={`/b/${business.slug}`}
+            className="mb-4"
+          />
           <h1 className="text-2xl font-bold text-gray-900">Checkout</h1>
         </div>
 

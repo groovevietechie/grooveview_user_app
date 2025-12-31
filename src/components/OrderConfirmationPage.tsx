@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation"
 import { useState } from "react"
 import type { Business } from "@/types/database"
 import { useTheme } from "@/contexts/ThemeContext"
+import { useBackNavigation } from "@/hooks/useBackNavigation"
 import SuccessToast from "./SuccessToast"
 
 interface OrderConfirmationPageProps {
@@ -16,6 +17,11 @@ export default function OrderConfirmationPage({ business, orderId, showSuccess }
   const router = useRouter()
   const { primaryColor } = useTheme()
   const [showToast, setShowToast] = useState(showSuccess || false)
+
+  // Use the back navigation hook - back should go to menu
+  useBackNavigation({
+    fallbackRoute: `/b/${business.slug}`
+  })
 
   return (
     <>

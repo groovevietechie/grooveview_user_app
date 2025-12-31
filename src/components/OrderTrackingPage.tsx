@@ -7,12 +7,13 @@ import { useTheme } from "@/contexts/ThemeContext"
 import { getOrdersByIds } from "@/lib/api"
 import { getContrastColor, lightenColor, darkenColor } from "@/lib/color-utils"
 import { getDeviceOrders } from "@/lib/order-storage"
+import { useBackNavigation } from "@/hooks/useBackNavigation"
+import BackButton from "@/components/BackButton"
 import {
   CheckCircleIcon,
   ClockIcon,
   TruckIcon,
   SparklesIcon,
-  ArrowLeftIcon,
   ShoppingBagIcon,
   ChatBubbleLeftIcon,
   CalendarIcon,
@@ -47,6 +48,11 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
   const [orders, setOrders] = useState<OrderWithItems[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedOrder, setSelectedOrder] = useState<OrderWithItems | null>(null)
+
+  // Use the back navigation hook
+  useBackNavigation({
+    fallbackRoute: `/b/${business.slug}`
+  })
 
   const themeShades = {
     lightest: lightenColor(primaryColor, 90),
@@ -158,17 +164,15 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
       >
         <div className="max-w-7xl mx-auto px-4 py-5 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <button
-              onClick={() => router.back()}
+            <BackButton 
+              fallbackRoute={`/b/${business.slug}`}
               className="p-2.5 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95"
-              title="Go back"
               style={{
                 color: primaryColor,
                 backgroundColor: themeShades.lightest,
               }}
-            >
-              <ArrowLeftIcon className="w-6 h-6" />
-            </button>
+              label=""
+            />
             <div>
               <h1 className="text-xl font-bold text-gray-900 tracking-tight">Order Tracking</h1>
               <p className="text-sm text-gray-500 font-medium mt-0.5">{business.name}</p>
