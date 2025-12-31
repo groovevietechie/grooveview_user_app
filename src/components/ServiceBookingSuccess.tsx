@@ -34,10 +34,10 @@ export default function ServiceBookingSuccess({
       {/* Success Message */}
       <div className="space-y-2">
         <h2 className="text-2xl font-bold text-gray-900">
-          Booking Confirmed!
+          Payment Confirmed!
         </h2>
         <p className="text-gray-600">
-          Your service booking has been successfully submitted.
+          Your service booking and payment have been successfully processed.
         </p>
       </div>
 
@@ -63,15 +63,15 @@ export default function ServiceBookingSuccess({
           <div className="space-y-2 text-sm text-gray-600">
             <div className="flex items-start gap-2">
               <CalendarIcon className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: themeColor }} />
-              <p>We'll review your booking and confirm the details within 24 hours.</p>
+              <p>Your booking is confirmed and we'll prepare everything for your event.</p>
             </div>
             <div className="flex items-start gap-2">
               <PhoneIcon className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: themeColor }} />
-              <p>You'll receive a call or message to confirm your booking.</p>
+              <p>We'll contact you 24 hours before your event to confirm final details.</p>
             </div>
             <div className="flex items-start gap-2">
               <EnvelopeIcon className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: themeColor }} />
-              <p>Check your email for booking confirmation and updates.</p>
+              <p>Check your email for booking confirmation and event details.</p>
             </div>
           </div>
         </div>

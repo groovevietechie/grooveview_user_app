@@ -202,19 +202,24 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
 
         {/* Tabs */}
         {!searchQuery.trim() && (
-          <div className="flex gap-2 justify-center overflow-x-auto pb-2 mb-6">
+          <div className="flex gap-3 justify-center overflow-x-auto pb-2 mb-6">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                className={`flex-shrink-0 px-6 py-3 rounded-full text-sm font-medium transition-all duration-200 min-w-[100px] ${
                   activeTab === tab.id
-                    ? 'text-white shadow-md'
-                    : 'text-gray-600 bg-gray-100 hover:bg-gray-200'
+                    ? 'text-white shadow-lg transform scale-105'
+                    : 'text-gray-600 bg-gray-100 hover:bg-gray-200 hover:shadow-md'
                 }`}
                 style={activeTab === tab.id ? { backgroundColor: themeColor } : {}}
               >
-                {tab.name} {tab.count > 0 && `(${tab.count})`}
+                <div className="text-center">
+                  <div className="font-semibold">{tab.name}</div>
+                  {tab.count > 0 && (
+                    <div className="text-xs opacity-80 mt-0.5">({tab.count})</div>
+                  )}
+                </div>
               </button>
             ))}
           </div>

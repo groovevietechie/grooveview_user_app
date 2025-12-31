@@ -189,11 +189,9 @@ export async function getServiceOptions(businessId: string, serviceType?: string
 // Get service options from custom_fields of service configuration
 export async function getServiceOptionsFromCustomFields(serviceConfigId: string): Promise<ServiceOption[]> {
   try {
-    console.log("[API] Fetching service options from custom_fields for service config:", serviceConfigId)
-
     const { data, error } = await supabase
       .from("service_configurations")
-      .select("custom_fields")
+      .select("available_options, custom_fields, business_id, service_type, title")
       .eq("id", serviceConfigId)
       .single()
 
@@ -202,38 +200,131 @@ export async function getServiceOptionsFromCustomFields(serviceConfigId: string)
       throw error
     }
 
-    const customFields = data?.custom_fields as any
-    const serviceOptions = customFields?.serviceOptions || []
+    const availableOptions = data?.available_options || []
+    const customFields = data?.custom_fields as any || {}
+    const businessId = data.business_id
+    const serviceType = data.service_type
 
-    console.log("[API] Service options from custom_fields fetched:", serviceOptions.length)
+    // First, try to get options from the service_options table
+    let serviceOptions: ServiceOption[] = []
+    
+    try {
+      const optionsFromTable = await getServiceOptions(businessId, serviceType)
+      
+      // If we have available_options specified, filter the table results
+      if (availableOptions.length > 0) {
+        serviceOptions = optionsFromTable.filter(option => 
+          availableOptions.includes(option.name)
+        )
+      } else {
+        // If no available_options specified, use all options for this service type
+        serviceOptions = optionsFromTable
+      }
+      
+      if (serviceOptions.length > 0) {
+        return serviceOptions
+      }
+    } catch (tableError) {
+      // Continue to custom_fields fallback
+    }
 
-    // Transform custom_fields service options to ServiceOption format
-    return serviceOptions.map((option: any, index: number) => ({
-      id: `${serviceConfigId}_option_${index}`,
-      business_id: "", // Will be set by caller
-      name: option.name,
-      category: option.category || "Service Option",
-      price: option.price || 0,
-      is_active: true,
-      description: option.description,
-      image_url: option.image_url,
-      metadata: option.metadata || {},
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    }))
+    // Fallback: If no options in table, try to construct from available_options + custom_fields
+    if (availableOptions.length === 0) {
+      return []
+    }
+
+    // Handle different custom_fields structures
+    serviceOptions = []
+
+    // Method 1: Check for custom_options array (most detailed)
+    if (customFields.custom_options && Array.isArray(customFields.custom_options)) {
+      serviceOptions = customFields.custom_options.map((option: any, index: number) => ({
+        id: `${serviceConfigId}_custom_${option.id || index}`,
+        business_id: businessId,
+        name: option.name,
+        category: "Service Option",
+        price: option.price || 0,
+        is_active: true,
+        description: option.description || "",
+        image_url: null,
+        metadata: { is_required: option.is_required || false },
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }))
+    }
+
+    // Method 2: Check for option_prices mapping
+    if (serviceOptions.length === 0 && customFields.option_prices) {
+      serviceOptions = availableOptions.map((optionName: string, index: number) => {
+        const price = customFields.option_prices[optionName] || 0
+        return {
+          id: `${serviceConfigId}_price_${index}`,
+          business_id: businessId,
+          name: optionName,
+          category: "Service Option",
+          price: price,
+          is_active: true,
+          description: "",
+          image_url: null,
+          metadata: {},
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }
+      })
+    }
+
+    // Method 3: Try direct mapping from available_options with custom_fields lookup
+    if (serviceOptions.length === 0) {
+      serviceOptions = availableOptions.map((optionName: string, index: number) => {
+        let price = 0
+        let description = ""
+        let category = "Service Option"
+        
+        // Try to find price in custom_fields
+        if (customFields[optionName]) {
+          const optionData = customFields[optionName]
+          if (typeof optionData === 'object') {
+            price = optionData.price || optionData.cost || 0
+            description = optionData.description || ""
+            category = optionData.category || "Service Option"
+          } else if (typeof optionData === 'number') {
+            price = optionData
+          }
+        }
+
+        return {
+          id: `${serviceConfigId}_option_${index}`,
+          business_id: businessId,
+          name: optionName,
+          category: category,
+          price: price,
+          is_active: true,
+          description: description,
+          image_url: null,
+          metadata: {},
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }
+      })
+    }
+
+    return serviceOptions
   } catch (error) {
-    console.error("[API] Error fetching service options from custom_fields:", error)
+    console.error("[API] Error fetching service options:", error)
     return []
   }
 }
 
-export async function submitServiceBooking(bookingData: ServiceBookingSubmission): Promise<string | null> {
+export async function submitServiceBooking(bookingData: ServiceBookingSubmission): Promise<{ bookingId: string; transferCode: string; totalAmount: number } | null> {
   try {
     console.log("[API] Submitting service booking:", bookingData)
 
+    // Generate a 6-digit transfer code
+    const transferCode = Math.floor(100000 + Math.random() * 900000).toString()
+
     // Use the secure function for booking submission
-    const { data: bookingId, error } = await supabase
-      .rpc("submit_service_booking", {
+    const { data: result, error } = await supabase
+      .rpc("submit_service_booking_with_payment", {
         p_business_id: bookingData.businessId,
         p_customer_name: bookingData.customerName,
         p_customer_phone: bookingData.customerPhone,
@@ -241,6 +332,7 @@ export async function submitServiceBooking(bookingData: ServiceBookingSubmission
         p_event_date: bookingData.eventDate,
         p_number_of_participants: bookingData.numberOfParticipants,
         p_total_amount: bookingData.totalAmount,
+        p_transfer_code: transferCode,
         p_service_details: {
           items: bookingData.items.map(item => ({
             id: item.serviceOption.id,
@@ -268,14 +360,102 @@ export async function submitServiceBooking(bookingData: ServiceBookingSubmission
 
     if (error) {
       console.error("[API] Service booking submission failed:", error)
+      
+      // Fallback to the original function if the new one doesn't exist
+      const { data: bookingId, error: fallbackError } = await supabase
+        .rpc("submit_service_booking", {
+          p_business_id: bookingData.businessId,
+          p_customer_name: bookingData.customerName,
+          p_customer_phone: bookingData.customerPhone,
+          p_service_type: bookingData.serviceType || 'custom',
+          p_event_date: bookingData.eventDate,
+          p_number_of_participants: bookingData.numberOfParticipants,
+          p_total_amount: bookingData.totalAmount,
+          p_service_details: {
+            items: bookingData.items.map(item => ({
+              id: item.serviceOption.id,
+              name: item.serviceOption.name,
+              category: item.serviceOption.category,
+              quantity: item.quantity,
+              unit_price: item.serviceOption.price,
+              total_price: item.serviceOption.price * item.quantity,
+              note: item.note,
+            })),
+            pre_order_enabled: bookingData.preOrderEnabled,
+            pre_order_items: bookingData.preOrderEnabled ? bookingData.preOrderItems.map(item => ({
+              id: item.menuItem.id,
+              name: item.menuItem.name,
+              quantity: item.quantity,
+              unit_price: item.menuItem.price,
+              total_price: item.menuItem.price * item.quantity,
+              note: item.note,
+            })) : [],
+            special_requests: bookingData.specialRequests,
+            booking_details: bookingData.bookingDetails,
+          },
+          p_customer_email: bookingData.customerEmail || null,
+        })
+
+      if (fallbackError) {
+        console.error("[API] Fallback booking submission also failed:", fallbackError)
+        return null
+      }
+
+      // Update the booking with transfer code using a direct update
+      if (bookingId) {
+        await supabase
+          .from("service_bookings")
+          .update({ 
+            transfer_code: transferCode,
+            payment_status: 'pending'
+          })
+          .eq("id", bookingId)
+
+        return {
+          bookingId,
+          transferCode,
+          totalAmount: bookingData.totalAmount
+        }
+      }
+      
       return null
     }
 
-    console.log("[API] Service booking created successfully:", bookingId)
-    return bookingId
+    console.log("[API] Service booking created successfully:", result)
+    return {
+      bookingId: result.booking_id,
+      transferCode: result.transfer_code,
+      totalAmount: bookingData.totalAmount
+    }
   } catch (error) {
     console.error("[API] Error submitting service booking:", error)
     return null
+  }
+}
+
+export async function confirmServicePayment(bookingId: string): Promise<boolean> {
+  try {
+    console.log("[API] Confirming service payment:", bookingId)
+
+    const { error } = await supabase
+      .from("service_bookings")
+      .update({ 
+        payment_status: 'confirmed',
+        payment_confirmed_at: new Date().toISOString(),
+        status: 'confirmed'
+      })
+      .eq("id", bookingId)
+
+    if (error) {
+      console.error("[API] Payment confirmation failed:", error)
+      return false
+    }
+
+    console.log("[API] Payment confirmed successfully")
+    return true
+  } catch (error) {
+    console.error("[API] Error confirming payment:", error)
+    return false
   }
 }
 
@@ -312,6 +492,9 @@ export async function getServiceBookingStatus(bookingId: string): Promise<Servic
       number_of_participants: booking.number_of_participants,
       total_amount: booking.total_amount,
       service_details: booking.service_details,
+      transfer_code: booking.transfer_code,
+      payment_status: booking.payment_status,
+      payment_confirmed_at: booking.payment_confirmed_at,
       created_at: booking.created_at,
       updated_at: booking.updated_at,
     }

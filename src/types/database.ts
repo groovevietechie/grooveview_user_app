@@ -11,6 +11,10 @@ export interface Business {
   is_active: boolean
   created_at: string
   updated_at: string
+  link_code?: string
+  payment_account_number?: string
+  payment_account_name?: string
+  payment_bank?: string
 }
 
 export interface Menu {
@@ -128,6 +132,9 @@ export interface ServiceBooking {
   number_of_participants: number
   total_amount: number
   service_details: Record<string, unknown>
+  transfer_code?: string
+  payment_status: PaymentStatus
+  payment_confirmed_at?: string
   created_at: string
   updated_at: string
 }

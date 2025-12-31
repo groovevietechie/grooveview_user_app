@@ -12,7 +12,7 @@ interface ServiceBookingFormProps {
   business: Business
   serviceConfiguration: ServiceConfiguration
   onBack: () => void
-  onBookingComplete: (bookingId: string) => void
+  onBookingComplete: (bookingId: string, transferCode: string, totalAmount: number) => void
   themeColor: string
 }
 
@@ -57,12 +57,12 @@ export default function ServiceBookingForm({
     }
 
     if (!bookingDetails.eventDate) {
-      newErrors.eventDate = "Event date is required"
+      newErrors.eventDate = "Desired date is required"
     } else {
       const eventDate = new Date(bookingDetails.eventDate)
       const now = new Date()
       if (eventDate <= now) {
-        newErrors.eventDate = "Event date must be in the future"
+        newErrors.eventDate = "Desired date must be in the future"
       }
     }
 
@@ -113,11 +113,11 @@ export default function ServiceBookingForm({
         }
       }
 
-      const bookingId = await submitServiceBooking(bookingData)
+      const result = await submitServiceBooking(bookingData)
       
-      if (bookingId) {
+      if (result) {
         clearServiceCart()
-        onBookingComplete(bookingId)
+        onBookingComplete(result.bookingId, result.transferCode, result.totalAmount)
       } else {
         setErrors({ submit: "Failed to submit booking. Please try again." })
       }
@@ -300,7 +300,7 @@ export default function ServiceBookingForm({
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               <CalendarIcon className="w-4 h-4 inline mr-1" />
-              Event Date & Time *
+              Desired Date & Time *
             </label>
             <input
               type="datetime-local"
