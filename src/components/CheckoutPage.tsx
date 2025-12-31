@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation"
 import type { Business, PaymentMethod } from "@/types/database"
 import { useCartStore } from "@/store/cartStore"
 import { useTheme } from "@/contexts/ThemeContext"
-import { submitOrder, submitOrderWithTransfer } from "@/lib/api"
+import { submitOrder } from "@/lib/api"
 import { saveDeviceOrder } from "@/lib/order-storage"
 import { ArrowLeftIcon, HomeIcon, BuildingOfficeIcon, TruckIcon, PhoneIcon } from "@heroicons/react/24/outline"
 
@@ -97,6 +97,42 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
       }
     }
 
+    // Handle bank transfer payment - go to payment page first
+    if (paymentMethod === "transfer") {
+      // Store order data in session storage for payment page
+      const seatLabel = orderType === "table" 
+        ? `Table ${tableNumber}` 
+        : orderType === "room" 
+        ? `Room ${roomNumber}` 
+        : "Home Delivery"
+
+      const orderData = {
+        businessId: business.id,
+        items: items.map((cartItem) => ({
+          menuItemId: cartItem.menuItem.id,
+          quantity: cartItem.quantity,
+          unitPrice: cartItem.menuItem.price,
+          note: cartItem.note,
+        })),
+        seatLabel,
+        customerNote: orderType === "home" 
+          ? `Phone: ${deliveryPhone}${customerNote.trim() ? `\n\nSpecial Instructions: ${customerNote.trim()}` : ''}`
+          : customerNote.trim() || undefined,
+        paymentMethod,
+        deliveryAddress: orderType === "home" ? deliveryAddress : undefined,
+      }
+
+      // Store order data and total for payment page
+      sessionStorage.setItem(`${business.id}_pending_order`, JSON.stringify(orderData))
+      sessionStorage.setItem(`${business.id}_order_total`, total.toString())
+      sessionStorage.setItem(`${business.id}_order_type`, orderType)
+
+      // Redirect to payment page
+      router.push(`/b/${business.slug}/payment?amount=${total}`)
+      return
+    }
+
+    // Handle cash payments - place order immediately
     setIsSubmitting(true)
 
     try {
@@ -122,45 +158,20 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
         deliveryAddress: orderType === "home" ? deliveryAddress : undefined,
       }
 
-      console.log("[v0] Order data prepared:", orderData)
+      const orderId = await submitOrder(orderData)
       
-      // Use enhanced submission for transfer payments
-      if (paymentMethod === "transfer") {
-        const result = await submitOrderWithTransfer(orderData)
-        
-        if (result) {
-          console.log("[v0] Transfer order placed successfully:", result.orderId)
-          saveDeviceOrder(business.id, result.orderId)
-          sessionStorage.setItem(`${business.id}_recent_order`, "true")
-          sessionStorage.setItem(`${business.id}_last_order_id`, result.orderId)
-          sessionStorage.setItem(`${business.id}_transfer_code`, result.transferCode)
-          sessionStorage.setItem(`${business.id}_transfer_amount`, result.totalAmount.toString())
-          sessionStorage.setItem(`${business.id}_order_type`, orderType)
-          clearCart()
-          
-          // Redirect to payment page with transfer details
-          router.push(`/b/${business.slug}/order/${result.orderId}/payment?code=${result.transferCode}&amount=${result.totalAmount}`)
-        } else {
-          console.error("[v0] Transfer order submission failed")
-          alert("Failed to place order. Please check your connection and try again.")
-        }
+      if (orderId) {
+        console.log("[v0] Order placed successfully:", orderId)
+        saveDeviceOrder(business.id, orderId)
+        sessionStorage.setItem(`${business.id}_recent_order`, "true")
+        sessionStorage.setItem(`${business.id}_last_order_id`, orderId)
+        clearCart()
+        router.push(`/b/${business.slug}/order/${orderId}?success=true`)
       } else {
-        // Use regular submission for cash payments
-        const orderId = await submitOrder(orderData)
-        
-        if (orderId) {
-          console.log("[v0] Order placed successfully:", orderId)
-          saveDeviceOrder(business.id, orderId)
-          sessionStorage.setItem(`${business.id}_recent_order`, "true")
-          sessionStorage.setItem(`${business.id}_last_order_id`, orderId)
-          clearCart()
-          router.push(`/b/${business.slug}/order/${orderId}?success=true`)
-        } else {
-          console.error("[v0] Order submission returned null - Check browser console for details")
-          alert(
-            "Failed to place order. Please check your connection and try again. If the problem persists, the restaurant may not have online ordering enabled.",
-          )
-        }
+        console.error("[v0] Order submission returned null - Check browser console for details")
+        alert(
+          "Failed to place order. Please check your connection and try again. If the problem persists, the restaurant may not have online ordering enabled.",
+        )
       }
     } catch (error) {
       console.error("[v0] Order submission error:", error)
@@ -396,7 +407,7 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
                 {paymentMethod === "transfer" && (
                   <div className="ml-6 mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                     <p className="text-sm text-blue-800">
-                      💡 You'll receive bank details and a transfer code after placing your order
+                      💡 You'll proceed to payment first, then your order will be placed after payment confirmation
                     </p>
                   </div>
                 )}
@@ -420,7 +431,7 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
                 <div className="ml-6 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
                   <p className="text-sm text-yellow-800">
                     <strong>Home delivery requires advance payment via bank transfer.</strong><br />
-                    You'll receive bank details and a transfer code after placing your order.
+                    You'll proceed to payment first, then your order will be placed after payment confirmation.
                   </p>
                 </div>
               </div>
@@ -434,7 +445,12 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
             style={isSubmitting ? {} : { backgroundColor: primaryColor }}
             className="w-full text-white py-4 px-6 rounded-lg disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors font-semibold text-lg"
           >
-            {isSubmitting ? "Placing Order..." : `Place Order - ₦${total.toLocaleString()}`}
+            {isSubmitting 
+              ? "Processing..." 
+              : paymentMethod === "transfer" 
+                ? `Proceed to Payment - ₦${total.toLocaleString()}`
+                : `Place Order - ₦${total.toLocaleString()}`
+            }
           </button>
         </form>
       </div>

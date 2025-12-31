@@ -1,15 +1,13 @@
 import { notFound } from "next/navigation"
 import { getBusinessBySlug } from "@/lib/api"
 import type { Business } from "@/types/database"
-import MenuOrderPaymentClient from "@/components/MenuOrderPaymentClient"
+import MenuPaymentClient from "@/components/MenuPaymentClient"
 
 interface PageProps {
   params: Promise<{
     slug: string
-    orderId: string
   }>
   searchParams: Promise<{
-    code?: string
     amount?: string
   }>
 }
@@ -19,9 +17,9 @@ async function getBusinessData(slug: string): Promise<Business | null> {
   return business
 }
 
-export default async function MenuOrderPayment({ params, searchParams }: PageProps) {
-  const { slug, orderId } = await params
-  const { code, amount } = await searchParams
+export default async function MenuPayment({ params, searchParams }: PageProps) {
+  const { slug } = await params
+  const { amount } = await searchParams
   
   const business = await getBusinessData(slug)
 
@@ -29,15 +27,13 @@ export default async function MenuOrderPayment({ params, searchParams }: PagePro
     notFound()
   }
 
-  if (!code || !amount) {
+  if (!amount) {
     notFound()
   }
 
   return (
-    <MenuOrderPaymentClient 
+    <MenuPaymentClient 
       business={business} 
-      orderId={orderId}
-      transferCode={code}
       totalAmount={parseFloat(amount)}
     />
   )

@@ -172,15 +172,15 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
     searchedItems.length === 0
 
   return (
-    <div className="w-full space-y-6 pb-2">
+    <div className="w-full space-y-4 pb-2">
       {/* Header */}
-      <div className="mb-4">
-        <h2 className="text-xl font-bold text-gray-900 tracking-tight mb-4">
+      <div className="mb-2">
+        <h2 className="text-lg font-bold text-gray-900 tracking-tight mb-2">
           Discover Our Menu
         </h2>
         
         {/* Search Bar */}
-        <div className="relative mb-6">
+        <div className="relative mb-2">
           <div className="absolute inset-0 bg-gradient-to-r from-gray-100 to-gray-50 rounded-full blur-sm opacity-60"></div>
           <div className="relative">
             <MagnifyingGlassIcon
@@ -192,7 +192,7 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
               placeholder="Search menus or items..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-14 pr-6 py-3.5 rounded-full border-2 outline-none transition-all text-sm font-medium bg-white/80 backdrop-blur-sm shadow-sm hover:shadow-md focus:shadow-lg"
+              className="w-full pl-8 pr-6 py-3.5 rounded-full border-2 outline-none transition-all text-sm font-medium bg-white/80 backdrop-blur-sm shadow-sm hover:shadow-md focus:shadow-lg"
               style={{
                 borderColor: searchQuery ? themeColor : "#E5E7EB",
               }}
@@ -202,12 +202,12 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
 
         {/* Tabs */}
         {!searchQuery.trim() && (
-          <div className="flex gap-3 justify-center overflow-x-auto pb-2 mb-6">
+          <div className="flex gap-2 justify-center overflow-x-auto pb-2 mb-2">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex-shrink-0 px-6 py-3 rounded-full text-sm font-medium transition-all duration-200 min-w-[100px] ${
+                className={`flex-shrink-0 px-2 py-5 rounded-full text-sm font-medium transition-all duration-200 min-w-[80px] ${
                   activeTab === tab.id
                     ? 'text-white shadow-lg transform scale-105'
                     : 'text-gray-600 bg-gray-100 hover:bg-gray-200 hover:shadow-md'
@@ -215,9 +215,9 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
                 style={activeTab === tab.id ? { backgroundColor: themeColor } : {}}
               >
                 <div className="text-center">
-                  <div className="font-semibold">{tab.name}</div>
+                  <div className="font-medium">{tab.name}</div>
                   {tab.count > 0 && (
-                    <div className="text-xs opacity-80 mt-0.5">({tab.count})</div>
+                    <div className="text-sm opacity-80 mt-0.5">({tab.count})</div>
                   )}
                 </div>
               </button>
