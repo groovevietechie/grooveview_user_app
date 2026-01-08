@@ -205,13 +205,13 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
 
         {/* Enhanced Tabs */}
         {!searchQuery.trim() && (
-          <div className="relative mb-6">
-            <div className="flex gap-1 p-1 bg-gray-100 rounded-2xl overflow-x-auto scrollbar-hide justify-center">
+          <div className="relative mb-6 flex justify-center">
+            <div className="inline-flex gap-0.5 p-1 bg-gray-100 rounded-2xl overflow-x-auto scrollbar-hide">
               {tabs.map((tab, index) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`relative flex-shrink-0 px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 min-w-[100px] ${
+                  className={`relative flex-shrink-0 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 min-w-[80px] ${
                     activeTab === tab.id
                       ? 'text-white shadow-lg transform scale-105 z-10'
                       : 'text-gray-600 hover:text-gray-800 hover:bg-white/50'
