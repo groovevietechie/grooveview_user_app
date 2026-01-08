@@ -38,13 +38,13 @@ export default function ItemsGrid({ category, items, onBack, themeColor }: Items
         </button>
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
-            <ShoppingBagIcon className="w-7 h-7" style={{ color: themeColor }} />
-            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">{category.name}</h1>
+            <ShoppingBagIcon className="w-5 h-5" style={{ color: themeColor }} />
+            <h1 className="text-xl font-bold text-gray-900 tracking-tight">{category.name}</h1>
           </div>
           {category.description && (
-            <p className="text-gray-500 text-base leading-relaxed mt-2">{category.description}</p>
+            <p className="text-gray-500 text-sm leading-relaxed mt-2">{category.description}</p>
           )}
-          <div className="mt-3">
+          <div className="mt-1">
             <span
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold"
               style={{ backgroundColor: lightenColor(themeColor, 90), color: themeColor }}
@@ -55,7 +55,7 @@ export default function ItemsGrid({ category, items, onBack, themeColor }: Items
         </div>
       </div>
 
-      <div className="relative mb-8">
+      <div className="relative mb-4">
         <div className="absolute inset-0 bg-gradient-to-r from-gray-100 to-gray-50 rounded-full blur-sm opacity-60"></div>
         <div className="relative">
           <MagnifyingGlassIcon
@@ -67,7 +67,7 @@ export default function ItemsGrid({ category, items, onBack, themeColor }: Items
             placeholder="Search items..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-14 pr-6 py-3.5 rounded-full border-2 outline-none transition-all text-sm font-medium bg-white/80 backdrop-blur-sm shadow-sm hover:shadow-md focus:shadow-lg"
+            className="w-full pl-8 pr-6 py-3.5 rounded-full border-2 outline-none transition-all text-sm font-medium bg-white/80 backdrop-blur-sm shadow-sm hover:shadow-md focus:shadow-lg"
             style={{
               borderColor: searchQuery ? themeColor : "#E5E7EB",
             }}
@@ -84,7 +84,7 @@ export default function ItemsGrid({ category, items, onBack, themeColor }: Items
           <p className="text-gray-400 text-sm mt-1">Try adjusting your search</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="menu-grid-2col">
           {filteredItems.map((item, index) => (
             <div
               key={item.id}

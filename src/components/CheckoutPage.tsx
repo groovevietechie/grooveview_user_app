@@ -71,6 +71,8 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
   }
 
   const total = getTotal()
+  const deliveryFee = orderType === "home" ? 1500 : 0
+  const finalTotal = total + deliveryFee
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -131,11 +133,11 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
 
       // Store order data and total for payment page
       sessionStorage.setItem(`${business.id}_pending_order`, JSON.stringify(orderData))
-      sessionStorage.setItem(`${business.id}_order_total`, total.toString())
+      sessionStorage.setItem(`${business.id}_order_total`, finalTotal.toString())
       sessionStorage.setItem(`${business.id}_order_type`, orderType)
 
       // Redirect to payment page
-      router.push(`/b/${business.slug}/payment?amount=${total}`)
+      router.push(`/b/${business.slug}/payment?amount=${finalTotal}`)
       return
     }
 
@@ -347,9 +349,25 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
                   <p className="font-medium">₦{(cartItem.menuItem.price * cartItem.quantity).toLocaleString()}</p>
                 </div>
               ))}
+              
+              {/* Subtotal */}
+              <div className="border-t pt-3 flex justify-between items-center">
+                <span className="font-medium">Subtotal:</span>
+                <span className="font-medium">₦{total.toLocaleString()}</span>
+              </div>
+              
+              {/* Delivery Fee for Home Delivery */}
+              {orderType === "home" && (
+                <div className="flex justify-between items-center">
+                  <span className="font-medium">Delivery Fee:</span>
+                  <span className="font-medium">₦{deliveryFee.toLocaleString()}</span>
+                </div>
+              )}
+              
+              {/* Final Total */}
               <div className="border-t pt-3 flex justify-between items-center">
                 <span className="font-semibold text-lg">Total:</span>
-                <span className="font-semibold text-lg">₦{total.toLocaleString()}</span>
+                <span className="font-semibold text-lg" style={{ color: primaryColor }}>₦{finalTotal.toLocaleString()}</span>
               </div>
             </div>
           </div>
@@ -453,8 +471,8 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
             {isSubmitting 
               ? "Processing..." 
               : paymentMethod === "transfer" 
-                ? `Proceed to Payment - ₦${total.toLocaleString()}`
-                : `Place Order - ₦${total.toLocaleString()}`
+                ? `Proceed to Payment - ₦${finalTotal.toLocaleString()}`
+                : `Place Order - ₦${finalTotal.toLocaleString()}`
             }
           </button>
         </form>

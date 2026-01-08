@@ -172,27 +172,30 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
     searchedItems.length === 0
 
   return (
-    <div className="w-full space-y-4 pb-2">
+    <div className="w-full space-y-6 pb-2">
       {/* Header */}
-      <div className="mb-2">
-        <h2 className="text-lg font-bold text-gray-900 tracking-tight mb-2">
-          Discover Our Menu
-        </h2>
+      <div className="mb-6">
+        <div className="text-center mb-6">
+          <h2 className="text-xl font-bold text-gray-900 tracking-tight mb-2">
+            Discover Our Menu
+          </h2>
+          <p className="text-gray-600 text-xs">Choose from our carefully curated selection</p>
+        </div>
         
         {/* Search Bar */}
-        <div className="relative mb-2">
-          <div className="absolute inset-0 bg-gradient-to-r from-gray-100 to-gray-50 rounded-full blur-sm opacity-60"></div>
+        <div className="relative mb-6">
+          <div className="absolute inset-0 bg-gradient-to-r from-gray-100 via-white to-gray-100 rounded-2xl blur-sm opacity-60"></div>
           <div className="relative">
             <MagnifyingGlassIcon
               style={{ color: themeColor }}
-              className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none"
+              className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none"
             />
             <input
               type="text"
-              placeholder="Search menus or items..."
+              placeholder="Search menus, items, or services..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-8 pr-6 py-3.5 rounded-full border-2 outline-none transition-all text-sm font-medium bg-white/80 backdrop-blur-sm shadow-sm hover:shadow-md focus:shadow-lg"
+              className="w-full pl-14 pr-6 py-4 rounded-2xl border-2 outline-none transition-all text-sm font-medium bg-white/90 backdrop-blur-sm shadow-lg hover:shadow-xl focus:shadow-2xl placeholder:text-gray-400"
               style={{
                 borderColor: searchQuery ? themeColor : "#E5E7EB",
               }}
@@ -200,67 +203,92 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
           </div>
         </div>
 
-        {/* Tabs */}
+        {/* Enhanced Tabs */}
         {!searchQuery.trim() && (
-          <div className="flex gap-2 justify-center overflow-x-auto pb-2 mb-2">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex-shrink-0 px-2 py-5 rounded-full text-sm font-medium transition-all duration-200 min-w-[80px] ${
-                  activeTab === tab.id
-                    ? 'text-white shadow-lg transform scale-105'
-                    : 'text-gray-600 bg-gray-100 hover:bg-gray-200 hover:shadow-md'
-                }`}
-                style={activeTab === tab.id ? { backgroundColor: themeColor } : {}}
-              >
-                <div className="text-center">
-                  <div className="font-medium">{tab.name}</div>
-                  {tab.count > 0 && (
-                    <div className="text-sm opacity-80 mt-0.5">({tab.count})</div>
+          <div className="relative mb-6">
+            <div className="flex gap-1 p-1 bg-gray-100 rounded-2xl overflow-x-auto scrollbar-hide justify-center">
+              {tabs.map((tab, index) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`relative flex-shrink-0 px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 min-w-[100px] ${
+                    activeTab === tab.id
+                      ? 'text-white shadow-lg transform scale-105 z-10'
+                      : 'text-gray-600 hover:text-gray-800 hover:bg-white/50'
+                  }`}
+                  style={activeTab === tab.id ? { 
+                    backgroundColor: themeColor,
+                    boxShadow: `0 8px 25px -5px ${themeColor}40`
+                  } : {}}
+                >
+                  <div className="text-center relative z-10">
+                    <div className="font-semibold">{tab.name}</div>
+                    {tab.count > 0 && (
+                      <div className={`text-xs mt-0.5 ${
+                        activeTab === tab.id ? 'opacity-90' : 'opacity-60'
+                      }`}>
+                        {tab.count} {tab.count === 1 ? 'item' : 'items'}
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Active tab indicator */}
+                  {activeTab === tab.id && (
+                    <div 
+                      className="absolute inset-0 rounded-xl opacity-20"
+                      style={{ backgroundColor: 'white' }}
+                    />
                   )}
-                </div>
-              </button>
-            ))}
+                </button>
+              ))}
+            </div>
           </div>
         )}
       </div>
 
       {/* Search Results */}
       {searchQuery.trim() && (
-        <div className="mb-6">
+        <div className="mb-8">
           {hasNoResults ? (
-            <div className="text-center py-16 bg-gradient-to-br from-gray-50 to-white rounded-2xl border border-gray-100 shadow-sm">
-              <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <MagnifyingGlassIcon className="w-10 h-10 text-gray-400" />
+            <div className="text-center py-20 bg-gradient-to-br from-gray-50 via-white to-gray-50 rounded-3xl border border-gray-100 shadow-lg">
+              <div className="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+                <MagnifyingGlassIcon className="w-12 h-12 text-gray-400" />
               </div>
-              <p className="text-gray-600 font-medium text-lg">No results found</p>
-              <p className="text-gray-400 text-sm mt-1">Try adjusting your search terms</p>
+              <p className="text-gray-700 font-semibold text-lg mb-2">No results found</p>
+              <p className="text-gray-500 text-xs">Try adjusting your search terms or browse our categories</p>
             </div>
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-8">
               {/* Menu Items Results */}
               {searchedItems.length > 0 && (
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                    <SparklesIcon className="w-5 h-5" style={{ color: themeColor }} />
-                    Menu Items ({searchedItems.length})
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div 
+                      className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg"
+                      style={{ backgroundColor: themeColor }}
+                    >
+                      <SparklesIcon className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-gray-900">Menu Items</h3>
+                      <p className="text-gray-500 text-xs">{searchedItems.length} items found</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {searchedItems.map(({ item, category, menu }) => (
                       <button
                         key={`${item.id}-${category.id}`}
                         onClick={() => handleItemSelect(item, category)}
-                        className="group text-left p-4 bg-white border border-gray-200 rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-offset-2 active:scale-[0.98]"
+                        className="group text-left p-5 bg-white border border-gray-200 rounded-2xl hover:shadow-xl transition-all duration-300 hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-offset-2 active:scale-[0.98] hover:border-gray-300"
                         style={
                           {
                             "--tw-ring-color": `${themeColor}40`,
                           } as React.CSSProperties
                         }
                       >
-                        <div className="flex items-start gap-3">
+                        <div className="flex items-start gap-4">
                           {item.image_url ? (
-                            <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                            <div className="relative w-18 h-18 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0 shadow-md">
                               <Image
                                 src={item.image_url}
                                 alt={item.name}
@@ -270,31 +298,39 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
                             </div>
                           ) : (
                             <div 
-                              className="w-16 h-16 rounded-lg flex items-center justify-center flex-shrink-0"
+                              className="w-18 h-18 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md"
                               style={{ backgroundColor: lightenColor(themeColor, 95) }}
                             >
-                              <SparklesIcon className="w-8 h-8 opacity-40" style={{ color: themeColor }} />
+                              <SparklesIcon className="w-8 h-8 opacity-50" style={{ color: themeColor }} />
                             </div>
                           )}
                           <div className="flex-1 min-w-0">
-                            <h4 className="font-semibold text-gray-900 group-hover:translate-x-1 transition-transform duration-300">
+                            <h4 className="font-bold text-gray-900 group-hover:translate-x-1 transition-transform duration-300 text-sm">
                               {item.name}
                             </h4>
-                            <p className="text-sm text-gray-500 mt-1">
-                              {menu.name} → {category.name}
-                            </p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                                {menu.name}
+                              </span>
+                              <span className="text-xs text-gray-400">→</span>
+                              <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                                {category.name}
+                              </span>
+                            </div>
                             {item.description && (
-                              <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                              <p className="text-xs text-gray-600 mt-2 line-clamp-2 leading-relaxed">
                                 {item.description}
                               </p>
                             )}
                             {item.price && (
-                              <p className="text-sm font-medium mt-2" style={{ color: themeColor }}>
-                                ₦{item.price.toLocaleString()}
-                              </p>
+                              <div className="flex items-center justify-between mt-3">
+                                <p className="text-sm font-bold" style={{ color: themeColor }}>
+                                  ₦{item.price.toLocaleString()}
+                                </p>
+                                <ArrowRightIcon className="w-5 h-5 text-gray-400 group-hover:text-gray-600 group-hover:translate-x-1 transition-all duration-300" />
+                              </div>
                             )}
                           </div>
-                          <ArrowRightIcon className="w-5 h-5 text-gray-400 group-hover:text-gray-600 group-hover:translate-x-1 transition-all duration-300 flex-shrink-0" />
                         </div>
                       </button>
                     ))}
@@ -305,14 +341,24 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
               {/* Categories Results */}
               {filteredCategories.length > 0 && (
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                    {activeTab === "services" ? (
-                      <CogIcon className="w-5 h-5" style={{ color: themeColor }} />
-                    ) : (
-                      <SparklesIcon className="w-5 h-5" style={{ color: themeColor }} />
-                    )}
-                    {activeTab === "services" ? "Services" : "Categories"} ({filteredCategories.length})
-                  </h3>
+                  <div className="flex items-center gap-3 mb-6">
+                    <div 
+                      className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg"
+                      style={{ backgroundColor: activeTab === "services" ? '#1F2937' : themeColor }}
+                    >
+                      {activeTab === "services" ? (
+                        <CogIcon className="w-5 h-5 text-white" />
+                      ) : (
+                        <SparklesIcon className="w-5 h-5 text-white" />
+                      )}
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-gray-900">
+                        {activeTab === "services" ? "Services" : "Categories"}
+                      </h3>
+                      <p className="text-gray-500 text-xs">{filteredCategories.length} options available</p>
+                    </div>
+                  </div>
                   <div className="grid grid-cols-2 gap-4">
                     {filteredCategories.map((category) => {
                       const isService = (category as any).isService
@@ -320,10 +366,10 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
                         <button
                           key={category.id}
                           onClick={() => handleCategorySelect(category)}
-                          className={`group rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-offset-2 active:scale-[0.98] ${
+                          className={`group rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-offset-2 active:scale-[0.98] ${
                             isService
-                              ? 'bg-black text-white h-24 flex items-center justify-center'
-                              : 'bg-white border border-gray-200 text-left'
+                              ? 'bg-gradient-to-br from-gray-900 to-black text-white h-28 flex items-center justify-center'
+                              : 'bg-white border border-gray-200 text-left hover:border-gray-300'
                           }`}
                           style={
                             {
@@ -332,17 +378,17 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
                           }
                         >
                           {isService ? (
-                            // Service button with black background and centered text
-                            <div className="text-center">
-                              <CogIcon className="w-8 h-8 mx-auto mb-2 opacity-70" />
+                            <div className="text-center p-4">
+                              <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center mx-auto mb-3">
+                                <CogIcon className="w-6 h-6 text-white" />
+                              </div>
                               <h4 className="font-bold text-sm leading-tight">
                                 {category.name}
                               </h4>
                             </div>
                           ) : (
-                            // Regular category button
                             <>
-                              <div className="relative h-24 overflow-hidden">
+                              <div className="relative h-28 overflow-hidden">
                                 {category.image_url ? (
                                   <Image
                                     src={category.image_url}
@@ -356,18 +402,18 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
                                     style={{ backgroundColor: lightenColor(themeColor, 95) }}
                                   >
                                     <SparklesIcon
-                                      className="w-8 h-8 opacity-30"
+                                      className="w-10 h-10 opacity-30"
                                       style={{ color: themeColor }}
                                     />
                                   </div>
                                 )}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
-                                <div className="absolute bottom-2 left-3 right-3">
-                                  <h4 className="text-white font-bold text-sm leading-tight">
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+                                <div className="absolute bottom-3 left-4 right-4">
+                                  <h4 className="text-white font-bold text-sm leading-tight mb-1">
                                     {category.name}
                                   </h4>
                                   {category.description && (
-                                    <p className="text-white/80 text-xs mt-1 line-clamp-1">
+                                    <p className="text-white/90 text-xs line-clamp-1">
                                       {category.description}
                                     </p>
                                   )}
@@ -392,70 +438,76 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
 
       {/* Default Categories Grid (when not searching) */}
       {!searchQuery.trim() && (
-        <div className="space-y-4">
+        <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-900">
-              {activeTab === "all" ? "All Categories" : 
-               activeTab === "services" ? "Services" : 
-               `${menus.find(m => m.id === activeTab)?.name || ""} Categories`}
-            </h3>
+            <div>
+              <h3 className="text-lg font-bold text-gray-900">
+                {activeTab === "all" ? "All Categories" : 
+                 activeTab === "services" ? "Our Services" : 
+                 `${menus.find(m => m.id === activeTab)?.name || ""} Menu`}
+              </h3>
+              <p className="text-gray-500 text-xs mt-1">
+                {activeTab === "services" ? "Professional services tailored for you" : "Browse our delicious offerings"}
+              </p>
+            </div>
           </div>
           
           {filteredCategories.length === 0 ? (
-            <div className="text-center py-16 bg-gradient-to-br from-gray-50 to-white rounded-2xl border border-gray-100 shadow-sm">
-              <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="text-center py-20 bg-gradient-to-br from-gray-50 via-white to-gray-50 rounded-3xl border border-gray-100 shadow-lg">
+              <div className="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
                 {activeTab === "services" ? (
                   servicesLoading ? (
-                    <CogIcon className="w-10 h-10 text-gray-400 animate-pulse" />
+                    <CogIcon className="w-12 h-12 text-gray-400 animate-spin" />
                   ) : (
-                    <CogIcon className="w-10 h-10 text-gray-400" />
+                    <CogIcon className="w-12 h-12 text-gray-400" />
                   )
                 ) : (
-                  <SparklesIcon className="w-10 h-10 text-gray-400" />
+                  <SparklesIcon className="w-12 h-12 text-gray-400" />
                 )}
               </div>
-              <p className="text-gray-600 font-medium text-lg">
+              <p className="text-gray-700 font-semibold text-lg mb-2">
                 {activeTab === "services" ? 
                   (servicesLoading ? "Loading services..." : "No services available") : 
                   "No categories available"}
               </p>
-              <p className="text-gray-400 text-sm mt-1">
+              <p className="text-gray-500 text-xs">
                 {activeTab === "services" ? 
-                  (servicesLoading ? "Please wait..." : "Check back later for updates") : 
-                  "Check back later for updates"}
+                  (servicesLoading ? "Please wait while we load our services..." : "We're working on adding new services for you") : 
+                  "New categories will be added soon"}
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-4">
-              {filteredCategories.map((category) => {
+            <div className="grid grid-cols-2 gap-5">
+              {filteredCategories.map((category, index) => {
                 const isService = (category as any).isService
                 return (
                   <button
                     key={category.id}
                     onClick={() => handleCategorySelect(category)}
-                    className={`group rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-offset-2 active:scale-[0.98] ${
+                    className={`group rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-offset-2 active:scale-[0.98] ${
                       isService
-                        ? 'bg-black text-white h-24 flex items-center justify-center'
-                        : 'bg-white border border-gray-200 text-left'
+                        ? 'bg-gradient-to-br from-gray-900 to-black text-white h-32 flex items-center justify-center'
+                        : 'bg-white border border-gray-200 text-left hover:border-gray-300'
                     }`}
                     style={
                       {
                         "--tw-ring-color": `${themeColor}40`,
+                        animationDelay: `${index * 100}ms`,
                       } as React.CSSProperties
                     }
                   >
                     {isService ? (
-                      // Service button with black background and centered text
-                      <div className="text-center">
-                        <CogIcon className="w-8 h-8 mx-auto mb-2 opacity-70" />
+                      <div className="text-center p-5">
+                        <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                          <CogIcon className="w-7 h-7 text-white" />
+                        </div>
                         <h4 className="font-bold text-sm leading-tight">
                           {category.name}
                         </h4>
                       </div>
                     ) : (
-                      // Regular category button
                       <>
-                        <div className="relative h-24 overflow-hidden">
+                        <div className="relative h-32 overflow-hidden">
                           {category.image_url ? (
                             <Image
                               src={category.image_url}
@@ -469,25 +521,25 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
                               style={{ backgroundColor: lightenColor(themeColor, 95) }}
                             >
                               <SparklesIcon
-                                className="w-8 h-8 opacity-30"
+                                className="w-12 h-12 opacity-30"
                                 style={{ color: themeColor }}
                               />
                             </div>
                           )}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
-                          <div className="absolute bottom-2 left-3 right-3">
-                            <h4 className="text-white font-bold text-sm leading-tight">
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+                          <div className="absolute bottom-4 left-4 right-4">
+                            <h4 className="text-white font-bold text-sm leading-tight mb-1">
                               {category.name}
                             </h4>
                             {category.description && (
-                              <p className="text-white/80 text-xs mt-1 line-clamp-1">
+                              <p className="text-white/90 text-xs line-clamp-2 leading-relaxed">
                                 {category.description}
                               </p>
                             )}
                           </div>
                         </div>
                         <div
-                          className="h-1 w-0 group-hover:w-full transition-all duration-500 ease-out"
+                          className="h-1.5 w-0 group-hover:w-full transition-all duration-500 ease-out"
                           style={{ backgroundColor: themeColor }}
                         />
                       </>

@@ -159,3 +159,72 @@ body {
 @utility animate-slide-out {
   animation: slideOut 0.3s ease-in forwards;
 }
+/* Menu item grid optimizations for 2-column layout */
+@layer utilities {
+  .menu-grid-2col {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  
+  @media (min-width: 768px) {
+    .menu-grid-2col {
+      gap: 1.5rem;
+    }
+  }
+  
+  /* Ensure consistent card heights in grid */
+  .menu-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+  
+  .menu-card-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .menu-card-actions {
+    margin-top: auto;
+  }
+}/* Enhanced
+ menu tabs styling */
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Smooth animations for menu items */
+  .animate-fade-in-up {
+    animation: fadeInUp 0.6s ease-out forwards;
+  }
+  
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* Enhanced focus states */
+  .focus-ring {
+    @apply focus:outline-none focus:ring-4 focus:ring-offset-2;
+  }
+  
+  /* Glass morphism effect */
+  .glass-effect {
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.9);
+  }
+}
