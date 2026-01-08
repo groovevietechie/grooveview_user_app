@@ -11,10 +11,11 @@ interface MenuTabsViewProps {
   menus: Menu[]
   categories: MenuCategory[]
   items: MenuItem[]
-  onSelectCategory: (category: MenuCategory) => void
+  onSelectCategory: (category: MenuCategory, activeTab?: string) => void
   onSelectService: (service: ServiceConfiguration) => void
   themeColor: string
   business: Business
+  initialActiveTab?: string
 }
 
 type TabType = "all" | string // "all" or menu.id or "services"
@@ -26,10 +27,18 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
   onSelectCategory,
   onSelectService,
   themeColor,
-  business
+  business,
+  initialActiveTab
 }) => {
+  // Determine default tab - Drinks first, then other menus, then services
+  const drinkKeywords = ['drink', 'beverage', 'juice', 'water', 'soda', 'coffee', 'tea', 'cocktail', 'beer', 'wine', 'smoothie', 'shake', 'latte', 'cappuccino']
+  const drinksMenu = menus.find(menu => 
+    drinkKeywords.some(keyword => menu.name.toLowerCase().includes(keyword))
+  )
+  const defaultTab = drinksMenu?.id || menus[0]?.id || "services"
+  
   const [searchQuery, setSearchQuery] = useState("")
-  const [activeTab, setActiveTab] = useState<TabType>("all")
+  const [activeTab, setActiveTab] = useState<TabType>(initialActiveTab || defaultTab)
   const [services, setServices] = useState<ServiceConfiguration[]>([])
   const [servicesLoading, setServicesLoading] = useState(false)
 
@@ -83,9 +92,7 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
 
   // Get categories to display based on active tab
   const displayCategories = useMemo(() => {
-    if (activeTab === "all") {
-      return categories
-    } else if (activeTab === "services") {
+    if (activeTab === "services") {
       // Convert services to category-like objects for display
       return services.map(service => ({
         id: service.id,
@@ -144,26 +151,37 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
 
   const handleItemSelect = (item: MenuItem, category: MenuCategory) => {
     // Navigate directly to items view for this category
-    onSelectCategory(category)
+    onSelectCategory(category, activeTab) // Pass the current active tab
   }
 
   const handleCategorySelect = (category: any) => {
     if (category.isService && category.serviceData) {
       onSelectService(category.serviceData)
     } else {
-      onSelectCategory(category as MenuCategory)
+      onSelectCategory(category as MenuCategory, activeTab) // Pass the current active tab
     }
   }
 
 
-  // Create tabs array
+  // Create tabs array - Drinks first, then other menus, then Services
+  const otherMenus = menus.filter(menu => 
+    !drinkKeywords.some(keyword => menu.name.toLowerCase().includes(keyword))
+  )
+  
   const tabs = [
-    { id: "all", name: "All", count: categories.length },
-    ...menus.map(menu => ({
+    // Drinks menu first (if exists)
+    ...(drinksMenu ? [{
+      id: drinksMenu.id,
+      name: drinksMenu.name,
+      count: categories.filter(cat => cat.menu_id === drinksMenu.id).length
+    }] : []),
+    // Other menus
+    ...otherMenus.map(menu => ({
       id: menu.id,
       name: menu.name,
       count: categories.filter(cat => cat.menu_id === menu.id).length
     })),
+    // Services last
     { id: "services", name: "Services", count: services.length }
   ]
 
@@ -442,8 +460,7 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-lg font-bold text-gray-900">
-                {activeTab === "all" ? "All Categories" : 
-                 activeTab === "services" ? "Our Services" : 
+                {activeTab === "services" ? "Our Services" : 
                  `${menus.find(m => m.id === activeTab)?.name || ""} Menu`}
               </h3>
               <p className="text-gray-500 text-xs mt-1">

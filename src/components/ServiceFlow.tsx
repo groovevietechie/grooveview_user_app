@@ -17,11 +17,12 @@ interface ServiceFlowProps {
   themeColor: string
   initialService?: any
   onBookingComplete?: (bookingId: string) => void
+  onBackToMenu?: () => void
 }
 
 type FlowStep = "serviceTypes" | "serviceOptions" | "bookingForm" | "payment" | "success"
 
-export default function ServiceFlow({ business, themeColor, initialService, onBookingComplete }: ServiceFlowProps) {
+export default function ServiceFlow({ business, themeColor, initialService, onBookingComplete, onBackToMenu }: ServiceFlowProps) {
   const [step, setStep] = useState<FlowStep>(initialService ? "serviceOptions" : "serviceTypes")
   const [serviceConfigurations, setServiceConfigurations] = useState<ServiceConfiguration[]>([])
   const [serviceOptions, setServiceOptions] = useState<ServiceOption[]>([])
@@ -44,13 +45,13 @@ export default function ServiceFlow({ business, themeColor, initialService, onBo
       } else if (step === "bookingForm") {
         setStep("serviceOptions")
       } else if (step === "serviceOptions") {
-        if (initialService && onBookingComplete) {
-          onBookingComplete("")
+        if (initialService && onBackToMenu) {
+          onBackToMenu() // Use the callback to return to services tab
         } else {
           setStep("serviceTypes")
         }
-      } else if (onBookingComplete) {
-        onBookingComplete("")
+      } else if (onBackToMenu) {
+        onBackToMenu() // Use the callback to return to services tab
       }
     }
   })
@@ -132,9 +133,9 @@ export default function ServiceFlow({ business, themeColor, initialService, onBo
 
   const handleBackToServiceTypes = () => {
     if (initialService) {
-      // If we came from a specific service button, go back to menu
-      if (onBookingComplete) {
-        onBookingComplete("")
+      // If we came from a specific service button, go back to menu with services tab
+      if (onBackToMenu) {
+        onBackToMenu()
       }
     } else {
       // Otherwise go back to service types selection

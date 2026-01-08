@@ -21,6 +21,21 @@ export default function MenuList({ business, menus, categories, items, themeColo
   const [step, setStep] = useState<FlowStep>("menus")
   const [selectedCategory, setSelectedCategory] = useState<MenuCategory | null>(null)
   const [selectedService, setSelectedService] = useState<any>(null)
+  const [lastActiveTab, setLastActiveTab] = useState<string>("") // Will be set dynamically based on available menus
+
+  // Set initial active tab based on available menus (drinks first preference)
+  const getInitialActiveTab = () => {
+    const drinkKeywords = ['drink', 'beverage', 'juice', 'water', 'soda', 'coffee', 'tea', 'cocktail', 'beer', 'wine', 'smoothie', 'shake', 'latte', 'cappuccino']
+    const drinksMenu = menus.find(menu => 
+      drinkKeywords.some(keyword => menu.name.toLowerCase().includes(keyword))
+    )
+    return drinksMenu?.id || menus[0]?.id || "services"
+  }
+
+  // Set initial tab if not already set
+  if (!lastActiveTab && menus.length > 0) {
+    setLastActiveTab(getInitialActiveTab())
+  }
 
   // Group items by category
   const itemsByCategory = items.reduce(
@@ -34,8 +49,11 @@ export default function MenuList({ business, menus, categories, items, themeColo
     {} as Record<string, MenuItem[]>,
   )
 
-  const handleCategorySelect = (category: MenuCategory) => {
+  const handleCategorySelect = (category: MenuCategory, activeTab?: string) => {
     setSelectedCategory(category)
+    if (activeTab) {
+      setLastActiveTab(activeTab) // Store which tab the user was on
+    }
     setStep("items")
   }
 
@@ -43,16 +61,20 @@ export default function MenuList({ business, menus, categories, items, themeColo
     setSelectedCategory(null)
     setSelectedService(null)
     setStep("menus")
+    // Don't reset lastActiveTab - preserve it for the MenuTabsView
   }
 
   const handleServiceSelect = (service: any) => {
     setSelectedService(service)
+    setLastActiveTab("services") // Set the active tab to services when a service is selected
     setStep("services")
   }
 
   const handleServiceBookingComplete = (bookingId: string) => {
     console.log("Service booking completed:", bookingId)
-    handleBackToMenus()
+    // Don't reset lastActiveTab - preserve "services" tab
+    setSelectedService(null)
+    setStep("menus") // Return to menus but preserve the services tab
   }
 
   if (menus.length === 0 && step !== "services") {
@@ -75,6 +97,7 @@ export default function MenuList({ business, menus, categories, items, themeColo
             onSelectService={handleServiceSelect}
             themeColor={themeColor}
             business={business}
+            initialActiveTab={lastActiveTab} // Pass the last active tab
           />
         )}
 
@@ -93,6 +116,10 @@ export default function MenuList({ business, menus, categories, items, themeColo
             themeColor={themeColor}
             initialService={selectedService}
             onBookingComplete={handleServiceBookingComplete}
+            onBackToMenu={() => {
+              setSelectedService(null)
+              setStep("menus") // Return to menus with preserved tab state
+            }}
           />
         )}
       </div>
