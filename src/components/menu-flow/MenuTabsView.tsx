@@ -484,7 +484,7 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
               </div>
               <p className="text-gray-700 font-semibold text-lg mb-2">
                 {activeTab === "services" ? 
-                  (servicesLoading ? "Loading services..." : "No services available") : 
+                  (servicesLoading ? "Loading services..." : "Coming Soon") : 
                   "No categories available"}
               </p>
               <p className="text-gray-500 text-xs">

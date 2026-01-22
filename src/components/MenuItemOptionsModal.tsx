@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react"
 import { Dialog, Transition } from "@headlessui/react"
 import { Fragment } from "react"
-import { XMarkIcon, PlusIcon, MinusIcon, CheckIcon } from "@heroicons/react/24/outline"
+import { XMarkIcon, PlusIcon, MinusIcon, CheckIcon, CogIcon } from "@heroicons/react/24/outline"
 import type { MenuItem, MenuItemOptionCategory, MenuItemOption, SelectedOption } from "@/types/database"
 import { getContrastColor, lightenColor } from "@/lib/color-utils"
 import Image from "next/image"
@@ -14,6 +14,7 @@ interface MenuItemOptionsModalProps {
   item: MenuItem
   themeColor: string
   onAddToCart: (quantity: number, selectedOptions: SelectedOption[], note?: string) => void
+  initialQuantity?: number
 }
 
 export default function MenuItemOptionsModal({
@@ -22,6 +23,7 @@ export default function MenuItemOptionsModal({
   item,
   themeColor,
   onAddToCart,
+  initialQuantity = 1,
 }: MenuItemOptionsModalProps) {
   const [quantity, setQuantity] = useState(1)
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string[]>>({})
@@ -34,12 +36,12 @@ export default function MenuItemOptionsModal({
   // Reset state when modal opens/closes
   useEffect(() => {
     if (isOpen) {
-      setQuantity(1)
+      setQuantity(initialQuantity)
       setSelectedOptions({})
       setNote("")
       setValidationErrors([])
     }
-  }, [isOpen])
+  }, [isOpen, initialQuantity])
 
   const handleOptionSelect = (categoryId: string, optionId: string, allowMultiple: boolean) => {
     setSelectedOptions(prev => {
@@ -203,7 +205,7 @@ export default function MenuItemOptionsModal({
                   </div>
 
                   {/* Option Categories */}
-                  {hasOptions && (
+                  {hasOptions ? (
                     <div className="space-y-6">
                       <h4 className="text-lg font-semibold text-gray-900">Customize Your Order</h4>
                       
@@ -273,6 +275,22 @@ export default function MenuItemOptionsModal({
                           </div>
                         </div>
                       ))}
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      <h4 className="text-lg font-semibold text-gray-900">Customize Your Order</h4>
+                      
+                      <div className="text-center py-8 bg-gradient-to-br from-gray-50 to-white rounded-2xl border border-gray-100">
+                        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <CogIcon className="w-8 h-8 text-gray-400" />
+                        </div>
+                        <p className="text-gray-600 font-medium text-lg mb-2">Customization Options Coming Soon!</p>
+                        <p className="text-gray-500 text-sm">
+                          The restaurant is working on adding customization options for this item.
+                          <br />
+                          For now, you can add it to your cart as is.
+                        </p>
+                      </div>
                     </div>
                   )}
 

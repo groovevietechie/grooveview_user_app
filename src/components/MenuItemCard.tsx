@@ -40,11 +40,11 @@ export default function MenuItemCard({ item, themeColor }: MenuItemCardProps) {
   }
 
   const handleQuickAdd = () => {
-    if (hasRequiredOptions) {
-      // If item has required options, open modal
+    if (hasOptions) {
+      // If item has any options, open modal
       setShowOptionsModal(true)
     } else {
-      // If no required options, add directly
+      // If no options at all, add directly
       handleAddToCart()
     }
   }
@@ -134,63 +134,80 @@ export default function MenuItemCard({ item, themeColor }: MenuItemCardProps) {
           </div>
 
           <div className="menu-card-actions space-y-3">
-            {/* Quick add without options (only if no required options) */}
-            {!hasRequiredOptions && (
-              <div
-                className="flex items-center gap-2 p-2 rounded-lg border-2 transition-all duration-200"
+            {/* Quantity selector - always show */}
+            <div
+              className="flex items-center gap-2 p-2 rounded-lg border-2 transition-all duration-200"
+              style={{
+                borderColor: quantity > 0 ? themeColor : "#E5E7EB",
+                backgroundColor: quantity > 0 ? lightBg : "#F9FAFB",
+              }}
+            >
+              <button
+                onClick={decrementQuantity}
+                className="w-7 h-7 rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 disabled:opacity-40 disabled:hover:scale-100"
                 style={{
-                  borderColor: quantity > 0 ? themeColor : "#E5E7EB",
-                  backgroundColor: quantity > 0 ? lightBg : "#F9FAFB",
+                  backgroundColor: quantity > 0 ? themeColor : "#E5E7EB",
+                  color: quantity > 0 ? contrastColor : "#9CA3AF",
                 }}
+                disabled={quantity === 0}
+                title="Decrease quantity"
+                aria-label="Decrease quantity"
               >
+                <MinusIcon className="w-4 h-4" />
+              </button>
+
+              <div className="flex-1 text-center">
+                <span className="font-bold text-lg text-gray-900">{quantity}</span>
+              </div>
+
+              <button
+                onClick={incrementQuantity}
+                className="w-7 h-7 rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95"
+                style={{ backgroundColor: themeColor, color: contrastColor }}
+                title="Increase quantity"
+                aria-label="Increase quantity"
+              >
+                <PlusIcon className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Action buttons - show when quantity > 0 */}
+            {quantity > 0 && (
+              <div className="space-y-2">
+                {/* Add to cart button */}
                 <button
-                  onClick={decrementQuantity}
-                  className="w-7 h-7 rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 disabled:opacity-40 disabled:hover:scale-100"
+                  onClick={hasRequiredOptions ? () => setShowOptionsModal(true) : handleQuickAdd}
+                  disabled={hasRequiredOptions}
                   style={{
-                    backgroundColor: quantity > 0 ? themeColor : "#E5E7EB",
-                    color: quantity > 0 ? contrastColor : "#9CA3AF",
+                    backgroundColor: hasRequiredOptions ? "#E5E7EB" : themeColor,
+                    color: hasRequiredOptions ? "#9CA3AF" : contrastColor,
                   }}
-                  disabled={quantity === 0}
-                  title="Decrease quantity"
-                  aria-label="Decrease quantity"
+                  className="w-full font-bold py-2.5 px-3 rounded-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] hover:shadow-md disabled:hover:scale-100 disabled:hover:shadow-none text-sm flex items-center justify-center gap-2 disabled:cursor-not-allowed"
                 >
-                  <MinusIcon className="w-4 h-4" />
+                  {hasRequiredOptions 
+                    ? "Select Required Options First" 
+                    : `Add ${quantity} to Cart`
+                  }
                 </button>
 
-                <div className="flex-1 text-center">
-                  <span className="font-bold text-lg text-gray-900">{quantity}</span>
-                </div>
-
-                <button
-                  onClick={incrementQuantity}
-                  className="w-7 h-7 rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95"
-                  style={{ backgroundColor: themeColor, color: contrastColor }}
-                  title="Increase quantity"
-                  aria-label="Increase quantity"
-                >
-                  <PlusIcon className="w-4 h-4" />
-                </button>
+                {/* Customize options button - only show if item has options */}
+                {hasOptions && (
+                  <button
+                    onClick={() => setShowOptionsModal(true)}
+                    className="w-full font-bold py-2.5 px-3 rounded-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] hover:shadow-md text-sm flex items-center justify-center gap-2 border-2"
+                    style={{
+                      borderColor: themeColor,
+                      backgroundColor: "white",
+                      color: themeColor,
+                    }}
+                  >
+                    <CogIcon className="w-4 h-4" />
+                    Customize Options
+                    {hasRequiredOptions && <span className="text-red-500">*</span>}
+                  </button>
+                )}
               </div>
             )}
-
-            {/* Add to cart button */}
-            <button
-              onClick={hasOptions ? () => setShowOptionsModal(true) : handleQuickAdd}
-              disabled={!hasOptions && quantity === 0}
-              style={{
-                backgroundColor: (!hasOptions && quantity === 0) ? "#E5E7EB" : themeColor,
-                color: (!hasOptions && quantity === 0) ? "#9CA3AF" : contrastColor,
-              }}
-              className="w-full font-bold py-2.5 px-3 rounded-lg disabled:cursor-not-allowed transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] hover:shadow-md disabled:hover:scale-100 disabled:hover:shadow-none text-sm flex items-center justify-center gap-2"
-            >
-              {hasOptions && <CogIcon className="w-4 h-4" />}
-              {hasOptions 
-                ? "Customize & Add" 
-                : quantity === 0 
-                  ? "Select Quantity" 
-                  : `Add ${quantity} to Cart`
-              }
-            </button>
 
             {currentQuantity > 0 && (
               <div
@@ -215,6 +232,7 @@ export default function MenuItemCard({ item, themeColor }: MenuItemCardProps) {
         item={item}
         themeColor={themeColor}
         onAddToCart={handleAddToCart}
+        initialQuantity={quantity}
       />
     </>
   )
