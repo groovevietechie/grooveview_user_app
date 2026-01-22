@@ -40,6 +40,30 @@ export interface MenuCategory {
   updated_at: string
 }
 
+export interface MenuItemOptionCategory {
+  id: string
+  item_id: string
+  name: string
+  description?: string
+  is_required: boolean // Whether customer must select at least one option from this category
+  allow_multiple: boolean // Whether customer can select multiple options from this category
+  display_order: number
+  options: MenuItemOption[]
+  created_at: string
+  updated_at: string
+}
+
+export interface MenuItemOption {
+  id: string
+  category_id: string // Now references option category instead of item directly
+  name: string
+  price?: number // Optional price
+  is_available: boolean
+  display_order: number
+  created_at: string
+  updated_at: string
+}
+
 export interface MenuItem {
   id: string
   category_id: string
@@ -49,6 +73,7 @@ export interface MenuItem {
   image_url?: string
   is_available: boolean
   display_order: number
+  option_categories?: MenuItemOptionCategory[] // Optional option categories
   created_at: string
   updated_at: string
 }
@@ -194,13 +219,22 @@ export interface PreOrderItem {
   menuItem: MenuItem
   quantity: number
   note?: string
+  selectedOptions: SelectedOption[] // Selected options for pre-order items
 }
 
 // Cart types
+export interface SelectedOption {
+  optionId: string
+  categoryId: string
+  name: string
+  price: number
+}
+
 export interface CartItem {
   menuItem: MenuItem
   quantity: number
   note?: string
+  selectedOptions: SelectedOption[] // Selected options for this cart item
 }
 
 export interface Cart {
@@ -216,6 +250,7 @@ export interface OrderSubmission {
     quantity: number
     unitPrice: number
     note?: string
+    selectedOptions?: SelectedOption[]
   }[]
   seatLabel: string
   customerNote?: string

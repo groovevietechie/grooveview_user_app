@@ -50,7 +50,13 @@ export async function getCategoriesByMenuId(menuId: string): Promise<MenuCategor
 export async function getItemsByCategoryId(categoryId: string): Promise<MenuItem[]> {
   const { data, error } = await supabase
     .from("menu_items")
-    .select("*")
+    .select(`
+      *,
+      option_categories:menu_item_option_categories(
+        *,
+        options:menu_item_options(*)
+      )
+    `)
     .eq("category_id", categoryId)
     .eq("is_available", true)
     .order("display_order", { ascending: true })
@@ -60,7 +66,13 @@ export async function getItemsByCategoryId(categoryId: string): Promise<MenuItem
     return []
   }
 
-  return data || []
+  return (data || []).map(item => ({
+    ...item,
+    option_categories: item.option_categories?.sort((a: any, b: any) => a.display_order - b.display_order).map((category: any) => ({
+      ...category,
+      options: category.options?.filter((option: any) => option.is_available).sort((a: any, b: any) => a.display_order - b.display_order) || []
+    })) || []
+  }))
 }
 
 // Get full menu structure for a business
@@ -90,7 +102,13 @@ export async function getFullMenu(businessId: string): Promise<{
   const categoryIds = categories?.map((cat) => cat.id) || []
   const { data: items, error: itemsError } = await supabase
     .from("menu_items")
-    .select("*")
+    .select(`
+      *,
+      option_categories:menu_item_option_categories(
+        *,
+        options:menu_item_options(*)
+      )
+    `)
     .in("category_id", categoryIds)
     .eq("is_available", true)
     .order("display_order", { ascending: true })
@@ -100,10 +118,19 @@ export async function getFullMenu(businessId: string): Promise<{
     return { menus, categories: categories || [], items: [] }
   }
 
+  // Process items to include sorted option categories and options
+  const processedItems = (items || []).map(item => ({
+    ...item,
+    option_categories: item.option_categories?.sort((a: any, b: any) => a.display_order - b.display_order).map((category: any) => ({
+      ...category,
+      options: category.options?.filter((option: any) => option.is_available).sort((a: any, b: any) => a.display_order - b.display_order) || []
+    })) || []
+  }))
+
   return {
     menus,
     categories: categories || [],
-    items: items || [],
+    items: processedItems,
   }
 }
 
@@ -661,14 +688,28 @@ export async function submitOrder(orderData: OrderSubmission): Promise<string | 
 
     console.log("[v0] Order created successfully:", order.id)
 
-    // Create order items
-    const orderItems = orderData.items.map((item) => ({
-      order_id: order.id,
-      menu_item_id: item.menuItemId,
-      quantity: item.quantity,
-      unit_price: item.unitPrice,
-      item_note: item.note,
-    }))
+    // Create order items with selected options
+    const orderItems = orderData.items.map((item) => {
+      const baseItem = {
+        order_id: order.id,
+        menu_item_id: item.menuItemId,
+        quantity: item.quantity,
+        unit_price: item.unitPrice,
+        item_note: item.note,
+      }
+
+      // If item has selected options, include them in the note
+      if (item.selectedOptions && item.selectedOptions.length > 0) {
+        const optionsText = item.selectedOptions.map(option => 
+          option.price > 0 ? `${option.name} (+₦${option.price})` : option.name
+        ).join(', ')
+        
+        const existingNote = item.note ? `${item.note}\n` : ''
+        baseItem.item_note = `${existingNote}Options: ${optionsText}`
+      }
+
+      return baseItem
+    })
 
     console.log("[v0] Creating order items:", orderItems)
 
