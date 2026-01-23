@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Suspense } from "react";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import NavigationHandler from "@/components/NavigationHandler";
 import MobileBackHandler from "@/components/MobileBackHandler";
@@ -37,8 +38,10 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeProvider>
-          <NavigationHandler />
-          <MobileBackHandler />
+          <Suspense fallback={null}>
+            <NavigationHandler />
+            <MobileBackHandler />
+          </Suspense>
           {children}
         </ThemeProvider>
       </body>
