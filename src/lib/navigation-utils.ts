@@ -70,7 +70,8 @@ export function getParentRoute(currentPath: string, businessSlug?: string): stri
     return `/b/${businessSlug}`
   }
   
-  if (currentPath === `/b/${businessSlug}`) {
+  // For menu pages, go to home
+  if (isMenuPage(currentPath)) {
     return '/'
   }
   
@@ -90,6 +91,7 @@ export function isRootPage(path: string): boolean {
  */
 export function isMenuPage(path: string): boolean {
   const pathSegments = path.split('/')
+  // Should be exactly /b/[slug] format (3 segments total)
   return pathSegments.length === 3 && pathSegments[1] === 'b' && pathSegments[2] !== ''
 }
 

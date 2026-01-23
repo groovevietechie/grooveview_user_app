@@ -1,11 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect } from "react"
 import type { Menu, MenuCategory, MenuItem, Business } from "@/types/database"
 import MenuTabsView from "./menu-flow/MenuTabsView"
 import ItemsGrid from "./menu-flow/ItemsGrid"
 import ServiceFlow from "./ServiceFlow"
 import { ErrorBoundary, MenuErrorFallback } from "./ErrorBoundary"
+import { useMenuNavigation } from "@/hooks/useMenuNavigation"
 
 interface MenuListProps {
   business: Business
@@ -15,13 +16,14 @@ interface MenuListProps {
   themeColor: string
 }
 
-type FlowStep = "menus" | "items" | "services"
-
 export default function MenuList({ business, menus, categories, items, themeColor }: MenuListProps) {
-  const [step, setStep] = useState<FlowStep>("menus")
-  const [selectedCategory, setSelectedCategory] = useState<MenuCategory | null>(null)
-  const [selectedService, setSelectedService] = useState<any>(null)
-  const [lastActiveTab, setLastActiveTab] = useState<string>("") // Will be set dynamically based on available menus
+  const {
+    navigationState,
+    navigateToCategory,
+    navigateToService,
+    navigateToMenus,
+    handleBack
+  } = useMenuNavigation()
 
   // Set initial active tab based on available menus (drinks first preference)
   const getInitialActiveTab = () => {
@@ -32,10 +34,12 @@ export default function MenuList({ business, menus, categories, items, themeColo
     return drinksMenu?.id || menus[0]?.id || "services"
   }
 
-  // Set initial tab if not already set
-  if (!lastActiveTab && menus.length > 0) {
-    setLastActiveTab(getInitialActiveTab())
-  }
+  // Initialize active tab if not set
+  useEffect(() => {
+    if (!navigationState.activeTab && menus.length > 0) {
+      navigateToMenus(getInitialActiveTab())
+    }
+  }, [menus, navigationState.activeTab, navigateToMenus])
 
   // Group items by category
   const itemsByCategory = items.reduce(
@@ -49,35 +53,26 @@ export default function MenuList({ business, menus, categories, items, themeColo
     {} as Record<string, MenuItem[]>,
   )
 
-  const handleCategorySelect = (category: MenuCategory, activeTab?: string) => {
-    setSelectedCategory(category)
-    if (activeTab) {
-      setLastActiveTab(activeTab) // Store which tab the user was on
-    }
-    setStep("items")
-  }
-
-  const handleBackToMenus = () => {
-    setSelectedCategory(null)
-    setSelectedService(null)
-    setStep("menus")
-    // Don't reset lastActiveTab - preserve it for the MenuTabsView
-  }
+  // Find selected category and service
+  const selectedCategory = navigationState.selectedCategoryId 
+    ? categories.find(cat => cat.id === navigationState.selectedCategoryId)
+    : null
 
   const handleServiceSelect = (service: any) => {
-    setSelectedService(service)
-    setLastActiveTab("services") // Set the active tab to services when a service is selected
-    setStep("services")
+    navigateToService(service.id)
   }
 
   const handleServiceBookingComplete = (bookingId: string) => {
     console.log("Service booking completed:", bookingId)
-    // Don't reset lastActiveTab - preserve "services" tab
-    setSelectedService(null)
-    setStep("menus") // Return to menus but preserve the services tab
+    // Return to menus but preserve the services tab
+    navigateToMenus("services")
   }
 
-  if (menus.length === 0 && step !== "services") {
+  const handleServiceBackToMenu = () => {
+    navigateToMenus(navigationState.activeTab)
+  }
+
+  if (menus.length === 0 && navigationState.step !== "services") {
     return (
       <div className="text-center py-12">
         <p className="text-gray-500 text-lg">No menus available</p>
@@ -88,38 +83,35 @@ export default function MenuList({ business, menus, categories, items, themeColo
   return (
     <ErrorBoundary fallback={(props) => <MenuErrorFallback {...props} themeColor={themeColor} />}>
       <div className="w-full">
-        {step === "menus" && (
+        {navigationState.step === "menus" && (
           <MenuTabsView
             menus={menus}
             categories={categories}
             items={items}
-            onSelectCategory={handleCategorySelect}
+            onSelectCategory={navigateToCategory}
             onSelectService={handleServiceSelect}
             themeColor={themeColor}
             business={business}
-            initialActiveTab={lastActiveTab} // Pass the last active tab
+            initialActiveTab={navigationState.activeTab}
           />
         )}
 
-        {step === "items" && selectedCategory && (
+        {navigationState.step === "items" && selectedCategory && (
           <ItemsGrid
             category={selectedCategory}
             items={itemsByCategory[selectedCategory.id] || []}
-            onBack={handleBackToMenus}
+            onBack={handleBack}
             themeColor={themeColor}
           />
         )}
 
-        {step === "services" && (
+        {navigationState.step === "services" && (
           <ServiceFlow
             business={business}
             themeColor={themeColor}
-            initialService={selectedService}
+            initialService={navigationState.selectedServiceId ? { id: navigationState.selectedServiceId } : null}
             onBookingComplete={handleServiceBookingComplete}
-            onBackToMenu={() => {
-              setSelectedService(null)
-              setStep("menus") // Return to menus with preserved tab state
-            }}
+            onBackToMenu={handleServiceBackToMenu}
           />
         )}
       </div>

@@ -190,7 +190,7 @@ export default function MenuItemCard({ item, themeColor }: MenuItemCardProps) {
                   }
                 </button>
 
-                {/* Customize options button - only show if item has options */}
+                {/* Customize options button - only show if item has options and quantity > 0 */}
                 {hasOptions && (
                   <button
                     onClick={() => setShowOptionsModal(true)}

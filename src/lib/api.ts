@@ -52,9 +52,26 @@ export async function getItemsByCategoryId(categoryId: string): Promise<MenuItem
     .from("menu_items")
     .select(`
       *,
-      option_categories:menu_item_option_categories(
-        *,
-        options:menu_item_options(*)
+      menu_item_option_categories (
+        id,
+        item_id,
+        name,
+        description,
+        is_required,
+        allow_multiple,
+        display_order,
+        created_at,
+        updated_at,
+        menu_item_options (
+          id,
+          category_id,
+          name,
+          price,
+          is_available,
+          display_order,
+          created_at,
+          updated_at
+        )
       )
     `)
     .eq("category_id", categoryId)
@@ -68,10 +85,14 @@ export async function getItemsByCategoryId(categoryId: string): Promise<MenuItem
 
   return (data || []).map(item => ({
     ...item,
-    option_categories: item.option_categories?.sort((a: any, b: any) => a.display_order - b.display_order).map((category: any) => ({
-      ...category,
-      options: category.options?.filter((option: any) => option.is_available).sort((a: any, b: any) => a.display_order - b.display_order) || []
-    })) || []
+    option_categories: (item.menu_item_option_categories || [])
+      .sort((a: any, b: any) => a.display_order - b.display_order)
+      .map((category: any) => ({
+        ...category,
+        options: (category.menu_item_options || [])
+          .filter((option: any) => option.is_available)
+          .sort((a: any, b: any) => a.display_order - b.display_order)
+      }))
   }))
 }
 
@@ -104,9 +125,26 @@ export async function getFullMenu(businessId: string): Promise<{
     .from("menu_items")
     .select(`
       *,
-      option_categories:menu_item_option_categories(
-        *,
-        options:menu_item_options(*)
+      menu_item_option_categories (
+        id,
+        item_id,
+        name,
+        description,
+        is_required,
+        allow_multiple,
+        display_order,
+        created_at,
+        updated_at,
+        menu_item_options (
+          id,
+          category_id,
+          name,
+          price,
+          is_available,
+          display_order,
+          created_at,
+          updated_at
+        )
       )
     `)
     .in("category_id", categoryIds)
@@ -121,10 +159,14 @@ export async function getFullMenu(businessId: string): Promise<{
   // Process items to include sorted option categories and options
   const processedItems = (items || []).map(item => ({
     ...item,
-    option_categories: item.option_categories?.sort((a: any, b: any) => a.display_order - b.display_order).map((category: any) => ({
-      ...category,
-      options: category.options?.filter((option: any) => option.is_available).sort((a: any, b: any) => a.display_order - b.display_order) || []
-    })) || []
+    option_categories: (item.menu_item_option_categories || [])
+      .sort((a: any, b: any) => a.display_order - b.display_order)
+      .map((category: any) => ({
+        ...category,
+        options: (category.menu_item_options || [])
+          .filter((option: any) => option.is_available)
+          .sort((a: any, b: any) => a.display_order - b.display_order)
+      }))
   }))
 
   return {

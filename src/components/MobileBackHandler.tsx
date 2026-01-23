@@ -1,15 +1,13 @@
 "use client"
 
 import { useEffect } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
-import { getParentRoute, getBusinessSlugFromPath, isRootPage } from '@/lib/navigation-utils'
+import { useGlobalNavigation } from '@/hooks/useGlobalNavigation'
 
 /**
  * Component to handle mobile device back button behavior
  */
 export default function MobileBackHandler() {
-  const router = useRouter()
-  const pathname = usePathname()
+  const { handleDeviceBack } = useGlobalNavigation()
 
   useEffect(() => {
     // Add a history entry when the component mounts
@@ -21,19 +19,14 @@ export default function MobileBackHandler() {
     const handlePopState = (event: PopStateEvent) => {
       event.preventDefault()
       
-      // At home page, allow default behavior (app close)
-      if (isRootPage(pathname)) {
-        return
-      }
-
-      // Use navigation utilities to determine where to go
-      const businessSlug = getBusinessSlugFromPath(pathname)
-      const parentRoute = getParentRoute(pathname, businessSlug || undefined)
+      // Use the global navigation handler
+      const wasHandled = handleDeviceBack()
       
-      router.push(parentRoute)
-
-      // Push a new state to maintain the back button functionality
-      window.history.pushState(null, '', window.location.href)
+      if (wasHandled) {
+        // Push a new state to maintain the back button functionality
+        window.history.pushState(null, '', window.location.href)
+      }
+      // If not handled, let the system handle it (app close)
     }
 
     // Listen for popstate events (back button)
@@ -45,7 +38,7 @@ export default function MobileBackHandler() {
     return () => {
       window.removeEventListener('popstate', handlePopState)
     }
-  }, [pathname, router])
+  }, [handleDeviceBack])
 
   return null
 }

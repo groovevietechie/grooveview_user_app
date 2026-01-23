@@ -1,29 +1,26 @@
 "use client"
 
 import { useEffect } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
+import { useGlobalNavigation } from '@/hooks/useGlobalNavigation'
+import { getBusinessSlugFromPath } from '@/lib/navigation-utils'
 
 /**
  * Global navigation handler for browser back button and device back button
  */
 export default function NavigationHandler() {
-  const router = useRouter()
-  const pathname = usePathname()
+  const { handleDeviceBack, currentPath, navigateTo } = useGlobalNavigation()
 
   useEffect(() => {
     const handlePopState = (event: PopStateEvent) => {
-      // Let the default browser behavior handle most cases
-      // This component mainly ensures the history state is properly managed
-      
       // Extract business slug from current path
-      const pathSegments = pathname.split('/')
+      const pathSegments = currentPath.split('/')
       const businessSlug = pathSegments[2] // /b/[slug]/...
 
       // For specific cases where we want custom behavior
-      if (pathname.includes('/payment') && businessSlug) {
+      if (currentPath.includes('/payment') && businessSlug) {
         // Prevent going back from payment page without proper handling
         event.preventDefault()
-        router.push(`/b/${businessSlug}/checkout`)
+        navigateTo(`/b/${businessSlug}/checkout`)
         return
       }
     }
@@ -33,30 +30,16 @@ export default function NavigationHandler() {
 
     // Handle Android back button (if in a WebView)
     const handleAndroidBack = () => {
-      const pathSegments = pathname.split('/')
+      const pathSegments = currentPath.split('/')
       const businessSlug = pathSegments[2]
 
-      if (pathname === '/' || !businessSlug) {
+      if (currentPath === '/' || !businessSlug) {
         // At home page, let the app close
         return false
       }
 
-      // Navigate based on current page
-      if (pathname.includes('/payment')) {
-        router.push(`/b/${businessSlug}/checkout`)
-      } else if (pathname.includes('/checkout')) {
-        router.push(`/b/${businessSlug}`)
-      } else if (pathname.includes('/order/')) {
-        router.push(`/b/${businessSlug}`)
-      } else if (pathname.includes('/orders')) {
-        router.push(`/b/${businessSlug}`)
-      } else if (pathname === `/b/${businessSlug}`) {
-        router.push('/')
-      } else {
-        router.back()
-      }
-      
-      return true // Prevent default back behavior
+      // Use the global navigation handler
+      return handleDeviceBack()
     }
 
     // Expose Android back handler to global scope
@@ -71,7 +54,7 @@ export default function NavigationHandler() {
         delete (window as any).handleAndroidBack
       }
     }
-  }, [pathname, router])
+  }, [currentPath, handleDeviceBack, navigateTo])
 
   // This component doesn't render anything
   return null
