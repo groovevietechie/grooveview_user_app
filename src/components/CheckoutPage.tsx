@@ -219,7 +219,7 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
                 <BuildingOfficeIcon className="w-5 h-5 text-gray-600" />
                 <div>
                   <span className="font-medium">Dining in (Table order)</span>
-                  <p className="text-sm text-gray-500">Order for your table in the restaurant</p>
+                  <p className="text-sm text-gray-500">Order for your table in the lounge</p>
                 </div>
               </label>
               <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
@@ -233,7 +233,7 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
                 <HomeIcon className="w-5 h-5 text-gray-600" />
                 <div>
                   <span className="font-medium">Room service (Service order)</span>
-                  <p className="text-sm text-gray-500">Delivery to your hotel room</p>
+                  <p className="text-sm text-gray-500">Delivery to your booked room</p>
                 </div>
               </label>
               <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
