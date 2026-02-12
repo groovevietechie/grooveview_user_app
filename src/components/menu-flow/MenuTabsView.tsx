@@ -16,6 +16,7 @@ interface MenuTabsViewProps {
   themeColor: string
   business: Business
   initialActiveTab?: string
+  orderCounts: Record<string, number>
 }
 
 type TabType = "all" | string // "all" or menu.id or "services"
@@ -28,7 +29,8 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
   onSelectService,
   themeColor,
   business,
-  initialActiveTab
+  initialActiveTab,
+  orderCounts
 }) => {
   // Determine default tab - Drinks first, then other menus, then services
   const drinkKeywords = ['drink', 'beverage', 'juice', 'water', 'soda', 'coffee', 'tea', 'cocktail', 'beer', 'wine', 'smoothie', 'shake', 'latte', 'cappuccino']
@@ -41,6 +43,17 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
   const [activeTab, setActiveTab] = useState<TabType>(initialActiveTab || defaultTab)
   const [services, setServices] = useState<ServiceConfiguration[]>([])
   const [servicesLoading, setServicesLoading] = useState(false)
+
+  // Calculate order counts for categories and menus
+  const getCategoryOrderCount = (categoryId: string): number => {
+    const categoryItems = items.filter(item => item.category_id === categoryId)
+    return categoryItems.reduce((total, item) => total + (orderCounts[item.id] || 0), 0)
+  }
+
+  const getMenuOrderCount = (menuId: string): number => {
+    const menuCategories = categories.filter(cat => cat.menu_id === menuId)
+    return menuCategories.reduce((total, cat) => total + getCategoryOrderCount(cat.id), 0)
+  }
 
   // Load services on component mount
   useEffect(() => {
@@ -426,6 +439,24 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
                                   </div>
                                 )}
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+                                
+                                {/* Order count badge - top right */}
+                                {(() => {
+                                  const count = getCategoryOrderCount(category.id)
+                                  return count > 0 ? (
+                                    <div 
+                                      className="absolute top-2 right-2 bg-white/95 backdrop-blur-sm px-2 py-1 rounded-lg shadow-lg"
+                                      style={{
+                                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2)'
+                                      }}
+                                    >
+                                      <span className="text-xs font-bold" style={{ color: themeColor }}>
+                                        {count} {count === 1 ? 'Order' : 'Orders'}
+                                      </span>
+                                    </div>
+                                  ) : null
+                                })()}
+                                
                                 <div className="absolute bottom-3 left-4 right-4">
                                   <h4 className="text-white font-bold text-sm leading-tight mb-1">
                                     {category.name}
@@ -544,6 +575,24 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
                             </div>
                           )}
                           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+                          
+                          {/* Order count badge - top right */}
+                          {(() => {
+                            const count = getCategoryOrderCount(category.id)
+                            return count > 0 ? (
+                              <div 
+                                className="absolute top-2 right-2 bg-white/95 backdrop-blur-sm px-2 py-1 rounded-lg shadow-lg"
+                                style={{
+                                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2)'
+                                }}
+                              >
+                                <span className="text-xs font-bold" style={{ color: themeColor }}>
+                                  {count} {count === 1 ? 'Order' : 'Orders'}
+                                </span>
+                              </div>
+                            ) : null
+                          })()}
+                          
                           <div className="absolute bottom-4 left-4 right-4">
                             <h4 className="text-white font-bold text-sm leading-tight mb-1">
                               {category.name}

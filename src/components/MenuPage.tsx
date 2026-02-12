@@ -5,6 +5,7 @@ import type { Business, Menu, MenuCategory, MenuItem } from "@/types/database"
 import { useCartStore } from "@/store/cartStore"
 import { useServiceStore } from "@/store/serviceStore"
 import { useTheme } from "@/contexts/ThemeContext"
+import { getMenuItemOrderCounts } from "@/lib/api"
 import MenuHeader from "./MenuHeader"
 import MenuList from "./MenuList"
 import CartSidebar from "./CartSidebar"
@@ -26,6 +27,7 @@ interface MenuPageProps {
 export default function MenuPage({ business, menuData }: MenuPageProps) {
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [showFloatingButton, setShowFloatingButton] = useState(false)
+  const [orderCounts, setOrderCounts] = useState<Record<string, number>>({})
   const { getItemCount, setBusinessId } = useCartStore()
   const { getServiceItemCount, setBusinessId: setServiceBusinessId } = useServiceStore()
   const { setPrimaryColor } = useTheme()
@@ -42,6 +44,9 @@ export default function MenuPage({ business, menuData }: MenuPageProps) {
     }
 
     checkRecentOrder()
+
+    // Fetch order counts
+    getMenuItemOrderCounts(business.id).then(setOrderCounts)
   }, [business.id, business.theme_color_hex, setBusinessId, setServiceBusinessId, setPrimaryColor])
 
   const itemCount = getItemCount()
@@ -86,6 +91,7 @@ export default function MenuPage({ business, menuData }: MenuPageProps) {
                     categories={menuData.categories}
                     items={menuData.items}
                     themeColor={business.theme_color_hex}
+                    orderCounts={orderCounts}
                   />
                 </div>
 

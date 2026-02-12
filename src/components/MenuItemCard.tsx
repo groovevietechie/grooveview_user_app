@@ -14,9 +14,10 @@ import MenuItemOptionsModal from "./MenuItemOptionsModal"
 interface MenuItemCardProps {
   item: MenuItem
   themeColor: string
+  orderCount?: number
 }
 
-export default function MenuItemCard({ item, themeColor }: MenuItemCardProps) {
+export default function MenuItemCard({ item, themeColor, orderCount = 0 }: MenuItemCardProps) {
   const [quantity, setQuantity] = useState(0)
   const [showOptionsModal, setShowOptionsModal] = useState(false)
   const { addItem, items } = useCartStore()
@@ -65,20 +66,35 @@ export default function MenuItemCard({ item, themeColor }: MenuItemCardProps) {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
+            {/* Price badge */}
             <div
-              className="absolute top-2 right-2 px-2.5 py-1 rounded-lg backdrop-blur-md font-bold text-xs shadow-md"
+              className="absolute top-2 left-2 px-2.5 py-1 rounded-lg backdrop-blur-md font-bold text-xs shadow-lg"
               style={{
                 backgroundColor: `${themeColor}F0`,
                 color: contrastColor,
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2)'
               }}
             >
               ₦{item.price.toLocaleString()}
             </div>
 
+            {/* Order count badge */}
+            {orderCount > 0 && (
+              <div
+                className="absolute top-2 right-2 px-2.5 py-1 rounded-lg backdrop-blur-md font-bold text-xs shadow-lg bg-white/95"
+                style={{ 
+                  color: themeColor,
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2)'
+                }}
+              >
+                {orderCount} {orderCount === 1 ? 'Order' : 'Orders'}
+              </div>
+            )}
+
             {/* Options indicator */}
             {hasOptions && (
               <div
-                className="absolute top-2 left-2 p-1.5 rounded-lg backdrop-blur-md shadow-md"
+                className="absolute top-12 left-2 p-1.5 rounded-lg backdrop-blur-md shadow-md"
                 style={{
                   backgroundColor: `${themeColor}F0`,
                   color: contrastColor,
@@ -90,7 +106,19 @@ export default function MenuItemCard({ item, themeColor }: MenuItemCardProps) {
             )}
           </div>
         ) : (
-          <div className="h-40 flex flex-col items-center justify-center" style={{ backgroundColor: lightBg }}>
+          <div className="h-40 flex flex-col items-center justify-center relative" style={{ backgroundColor: lightBg }}>
+            {/* Order count badge for no-image items */}
+            {orderCount > 0 && (
+              <div
+                className="absolute top-2 right-2 px-2.5 py-1 rounded-lg font-bold text-xs shadow-lg bg-white"
+                style={{ 
+                  color: themeColor,
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2)'
+                }}
+              >
+                {orderCount} {orderCount === 1 ? 'Order' : 'Orders'}
+              </div>
+            )}
             <div
               className="w-12 h-12 rounded-full flex items-center justify-center mb-2"
               style={{ backgroundColor: `${themeColor}20` }}
@@ -98,10 +126,11 @@ export default function MenuItemCard({ item, themeColor }: MenuItemCardProps) {
               <span className="text-xl">🍽️</span>
             </div>
             <div
-              className="px-3 py-1.5 rounded-lg font-bold text-xs"
+              className="px-3 py-1.5 rounded-lg font-bold text-xs shadow-lg"
               style={{
                 backgroundColor: `${themeColor}`,
                 color: contrastColor,
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2)'
               }}
             >
               ₦{item.price.toLocaleString()}

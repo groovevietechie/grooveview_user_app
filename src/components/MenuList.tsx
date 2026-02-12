@@ -14,9 +14,10 @@ interface MenuListProps {
   categories: MenuCategory[]
   items: MenuItem[]
   themeColor: string
+  orderCounts: Record<string, number>
 }
 
-export default function MenuList({ business, menus, categories, items, themeColor }: MenuListProps) {
+export default function MenuList({ business, menus, categories, items, themeColor, orderCounts }: MenuListProps) {
   const {
     navigationState,
     navigateToCategory,
@@ -93,6 +94,7 @@ export default function MenuList({ business, menus, categories, items, themeColo
             themeColor={themeColor}
             business={business}
             initialActiveTab={navigationState.activeTab}
+            orderCounts={orderCounts}
           />
         )}
 
@@ -102,6 +104,7 @@ export default function MenuList({ business, menus, categories, items, themeColo
             items={itemsByCategory[selectedCategory.id] || []}
             onBack={handleBack}
             themeColor={themeColor}
+            orderCounts={orderCounts}
           />
         )}
 

@@ -11,9 +11,10 @@ interface ItemsGridProps {
   items: MenuItem[]
   onBack: () => void
   themeColor: string
+  orderCounts: Record<string, number>
 }
 
-export default function ItemsGrid({ category, items, onBack, themeColor }: ItemsGridProps) {
+export default function ItemsGrid({ category, items, onBack, themeColor, orderCounts }: ItemsGridProps) {
   const [searchQuery, setSearchQuery] = useState("")
 
   const filteredItems = useMemo(() => {
@@ -91,7 +92,7 @@ export default function ItemsGrid({ category, items, onBack, themeColor }: Items
               style={{ animationDelay: `${index * 50}ms` }}
               className="animate-in fade-in slide-in-from-bottom-4 duration-500"
             >
-              <MenuItemCard item={item} themeColor={themeColor} />
+              <MenuItemCard item={item} themeColor={themeColor} orderCount={orderCounts[item.id] || 0} />
             </div>
           ))}
         </div>

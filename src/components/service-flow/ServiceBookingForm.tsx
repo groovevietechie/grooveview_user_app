@@ -1,9 +1,9 @@
 "use client"
 
-import { useState } from "react"
-import type { Business, ServiceConfiguration } from "@/types/database"
+import { useState, useEffect } from "react"
+import type { Business, ServiceConfiguration, Staff } from "@/types/database"
 import { useServiceStore } from "@/store/serviceStore"
-import { submitServiceBooking } from "@/lib/api"
+import { submitServiceBooking, getStaffMembers } from "@/lib/api"
 import BackButton from "@/components/BackButton"
 import { CalendarIcon, UserGroupIcon, PhoneIcon, EnvelopeIcon, UserIcon } from "@heroicons/react/24/outline"
 import { getContrastColor } from "@/lib/color-utils"
@@ -45,6 +45,26 @@ export default function ServiceBookingForm({
   
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [staffMembers, setStaffMembers] = useState<Staff[]>([])
+  const [selectedReferrer, setSelectedReferrer] = useState<string>("")
+  const [isLoadingStaff, setIsLoadingStaff] = useState(true)
+
+  // Fetch staff members on component mount
+  useEffect(() => {
+    const fetchStaff = async () => {
+      setIsLoadingStaff(true)
+      try {
+        const staff = await getStaffMembers(businessId)
+        setStaffMembers(staff)
+      } catch (error) {
+        console.error("Error fetching staff members:", error)
+      } finally {
+        setIsLoadingStaff(false)
+      }
+    }
+
+    fetchStaff()
+  }, [businessId])
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
@@ -111,7 +131,8 @@ export default function ServiceBookingForm({
           businessName: business.name,
           businessAddress: business.address,
           selectedDuration: selectedDuration,
-        }
+        },
+        referrerStaffId: selectedReferrer || undefined,
       }
 
       const result = await submitServiceBooking(bookingData)
@@ -294,6 +315,32 @@ export default function ServiceBookingForm({
             placeholder="Enter your email address"
           />
         </div>
+
+        {/* Referrer Selection */}
+        {staffMembers.length > 0 && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              <UserIcon className="w-4 h-4 inline mr-1" />
+              Referred By (Optional)
+            </label>
+            <select
+              value={selectedReferrer}
+              onChange={(e) => setSelectedReferrer(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 bg-white"
+              style={{ '--tw-ring-color': `${themeColor}40` } as React.CSSProperties}
+            >
+              <option value="">Select a staff member (optional)</option>
+              {staffMembers.map((staff) => (
+                <option key={staff.id} value={staff.id}>
+                  {staff.name} {staff.role && `- ${staff.role}`}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-gray-500 mt-1">
+              If a staff member referred you to this service, please select their name
+            </p>
+          </div>
+        )}
 
         {/* Event Details */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

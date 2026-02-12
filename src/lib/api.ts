@@ -1,5 +1,5 @@
 import { supabase } from "./supabase"
-import type { Business, Menu, MenuCategory, MenuItem, OrderSubmission, ServiceConfiguration, ServiceOption, ServiceBooking, ServiceBookingSubmission, ServiceStatus } from "@/types/database"
+import type { Business, Menu, MenuCategory, MenuItem, OrderSubmission, ServiceConfiguration, ServiceOption, ServiceBooking, ServiceBookingSubmission, ServiceStatus, Staff } from "@/types/database"
 
 // Business API
 export async function getBusinessBySlug(slug: string): Promise<Business | null> {
@@ -176,7 +176,65 @@ export async function getFullMenu(businessId: string): Promise<{
   }
 }
 
-// Service API
+// Staff API
+export async function getStaffMembers(businessId: string): Promise<Staff[]> {
+  try {
+    console.log("[API] Fetching staff members for business:", businessId)
+
+    const { data, error } = await supabase
+      .from("staff")
+      .select("*")
+      .eq("business_id", businessId)
+      .eq("is_active", true)
+      .order("name", { ascending: true })
+
+    if (error) {
+      console.error("[API] Staff members fetch failed:", error)
+      return []
+    }
+
+    console.log("[API] Staff members fetched:", data?.length || 0)
+    return data || []
+  } catch (error) {
+    console.error("[API] Error fetching staff members:", error)
+    return []
+  }
+}
+
+// Order Statistics API
+export async function getMenuItemOrderCounts(businessId: string): Promise<Record<string, number>> {
+  try {
+    console.log("[API] Fetching menu item order counts for business:", businessId)
+
+    const { data, error } = await supabase
+      .from("order_items")
+      .select(`
+        menu_item_id,
+        quantity,
+        orders!inner(business_id)
+      `)
+      .eq("orders.business_id", businessId)
+
+    if (error) {
+      console.error("[API] Order counts fetch failed:", error)
+      return {}
+    }
+
+    // Aggregate counts by menu item
+    const counts: Record<string, number> = {}
+    data?.forEach((item: any) => {
+      const itemId = item.menu_item_id
+      counts[itemId] = (counts[itemId] || 0) + item.quantity
+    })
+
+    console.log("[API] Order counts fetched for", Object.keys(counts).length, "items")
+    return counts
+  } catch (error) {
+    console.error("[API] Error fetching order counts:", error)
+    return {}
+  }
+}
+
 export async function getServiceConfigurations(businessId: string): Promise<ServiceConfiguration[]> {
   try {
     console.log("[API] Fetching service configurations for business:", businessId)
@@ -425,6 +483,7 @@ export async function submitServiceBooking(bookingData: ServiceBookingSubmission
           booking_details: bookingData.bookingDetails,
         },
         p_customer_email: bookingData.customerEmail || null,
+        p_referrer_staff_id: bookingData.referrerStaffId || null,
       })
 
     if (error) {
@@ -470,14 +529,20 @@ export async function submitServiceBooking(bookingData: ServiceBookingSubmission
         return null
       }
 
-      // Update the booking with transfer code using a direct update
+      // Update the booking with transfer code and referrer using a direct update
       if (bookingId) {
+        const updateData: any = { 
+          transfer_code: transferCode,
+          payment_status: 'pending'
+        }
+        
+        if (bookingData.referrerStaffId) {
+          updateData.referrer_staff_id = bookingData.referrerStaffId
+        }
+
         await supabase
           .from("service_bookings")
-          .update({ 
-            transfer_code: transferCode,
-            payment_status: 'pending'
-          })
+          .update(updateData)
           .eq("id", bookingId)
 
         return {

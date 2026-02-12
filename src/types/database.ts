@@ -150,6 +150,21 @@ export interface ServiceOption {
   updated_at: string
 }
 
+export interface Staff {
+  id: string
+  business_id: string
+  name: string
+  phone?: string
+  email?: string
+  role: string
+  commission_rate: number
+  is_active: boolean
+  profile_image_url?: string
+  notes?: string
+  created_at: string
+  updated_at: string
+}
+
 export interface ServiceBooking {
   id: string
   business_id: string
@@ -166,6 +181,10 @@ export interface ServiceBooking {
   transfer_code?: string
   payment_status: PaymentStatus
   payment_confirmed_at?: string
+  referrer_staff_id?: string
+  referrer_commission_amount?: number
+  referrer_commission_paid?: boolean
+  referrer_commission_paid_at?: string
   created_at: string
   updated_at: string
 }
@@ -184,6 +203,7 @@ export interface ServiceBookingSubmission {
   preOrderItems: PreOrderItem[]
   specialRequests?: string
   bookingDetails: Record<string, unknown>
+  referrerStaffId?: string
 }
 
 export interface ServiceCartItem {
