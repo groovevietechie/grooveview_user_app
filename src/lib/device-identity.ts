@@ -115,7 +115,9 @@ export function getCustomerId(): string | null {
   if (typeof window === "undefined") return null
   
   try {
-    return localStorage.getItem(CUSTOMER_ID_KEY)
+    const customerId = localStorage.getItem(CUSTOMER_ID_KEY)
+    console.log("[DeviceIdentity] Getting customer ID from localStorage:", customerId)
+    return customerId
   } catch (error) {
     console.error("[DeviceIdentity] Error getting customer ID:", error)
     return null
@@ -131,6 +133,14 @@ export function setCustomerId(customerId: string): void {
   try {
     localStorage.setItem(CUSTOMER_ID_KEY, customerId)
     console.log("[DeviceIdentity] Set customer ID:", customerId)
+    
+    // Immediately verify it was saved
+    const saved = localStorage.getItem(CUSTOMER_ID_KEY)
+    if (saved === customerId) {
+      console.log("[DeviceIdentity] ✅ Customer ID verified in localStorage:", saved)
+    } else {
+      console.error("[DeviceIdentity] ❌ Customer ID NOT saved correctly! Expected:", customerId, "Got:", saved)
+    }
   } catch (error) {
     console.error("[DeviceIdentity] Error setting customer ID:", error)
   }
