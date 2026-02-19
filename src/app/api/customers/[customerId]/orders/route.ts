@@ -7,9 +7,10 @@ import { supabase } from "@/lib/supabase"
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { customerId: string } }
+  { params }: { params: Promise<{ customerId: string }> }
 ) {
   try {
+    const { customerId } = await params
     const { searchParams } = new URL(request.url)
     const businessId = searchParams.get("businessId")
 
@@ -28,7 +29,7 @@ export async function GET(
           )
         )
       `)
-      .eq("customer_id", params.customerId)
+      .eq("customer_id", customerId)
       .order("created_at", { ascending: false })
 
     if (businessId) {

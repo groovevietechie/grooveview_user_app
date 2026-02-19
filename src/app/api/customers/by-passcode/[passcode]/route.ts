@@ -7,13 +7,18 @@ import { supabase } from "@/lib/supabase"
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { passcode: string } }
+  { params }: { params: Promise<{ passcode: string }> }
 ) {
   try {
+    // Await params in Next.js 15
+    const { passcode } = await params
+    
+    console.log("[API] Looking up customer by passcode:", passcode)
+
     const { data, error } = await supabase
       .from("customers")
       .select("*")
-      .eq("sync_passcode", params.passcode)
+      .eq("sync_passcode", passcode)
       .single()
 
     if (error) {
@@ -21,6 +26,7 @@ export async function GET(
       return NextResponse.json({ error: "Customer not found" }, { status: 404 })
     }
 
+    console.log("[API] Found customer:", data.id)
     return NextResponse.json(data)
   } catch (error) {
     console.error("[API] Error in GET /api/customers/by-passcode:", error)

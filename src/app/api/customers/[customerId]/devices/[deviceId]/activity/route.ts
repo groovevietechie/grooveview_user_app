@@ -7,14 +7,16 @@ import { supabase } from "@/lib/supabase"
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { customerId: string; deviceId: string } }
+  { params }: { params: Promise<{ customerId: string; deviceId: string }> }
 ) {
   try {
+    const { customerId, deviceId } = await params
+    
     const { error } = await supabase
       .from("customer_devices")
       .update({ last_active_at: new Date().toISOString() })
-      .eq("customer_id", params.customerId)
-      .eq("device_id", params.deviceId)
+      .eq("customer_id", customerId)
+      .eq("device_id", deviceId)
 
     if (error) {
       console.error("[API] Error updating device activity:", error)

@@ -7,13 +7,15 @@ import { supabase } from "@/lib/supabase"
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { customerId: string } }
+  { params }: { params: Promise<{ customerId: string }> }
 ) {
   try {
+    const { customerId } = await params
+    
     const { data, error } = await supabase
       .from("customers")
       .select("*")
-      .eq("id", params.customerId)
+      .eq("id", customerId)
       .single()
 
     if (error) {

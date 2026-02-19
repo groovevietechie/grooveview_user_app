@@ -7,13 +7,15 @@ import { supabase } from "@/lib/supabase"
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { customerId: string } }
+  { params }: { params: Promise<{ customerId: string }> }
 ) {
   try {
+    const { customerId } = await params
+    
     const { data, error } = await supabase
       .from("customer_devices")
       .select("*")
-      .eq("customer_id", params.customerId)
+      .eq("customer_id", customerId)
       .order("created_at", { ascending: false })
 
     if (error) {
@@ -34,9 +36,10 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { customerId: string } }
+  { params }: { params: Promise<{ customerId: string }> }
 ) {
   try {
+    const { customerId } = await params
     const body = await request.json()
     const { device_id, device_fingerprint, device_name } = body
 
@@ -52,7 +55,7 @@ export async function POST(
       const { data, error } = await supabase
         .from("customer_devices")
         .update({
-          customer_id: params.customerId,
+          customer_id: customerId,
           device_fingerprint,
           device_name,
           last_active_at: new Date().toISOString(),
@@ -73,7 +76,7 @@ export async function POST(
     const { data, error } = await supabase
       .from("customer_devices")
       .insert({
-        customer_id: params.customerId,
+        customer_id: customerId,
         device_id,
         device_fingerprint,
         device_name,

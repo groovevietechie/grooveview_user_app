@@ -7,16 +7,18 @@ import { supabase } from "@/lib/supabase"
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { customerId: string } }
+  { params }: { params: Promise<{ customerId: string }> }
 ) {
   try {
+    const { customerId } = await params
+    
     // Generate new 6-digit passcode
     const newPasscode = Math.floor(100000 + Math.random() * 900000).toString()
 
     const { data, error } = await supabase
       .from("customers")
       .update({ sync_passcode: newPasscode })
-      .eq("id", params.customerId)
+      .eq("id", customerId)
       .select()
       .single()
 
