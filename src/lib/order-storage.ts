@@ -73,3 +73,19 @@ export function clearBusinessOrders(businessId: string): void {
     console.error("[v0] Error clearing business orders:", error)
   }
 }
+
+/**
+ * Link all existing orders to a customer profile
+ * Called when a customer profile is created or device is linked
+ */
+export function linkOrdersToCustomer(customerId: string): void {
+  if (typeof window === "undefined") return
+
+  try {
+    // Store customer ID association
+    localStorage.setItem("groovevie_customer_id", customerId)
+    console.log("[v0] Linked orders to customer:", customerId)
+  } catch (error) {
+    console.error("[v0] Error linking orders to customer:", error)
+  }
+}

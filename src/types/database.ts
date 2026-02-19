@@ -277,3 +277,31 @@ export interface OrderSubmission {
   paymentMethod: PaymentMethod
   deliveryAddress?: string
 }
+
+// Customer Profile Types
+export interface Customer {
+  id: string
+  sync_passcode: string
+  created_at: string
+  updated_at: string
+}
+
+export interface CustomerDevice {
+  id: string
+  customer_id: string
+  device_id: string
+  device_fingerprint: string
+  device_name: string
+  last_active_at: string
+  created_at: string
+}
+
+export interface CustomerActivity {
+  id: string
+  customer_id: string
+  device_id: string
+  business_id?: string
+  activity_type: "order" | "booking" | "view" | "cart"
+  activity_data: Record<string, unknown>
+  created_at: string
+}

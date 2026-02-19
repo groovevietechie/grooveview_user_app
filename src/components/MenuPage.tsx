@@ -6,13 +6,17 @@ import { useCartStore } from "@/store/cartStore"
 import { useServiceStore } from "@/store/serviceStore"
 import { useTheme } from "@/contexts/ThemeContext"
 import { getMenuItemOrderCounts } from "@/lib/api"
+import { getDeviceId, getCustomerId } from "@/lib/device-identity"
+import { trackActivity, updateDeviceActivity } from "@/lib/customer-api"
+import { useCustomerProfile } from "@/hooks/useCustomerProfile"
 import MenuHeader from "./MenuHeader"
 import MenuList from "./MenuList"
 import CartSidebar from "./CartSidebar"
 import ServiceSidebar from "./ServiceSidebar"
 import FloatingOrderButton from "./FloatingOrderButton"
 import BackButtonHandler from "./BackButtonHandler"
-import { ShoppingCartIcon } from "@heroicons/react/24/outline"
+import DeviceSyncModal from "./DeviceSyncModal"
+import { ShoppingCartIcon, DevicePhoneMobileIcon } from "@heroicons/react/24/outline"
 import { useMenuNavigation } from "@/hooks/useMenuNavigation"
 
 interface MenuPageProps {
@@ -28,15 +32,29 @@ export default function MenuPage({ business, menuData }: MenuPageProps) {
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [showFloatingButton, setShowFloatingButton] = useState(false)
   const [orderCounts, setOrderCounts] = useState<Record<string, number>>({})
+  const [isSyncModalOpen, setIsSyncModalOpen] = useState(false)
   const { getItemCount, setBusinessId } = useCartStore()
   const { getServiceItemCount, setBusinessId: setServiceBusinessId } = useServiceStore()
   const { setPrimaryColor } = useTheme()
   const { handleBack } = useMenuNavigation()
+  
+  // Pre-load customer profile data on mount
+  const customerProfile = useCustomerProfile()
 
   useEffect(() => {
     setBusinessId(business.id)
     setServiceBusinessId(business.id)
     setPrimaryColor(business.theme_color_hex)
+
+    // Initialize device tracking
+    const deviceId = getDeviceId()
+    const customerId = getCustomerId()
+
+    // Track page view
+    if (customerId) {
+      trackActivity(customerId, deviceId, "view", { businessId: business.id }, business.id)
+      updateDeviceActivity(customerId, deviceId)
+    }
 
     const checkRecentOrder = () => {
       const hasRecentOrder = sessionStorage.getItem(`${business.id}_recent_order`) === "true"
@@ -47,6 +65,16 @@ export default function MenuPage({ business, menuData }: MenuPageProps) {
 
     // Fetch order counts
     getMenuItemOrderCounts(business.id).then(setOrderCounts)
+
+    // Listen for device sync event from MenuTabsView
+    const handleOpenDeviceSync = () => {
+      setIsSyncModalOpen(true)
+    }
+    window.addEventListener('openDeviceSync', handleOpenDeviceSync)
+
+    return () => {
+      window.removeEventListener('openDeviceSync', handleOpenDeviceSync)
+    }
   }, [business.id, business.theme_color_hex, setBusinessId, setServiceBusinessId, setPrimaryColor])
 
   const itemCount = getItemCount()
@@ -133,6 +161,15 @@ export default function MenuPage({ business, menuData }: MenuPageProps) {
           {showFloatingButton && (
             <FloatingOrderButton businessSlug={business.slug} primaryColor={business.theme_color_hex} />
           )}
+
+          {/* Device Sync Modal */}
+          <DeviceSyncModal 
+            isOpen={isSyncModalOpen} 
+            onClose={() => setIsSyncModalOpen(false)}
+            preloadedCustomer={customerProfile.customer}
+            preloadedDevices={customerProfile.devices}
+            onDataChange={customerProfile.refreshCustomerData}
+          />
         </div>
       </BackButtonHandler>
     </Suspense>

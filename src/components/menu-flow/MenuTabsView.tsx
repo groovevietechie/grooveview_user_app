@@ -206,11 +206,27 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
     <div className="w-full space-y-6 pb-2">
       {/* Header */}
       <div className="mb-6">
-        <div className="text-center mb-6">
-          <h2 className="text-xl font-bold text-gray-900 tracking-tight mb-2">
-            Discover Our Menu
-          </h2>
-          <p className="text-gray-600 text-xs">Choose from our carefully curated selection</p>
+        <div className="flex items-center justify-between mb-6">
+          <div className="text-left">
+            <h2 className="text-xl font-bold text-gray-900 tracking-tight mb-2">
+              Discover Our Menu
+            </h2>
+            <p className="text-gray-600 text-xs">Choose from our carefully curated selection</p>
+          </div>
+          <button
+            onClick={() => {
+              // Trigger sync modal - we'll need to pass this as a prop
+              const event = new CustomEvent('openDeviceSync')
+              window.dispatchEvent(event)
+            }}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm shadow-lg hover:shadow-xl transition-all hover:scale-105 active:scale-95 whitespace-nowrap"
+            style={{ backgroundColor: themeColor, color: 'white' }}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
+            </svg>
+            <span>Sync Devices</span>
+          </button>
         </div>
         
         {/* Search Bar */}

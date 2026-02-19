@@ -7,6 +7,8 @@ import { useTheme } from "@/contexts/ThemeContext"
 import { getOrdersByIds } from "@/lib/api"
 import { getContrastColor, lightenColor, darkenColor } from "@/lib/color-utils"
 import { getDeviceOrders } from "@/lib/order-storage"
+import { getCustomerId } from "@/lib/device-identity"
+import { getCustomerOrders } from "@/lib/customer-api"
 import { useBackNavigation } from "@/hooks/useBackNavigation"
 import BackButton from "@/components/BackButton"
 import {
@@ -83,19 +85,27 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
 
   const loadOrders = async () => {
     try {
-      // Get order IDs stored on this device for this business
-      const deviceOrderIds = getDeviceOrders(business.id)
-      console.log("[v0] Loading orders for device:", deviceOrderIds)
+      const customerId = getCustomerId()
 
-      if (deviceOrderIds.length === 0) {
-        setOrders([])
-        setLoading(false)
-        return
+      if (customerId) {
+        // Customer has a profile - load all orders across devices
+        console.log("[v0] Loading orders for customer:", customerId)
+        const customerOrders = await getCustomerOrders(customerId, business.id)
+        setOrders(customerOrders)
+      } else {
+        // No customer profile - use device-only orders
+        const deviceOrderIds = getDeviceOrders(business.id)
+        console.log("[v0] Loading orders for device:", deviceOrderIds)
+
+        if (deviceOrderIds.length === 0) {
+          setOrders([])
+          setLoading(false)
+          return
+        }
+
+        const fetchedOrders = await getOrdersByIds(deviceOrderIds)
+        setOrders(fetchedOrders)
       }
-
-      // Fetch only the orders that belong to this device
-      const fetchedOrders = await getOrdersByIds(deviceOrderIds)
-      setOrders(fetchedOrders)
     } catch (error) {
       console.error("[v0] Error loading orders:", error)
     } finally {
