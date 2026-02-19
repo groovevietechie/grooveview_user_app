@@ -203,15 +203,15 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
     searchedItems.length === 0
 
   return (
-    <div className="w-full space-y-6 pb-2">
+    <div className="w-full space-y-2 pb-1">
       {/* Header */}
-      <div className="mb-6">
+      <div className="mb-2">
         <div className="flex items-center justify-between mb-6">
           <div className="text-left">
             <h2 className="text-xl font-bold text-gray-900 tracking-tight mb-2">
               Discover Our Menu
             </h2>
-            <p className="text-gray-600 text-xs">Choose from our carefully curated selection</p>
+            <p className="text-gray-600 text-xs">Choose from our curated selection</p>
           </div>
           <button
             onClick={() => {
@@ -230,7 +230,7 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
         </div>
         
         {/* Search Bar */}
-        <div className="relative mb-6">
+        <div className="relative mb-2">
           <div className="absolute inset-0 bg-gradient-to-r from-gray-100 via-white to-gray-100 rounded-2xl blur-sm opacity-60"></div>
           <div className="relative">
             <MagnifyingGlassIcon
