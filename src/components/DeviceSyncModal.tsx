@@ -7,20 +7,17 @@ import {
   getDeviceId,
   getDeviceName,
   generateDeviceFingerprint,
-  getCustomerId,
-  setCustomerId,
-  clearCustomerId,
 } from "@/lib/device-identity"
 import {
   createCustomerProfile,
   getCustomerByPasscode,
+  getCustomerByDeviceId,
   linkDeviceToCustomer,
   getCustomerDevices,
   unlinkDevice,
   regeneratePasscode,
   updateDeviceActivity,
 } from "@/lib/customer-api"
-import { linkOrdersToCustomer } from "@/lib/order-storage"
 import type { Customer, CustomerDevice } from "@/types/database"
 import {
   XMarkIcon,
@@ -68,68 +65,39 @@ export default function DeviceSyncModal({
   }
   const contrastColor = getContrastColor(primaryColor)
 
-  // ALWAYS load fresh customer data from database when modal opens
+  // ALWAYS load customer data from database using device ID (NO localStorage!)
   useEffect(() => {
     if (!isOpen) return
 
-    // Check if customer ID exists in localStorage
-    const customerId = getCustomerId()
-    console.log("[DeviceSync] Modal opened, customer ID from localStorage:", customerId)
-    
-    if (customerId) {
-      // Customer ID exists - ALWAYS fetch fresh data from database
-      console.log("[DeviceSync] Fetching fresh data from database...")
-      loadCustomerData()
-    } else {
-      // No customer ID - show create profile screen
-      console.log("[DeviceSync] No customer ID, showing create profile")
-      setCustomer(null)
-      setDevices([])
-      setLoading(false)
-    }
+    console.log("[DeviceSync] Modal opened, loading customer by device ID...")
+    loadCustomerDataByDevice()
   }, [isOpen])
 
-  const loadCustomerData = async () => {
-    const customerId = getCustomerId()
-    
-    if (!customerId) {
-      console.log("[DeviceSync] No customer ID in localStorage")
-      setCustomer(null)
-      setDevices([])
-      setLoading(false)
-      return
-    }
-
-    console.log("[DeviceSync] Loading customer data for ID:", customerId)
+  const loadCustomerDataByDevice = async () => {
     setLoading(true)
     
     try {
-      // Fetch customer and devices from database
-      const [customerData, devicesData] = await Promise.all([
-        fetch(`/api/customers/${customerId}`).then(res => {
-          console.log("[DeviceSync] Customer API response status:", res.status)
-          return res.ok ? res.json() : null
-        }),
-        getCustomerDevices(customerId),
-      ])
-
-      console.log("[DeviceSync] Customer data received:", customerData)
-      console.log("[DeviceSync] Devices data received:", devicesData)
-
+      // Get device ID (this is reliably stored)
+      const deviceId = getDeviceId()
+      console.log("[DeviceSync] Device ID:", deviceId)
+      
+      // Look up customer by device ID in database
+      const customerData = await getCustomerByDeviceId(deviceId)
+      
       if (customerData) {
+        console.log("[DeviceSync] Customer found:", customerData.id)
+        console.log("[DeviceSync] Passcode:", customerData.sync_passcode)
+        
+        // Load devices for this customer
+        const devicesData = await getCustomerDevices(customerData.id)
+        
         setCustomer(customerData)
         setDevices(devicesData)
-        console.log("[DeviceSync] Customer profile loaded successfully")
-        console.log("[DeviceSync] Passcode:", customerData.sync_passcode)
-        console.log("[DeviceSync] Devices count:", devicesData.length)
-
+        
         // Update device activity
-        const deviceId = getDeviceId()
-        await updateDeviceActivity(customerId, deviceId)
+        await updateDeviceActivity(customerData.id, deviceId)
       } else {
-        // Customer data not found in database, clear the stored ID
-        console.warn("[DeviceSync] Customer not found in database, clearing localStorage")
-        clearCustomerId()
+        console.log("[DeviceSync] No customer found for this device")
         setCustomer(null)
         setDevices([])
       }
@@ -163,13 +131,11 @@ export default function DeviceSyncModal({
 
       console.log("[DeviceSync] Profile created successfully:", result.customer.id)
       console.log("[DeviceSync] Passcode:", result.customer.sync_passcode)
+      console.log("[DeviceSync] Device is now linked in database")
 
-      setCustomerId(result.customer.id)
-      linkOrdersToCustomer(result.customer.id)
+      // NO localStorage needed! Device is linked in database
       setCustomer(result.customer)
       setDevices([result.device])
-      
-      console.log("[DeviceSync] Customer ID saved to localStorage:", getCustomerId())
       
       // Notify parent to refresh data
       onDataChange?.()
@@ -213,14 +179,15 @@ export default function DeviceSyncModal({
         return
       }
 
-      setCustomerId(customerData.id)
-      linkOrdersToCustomer(customerData.id)
+      console.log("[DeviceSync] Device linked successfully to customer:", customerData.id)
+      
+      // NO localStorage needed! Device is linked in database
       setCustomer(customerData)
       setShowLinkDevice(false)
       setPasscodeInput("")
       
       // Reload devices and notify parent
-      await loadCustomerData()
+      await loadCustomerDataByDevice()
       onDataChange?.()
     } catch (err) {
       console.error("[DeviceSync] Error linking device:", err)
@@ -247,13 +214,12 @@ export default function DeviceSyncModal({
 
       if (success) {
         if (deviceId === currentDeviceId) {
-          // Unlinking current device
-          clearCustomerId()
+          // Unlinking current device - will show "No Profile Yet" on next open
           setCustomer(null)
           setDevices([])
         } else {
           // Reload devices
-          await loadCustomerData()
+          await loadCustomerDataByDevice()
         }
         
         // Notify parent to refresh data

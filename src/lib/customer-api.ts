@@ -15,6 +15,33 @@ function generatePasscode(): string {
 }
 
 /**
+ * Get customer by device ID (no localStorage needed!)
+ */
+export async function getCustomerByDeviceId(deviceId: string): Promise<Customer | null> {
+  try {
+    console.log("[CustomerAPI] Looking up customer for device:", deviceId)
+    
+    const response = await fetch(`${API_BASE}/api/customers/by-device/${deviceId}`)
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        console.log("[CustomerAPI] No customer found for this device")
+        return null
+      }
+      console.error("[CustomerAPI] Failed to get customer:", response.statusText)
+      return null
+    }
+
+    const customer = await response.json()
+    console.log("[CustomerAPI] Found customer:", customer.id, "Passcode:", customer.sync_passcode)
+    return customer
+  } catch (error) {
+    console.error("[CustomerAPI] Error getting customer by device ID:", error)
+    return null
+  }
+}
+
+/**
  * Create a new customer profile with passcode
  */
 export async function createCustomerProfile(
