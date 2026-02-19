@@ -679,12 +679,14 @@ export async function submitOrder(orderData: OrderSubmission): Promise<string | 
     // Prepare base order data (guaranteed to work with existing schema)
     const baseOrderData = {
       business_id: orderData.businessId,
+      customer_id: orderData.customerId || null,
       seat_label: orderData.seatLabel,
       customer_note: cleanCustomerNote || null,
       status: "new" as const,
       payment_method: orderData.paymentMethod,
-      payment_status: orderData.paymentMethod === 'transfer' ? "paid" as const : "pending" as const,
+      payment_status: (orderData.paymentMethod === 'transfer' || orderData.paymentMethod === 'tokens') ? "paid" as const : "pending" as const,
       total_amount: orderData.items.reduce((total, item) => total + item.unitPrice * item.quantity, 0),
+      token_payment_amount: orderData.tokenPaymentAmount || 0,
     }
 
     console.log("[v0] Base order data prepared:", baseOrderData)

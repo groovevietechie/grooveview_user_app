@@ -88,6 +88,7 @@ export interface Order {
   payment_method: PaymentMethod
   payment_status: PaymentStatus
   total_amount: number
+  token_payment_amount?: number // Amount paid using reward tokens
   estimated_ready_time?: string
   estimated_delivery_time?: string
   business_comment?: string
@@ -111,7 +112,7 @@ export interface OrderItem {
 
 export type OrderStatus = "new" | "accepted" | "preparing" | "ready" | "served" | "cancelled"
 export type OrderType = "table" | "room" | "home"
-export type PaymentMethod = "cash" | "card" | "mobile" | "transfer"
+export type PaymentMethod = "cash" | "card" | "mobile" | "transfer" | "tokens"
 export type PaymentStatus = "pending" | "paid" | "failed"
 
 // Service Types
@@ -265,6 +266,7 @@ export interface Cart {
 // Order types for submission
 export interface OrderSubmission {
   businessId: string
+  customerId?: string // Add customer ID for token tracking
   items: {
     menuItemId: string
     quantity: number
@@ -275,6 +277,7 @@ export interface OrderSubmission {
   seatLabel: string
   customerNote?: string
   paymentMethod: PaymentMethod
+  tokenPaymentAmount?: number // Amount paid using tokens
   deliveryAddress?: string
 }
 
@@ -282,6 +285,7 @@ export interface OrderSubmission {
 export interface Customer {
   id: string
   sync_passcode: string
+  reward_tokens: number // 1 token = 1 Naira, earned 2% from completed orders
   created_at: string
   updated_at: string
 }

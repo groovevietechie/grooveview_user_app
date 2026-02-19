@@ -27,6 +27,7 @@ import {
   ArrowPathIcon,
   TrashIcon,
   SparklesIcon,
+  CurrencyDollarIcon,
 } from "@heroicons/react/24/outline"
 
 interface DeviceSyncModalProps {
@@ -357,6 +358,40 @@ export default function DeviceSyncModal({
 
           {customer && (
             <div className="space-y-4">
+              {/* Reward Tokens Display */}
+              <div
+                className="p-4 rounded-2xl border"
+                style={{
+                  backgroundColor: lightColor,
+                  borderColor: primaryColor,
+                }}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="p-1.5 rounded-lg"
+                      style={{ backgroundColor: "white" }}
+                    >
+                      <CurrencyDollarIcon className="w-5 h-5" style={{ color: primaryColor }} />
+                    </div>
+                    <h3 className="font-bold text-gray-900 text-sm">Reward Tokens</h3>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-2xl font-bold" style={{ color: primaryColor }}>
+                      ₦{(customer.reward_tokens || 0).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </p>
+                  </div>
+                </div>
+                <div className="bg-white rounded-lg p-3 mt-2">
+                  <p className="text-xs text-gray-600">
+                    💰 Earn 2% tokens on every completed order across all your devices
+                  </p>
+                  <p className="text-xs text-gray-600 mt-1">
+                    🎁 Use tokens to pay for your orders (1 token = ₦1)
+                  </p>
+                </div>
+              </div>
+
               {/* Passcode Display */}
               <div
                 className="p-4 rounded-2xl border"

@@ -10,8 +10,10 @@ import { useTheme } from "@/contexts/ThemeContext"
 import { submitOrder } from "@/lib/api"
 import { saveDeviceOrder } from "@/lib/order-storage"
 import { useBackNavigation } from "@/hooks/useBackNavigation"
+import { useCustomerProfile } from "@/hooks/useCustomerProfile"
+import { getCustomerByDeviceId } from "@/lib/customer-api"
 import BackButton from "@/components/BackButton"
-import { HomeIcon, BuildingOfficeIcon, TruckIcon, PhoneIcon } from "@heroicons/react/24/outline"
+import { HomeIcon, BuildingOfficeIcon, TruckIcon, PhoneIcon, CurrencyDollarIcon } from "@heroicons/react/24/outline"
 
 interface CheckoutPageProps {
   business: Business
@@ -23,6 +25,7 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
   const router = useRouter()
   const { items, getTotal, clearCart } = useCartStore()
   const { primaryColor } = useTheme()
+  const { customer, refreshCustomerData } = useCustomerProfile()
   
   // Use the back navigation hook
   useBackNavigation({
@@ -36,8 +39,15 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
   const [deliveryPhone, setDeliveryPhone] = useState("")
   const [customerNote, setCustomerNote] = useState("")
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cash")
+  const [useTokens, setUseTokens] = useState(false)
+  const [tokenAmount, setTokenAmount] = useState(0)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isRedirecting, setIsRedirecting] = useState(false)
+
+  // Load customer data on mount
+  useEffect(() => {
+    refreshCustomerData()
+  }, [])
 
   // Handle empty cart redirect in useEffect to avoid render-time navigation
   useEffect(() => {
@@ -72,7 +82,22 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
 
   const total = getTotal()
   const deliveryFee = orderType === "home" ? 1500 : 0
-  const finalTotal = total + deliveryFee
+  const subtotal = total + deliveryFee
+  
+  // Calculate token usage
+  const availableTokens = customer?.reward_tokens || 0
+  const maxTokensToUse = Math.min(availableTokens, subtotal)
+  const actualTokenAmount = useTokens ? tokenAmount : 0
+  const finalTotal = subtotal - actualTokenAmount
+
+  // Update token amount when useTokens changes
+  useEffect(() => {
+    if (useTokens && maxTokensToUse > 0) {
+      setTokenAmount(maxTokensToUse)
+    } else {
+      setTokenAmount(0)
+    }
+  }, [useTokens, maxTokensToUse])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -106,8 +131,14 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
       }
     }
 
+    // Validate token payment
+    if (useTokens && actualTokenAmount > availableTokens) {
+      alert("Insufficient token balance")
+      return
+    }
+
     // Handle bank transfer payment - go to payment page first
-    if (paymentMethod === "transfer") {
+    if (paymentMethod === "transfer" && finalTotal > 0) {
       // Store order data in session storage for payment page
       const seatLabel = orderType === "table" 
         ? `Table ${tableNumber}` 
@@ -117,6 +148,7 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
 
       const orderData = {
         businessId: business.id,
+        customerId: customer?.id,
         items: items.map((cartItem) => ({
           menuItemId: cartItem.menuItem.id,
           quantity: cartItem.quantity,
@@ -128,6 +160,7 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
           ? `Phone: ${deliveryPhone}${customerNote.trim() ? `\n\nSpecial Instructions: ${customerNote.trim()}` : ''}`
           : customerNote.trim() || undefined,
         paymentMethod,
+        tokenPaymentAmount: actualTokenAmount,
         deliveryAddress: orderType === "home" ? deliveryAddress : undefined,
       }
 
@@ -141,7 +174,7 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
       return
     }
 
-    // Handle cash payments - place order immediately
+    // Handle cash/token payments - place order immediately
     setIsSubmitting(true)
 
     try {
@@ -153,6 +186,7 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
 
       const orderData = {
         businessId: business.id,
+        customerId: customer?.id,
         items: items.map((cartItem) => ({
           menuItemId: cartItem.menuItem.id,
           quantity: cartItem.quantity,
@@ -163,7 +197,8 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
         customerNote: orderType === "home" 
           ? `Phone: ${deliveryPhone}${customerNote.trim() ? `\n\nSpecial Instructions: ${customerNote.trim()}` : ''}`
           : customerNote.trim() || undefined,
-        paymentMethod,
+        paymentMethod: finalTotal === 0 ? "tokens" : paymentMethod,
+        tokenPaymentAmount: actualTokenAmount,
         deliveryAddress: orderType === "home" ? deliveryAddress : undefined,
       }
 
@@ -174,6 +209,12 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
         saveDeviceOrder(business.id, orderId)
         sessionStorage.setItem(`${business.id}_recent_order`, "true")
         sessionStorage.setItem(`${business.id}_last_order_id`, orderId)
+        
+        // Refresh customer data to update token balance
+        if (useTokens) {
+          refreshCustomerData()
+        }
+        
         clearCart()
         router.push(`/b/${business.slug}/order/${orderId}?success=true`)
       } else {
@@ -363,12 +404,67 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
                   <span className="font-medium">₦{deliveryFee.toLocaleString()}</span>
                 </div>
               )}
+
+              {/* Token Payment Section */}
+              {customer && availableTokens > 0 && (
+                <div className="border-t pt-3 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <CurrencyDollarIcon className="w-5 h-5" style={{ color: primaryColor }} />
+                      <span className="font-medium">Use Reward Tokens</span>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={useTokens}
+                        onChange={(e) => setUseTokens(e.target.checked)}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
+                  </div>
+                  
+                  {useTokens && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-blue-800">Available Tokens:</span>
+                        <span className="font-semibold text-blue-900">₦{availableTokens.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-blue-800">Using:</span>
+                        <span className="font-semibold text-blue-900">-₦{actualTokenAmount.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="0"
+                        max={maxTokensToUse}
+                        step="0.01"
+                        value={tokenAmount}
+                        onChange={(e) => setTokenAmount(parseFloat(e.target.value))}
+                        className="w-full"
+                        style={{ accentColor: primaryColor }}
+                      />
+                      <p className="text-xs text-blue-700">
+                        💡 Slide to adjust token amount (max: ₦{maxTokensToUse.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
               
               {/* Final Total */}
               <div className="border-t pt-3 flex justify-between items-center">
-                <span className="font-semibold text-lg">Total:</span>
-                <span className="font-semibold text-lg" style={{ color: primaryColor }}>₦{finalTotal.toLocaleString()}</span>
+                <span className="font-semibold text-lg">Total to Pay:</span>
+                <span className="font-semibold text-lg" style={{ color: primaryColor }}>₦{finalTotal.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
+
+              {useTokens && actualTokenAmount > 0 && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-2">
+                  <p className="text-xs text-green-800 text-center">
+                    🎉 You're saving ₦{actualTokenAmount.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} with tokens!
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -470,9 +566,11 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
           >
             {isSubmitting 
               ? "Processing..." 
-              : paymentMethod === "transfer" 
-                ? `Proceed to Payment - ₦${finalTotal.toLocaleString()}`
-                : `Place Order - ₦${finalTotal.toLocaleString()}`
+              : finalTotal === 0
+                ? "Place Order (Paid with Tokens)"
+                : paymentMethod === "transfer" && finalTotal > 0
+                  ? `Proceed to Payment - ₦${finalTotal.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                  : `Place Order - ₦${finalTotal.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
             }
           </button>
         </form>

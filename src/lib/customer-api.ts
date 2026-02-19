@@ -317,3 +317,51 @@ export async function updateDeviceActivity(customerId: string, deviceId: string)
     console.error("[CustomerAPI] Error updating device activity:", error)
   }
 }
+
+/**
+ * Get customer token balance
+ */
+export async function getCustomerTokenBalance(customerId: string): Promise<number> {
+  try {
+    const response = await fetch(`${API_BASE}/api/customers/${customerId}`)
+
+    if (!response.ok) {
+      console.error("[CustomerAPI] Failed to get customer:", response.statusText)
+      return 0
+    }
+
+    const customer = await response.json()
+    return customer.reward_tokens || 0
+  } catch (error) {
+    console.error("[CustomerAPI] Error getting token balance:", error)
+    return 0
+  }
+}
+
+/**
+ * Use tokens for payment
+ * Returns true if tokens were successfully deducted
+ */
+export async function useTokensForPayment(
+  customerId: string,
+  tokenAmount: number
+): Promise<boolean> {
+  try {
+    const response = await fetch(`${API_BASE}/api/customers/${customerId}/use-tokens`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token_amount: tokenAmount }),
+    })
+
+    if (!response.ok) {
+      console.error("[CustomerAPI] Failed to use tokens:", response.statusText)
+      return false
+    }
+
+    const data = await response.json()
+    return data.success || false
+  } catch (error) {
+    console.error("[CustomerAPI] Error using tokens:", error)
+    return false
+  }
+}
