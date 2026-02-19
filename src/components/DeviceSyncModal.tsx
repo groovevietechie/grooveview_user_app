@@ -73,17 +73,39 @@ export default function DeviceSyncModal({
     if (preloadedCustomer) {
       setCustomer(preloadedCustomer)
     }
-    if (preloadedDevices) {
+    if (preloadedDevices && preloadedDevices.length > 0) {
       setDevices(preloadedDevices)
     }
   }, [preloadedCustomer, preloadedDevices])
 
+  // Load customer data when modal opens
   useEffect(() => {
-    if (isOpen && !preloadedCustomer) {
-      // Only load if not preloaded
-      loadCustomerData()
+    if (!isOpen) return
+
+    // Always check localStorage for customer ID when modal opens
+    const customerId = getCustomerId()
+    console.log("[DeviceSync] Modal opened, customer ID from localStorage:", customerId)
+    console.log("[DeviceSync] Preloaded customer:", preloadedCustomer?.id)
+    
+    if (customerId) {
+      // Customer ID exists in localStorage
+      if (preloadedCustomer && preloadedCustomer.id === customerId) {
+        // Use preloaded data if it matches
+        console.log("[DeviceSync] Using preloaded data")
+        setCustomer(preloadedCustomer)
+        setDevices(preloadedDevices || [])
+      } else {
+        // Load fresh data if preloaded doesn't match or doesn't exist
+        console.log("[DeviceSync] Loading fresh data")
+        loadCustomerData()
+      }
+    } else {
+      // No customer ID - show create profile screen
+      console.log("[DeviceSync] No customer ID, showing create profile")
+      setCustomer(null)
+      setDevices([])
     }
-  }, [isOpen, preloadedCustomer])
+  }, [isOpen])
 
   const loadCustomerData = async () => {
     const customerId = getCustomerId()
@@ -136,6 +158,8 @@ export default function DeviceSyncModal({
       const fingerprint = JSON.stringify(generateDeviceFingerprint())
       const deviceName = getDeviceName()
 
+      console.log("[DeviceSync] Creating profile for device:", deviceId)
+
       const result = await createCustomerProfile(deviceId, fingerprint, deviceName)
 
       if (!result) {
@@ -144,10 +168,15 @@ export default function DeviceSyncModal({
         return
       }
 
+      console.log("[DeviceSync] Profile created successfully:", result.customer.id)
+      console.log("[DeviceSync] Passcode:", result.customer.sync_passcode)
+
       setCustomerId(result.customer.id)
       linkOrdersToCustomer(result.customer.id)
       setCustomer(result.customer)
       setDevices([result.device])
+      
+      console.log("[DeviceSync] Customer ID saved to localStorage:", getCustomerId())
       
       // Notify parent to refresh data
       onDataChange?.()
