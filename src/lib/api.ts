@@ -3,7 +3,9 @@ import type { Business, Menu, MenuCategory, MenuItem, OrderSubmission, ServiceCo
 
 // Business API
 export async function getBusinessBySlug(slug: string): Promise<Business | null> {
-  const { data, error } = await supabase.from("businesses").select("*").eq("slug", slug).single()
+  // Normalize slug: decode URI encoding and replace spaces with hyphens
+  const normalizedSlug = decodeURIComponent(slug).toLowerCase().replace(/\s+/g, "-")
+  const { data, error } = await supabase.from("businesses").select("*").eq("slug", normalizedSlug).single()
 
   if (error) {
     console.error("[GrooveVie API] Error fetching business:", error.message)
@@ -680,6 +682,7 @@ export async function submitOrder(orderData: OrderSubmission): Promise<string | 
     const baseOrderData = {
       business_id: orderData.businessId,
       customer_id: orderData.customerId || null,
+      device_id: orderData.deviceId || null,
       seat_label: orderData.seatLabel,
       customer_note: cleanCustomerNote || null,
       status: "new" as const,

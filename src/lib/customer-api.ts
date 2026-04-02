@@ -339,6 +339,32 @@ export async function getCustomerTokenBalance(customerId: string): Promise<numbe
 }
 
 /**
+ * Update customer profile fields (full_name, address, profile_picture_url)
+ */
+export async function updateCustomerProfile(
+  customerId: string,
+  updates: { full_name?: string; address?: string; profile_picture_url?: string }
+): Promise<Customer | null> {
+  try {
+    const response = await fetch(`${API_BASE}/api/customers/${customerId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updates),
+    })
+
+    if (!response.ok) {
+      console.error("[CustomerAPI] Failed to update customer profile:", response.statusText)
+      return null
+    }
+
+    return await response.json()
+  } catch (error) {
+    console.error("[CustomerAPI] Error updating customer profile:", error)
+    return null
+  }
+}
+
+/**
  * Use tokens for payment
  * Returns true if tokens were successfully deducted
  */
@@ -363,5 +389,34 @@ export async function useTokensForPayment(
   } catch (error) {
     console.error("[CustomerAPI] Error using tokens:", error)
     return false
+  }
+}
+
+/**
+ * Award 2% reward tokens to a customer when their order is marked as served.
+ * Idempotent — safe to call multiple times for the same order.
+ */
+export async function awardTokensForOrder(
+  customerId: string,
+  orderId: string,
+  orderTotal: number
+): Promise<{ success: boolean; tokensAwarded?: number; newBalance?: number }> {
+  try {
+    const response = await fetch(`${API_BASE}/api/customers/${customerId}/award-tokens`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ order_id: orderId, order_total: orderTotal }),
+    })
+
+    if (!response.ok) {
+      console.error("[CustomerAPI] Failed to award tokens:", response.statusText)
+      return { success: false }
+    }
+
+    const data = await response.json()
+    return { success: true, tokensAwarded: data.tokens_awarded, newBalance: data.new_balance }
+  } catch (error) {
+    console.error("[CustomerAPI] Error awarding tokens:", error)
+    return { success: false }
   }
 }

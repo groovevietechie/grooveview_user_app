@@ -1,6 +1,31 @@
-import { QrCodeIcon, ShoppingBagIcon, TruckIcon } from '@heroicons/react/24/outline'
+'use client'
+
+import { QrCodeIcon, ShoppingBagIcon, TruckIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline'
 
 export default function Home() {
+  const handleDownloadPOS = async () => {
+    try {
+      // Check if file exists first
+      const response = await fetch('/downloads/groovevie-pos.zip', { method: 'HEAD' })
+      
+      if (response.ok) {
+        // File exists, proceed with download
+        const link = document.createElement('a')
+        link.href = '/downloads/groovevie-pos.zip'
+        link.download = 'groovevie-pos.zip'
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+      } else {
+        // File doesn't exist, show user-friendly message
+        alert('The POS application download is currently being prepared. Please check back soon or contact support.')
+      }
+    } catch (error) {
+      console.error('Download error:', error)
+      alert('Unable to download at this time. Please try again later.')
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <div className="container mx-auto px-4 py-16">
@@ -16,6 +41,30 @@ export default function Home() {
             The easiest way to order food from your favorite restaurants.
             Simply scan the QR code and place your order instantly.
           </p>
+        </div>
+
+        {/* POS Download Banner */}
+        <div className="max-w-4xl mx-auto mb-12">
+          <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg shadow-lg p-4 md:p-6">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3 text-white">
+                <ArrowDownTrayIcon className="w-8 h-8 flex-shrink-0" />
+                <div>
+                  <h3 className="font-semibold text-lg">Download GrooveVie POS</h3>
+                  <p className="text-sm text-indigo-100">
+                    Get the desktop app for restaurant management
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={handleDownloadPOS}
+                className="bg-white text-indigo-600 px-6 py-3 rounded-lg font-semibold hover:bg-indigo-50 transition-colors shadow-md flex items-center gap-2 whitespace-nowrap"
+              >
+                <ArrowDownTrayIcon className="w-5 h-5" />
+                Download Now
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* How it works */}

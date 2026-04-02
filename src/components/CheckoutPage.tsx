@@ -11,7 +11,7 @@ import { submitOrder } from "@/lib/api"
 import { saveDeviceOrder } from "@/lib/order-storage"
 import { useBackNavigation } from "@/hooks/useBackNavigation"
 import { useCustomerProfile } from "@/hooks/useCustomerProfile"
-import { getCustomerByDeviceId } from "@/lib/customer-api"
+import { getCustomerId, getDeviceId } from "@/lib/device-identity"
 import BackButton from "@/components/BackButton"
 import { HomeIcon, BuildingOfficeIcon, TruckIcon, PhoneIcon, CurrencyDollarIcon } from "@heroicons/react/24/outline"
 
@@ -49,6 +49,25 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
     refreshCustomerData()
   }, [])
 
+  const total = getTotal()
+  const deliveryFee = orderType === "home" ? 1500 : 0
+  const subtotal = total + deliveryFee
+
+  // Calculate token usage
+  const availableTokens = customer?.reward_tokens || 0
+  const maxTokensToUse = Math.min(availableTokens, subtotal)
+  const actualTokenAmount = useTokens ? tokenAmount : 0
+  const finalTotal = subtotal - actualTokenAmount
+
+  // Update token amount when useTokens changes
+  useEffect(() => {
+    if (useTokens && maxTokensToUse > 0) {
+      setTokenAmount(maxTokensToUse)
+    } else {
+      setTokenAmount(0)
+    }
+  }, [useTokens, maxTokensToUse])
+
   // Handle empty cart redirect in useEffect to avoid render-time navigation
   useEffect(() => {
     if (items.length === 0 && !isRedirecting) {
@@ -79,25 +98,6 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
       setPaymentMethod("cash") // Table and room default to cash
     }
   }
-
-  const total = getTotal()
-  const deliveryFee = orderType === "home" ? 1500 : 0
-  const subtotal = total + deliveryFee
-  
-  // Calculate token usage
-  const availableTokens = customer?.reward_tokens || 0
-  const maxTokensToUse = Math.min(availableTokens, subtotal)
-  const actualTokenAmount = useTokens ? tokenAmount : 0
-  const finalTotal = subtotal - actualTokenAmount
-
-  // Update token amount when useTokens changes
-  useEffect(() => {
-    if (useTokens && maxTokensToUse > 0) {
-      setTokenAmount(maxTokensToUse)
-    } else {
-      setTokenAmount(0)
-    }
-  }, [useTokens, maxTokensToUse])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -148,7 +148,8 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
 
       const orderData = {
         businessId: business.id,
-        customerId: customer?.id,
+        customerId: customer?.id || getCustomerId() || undefined,
+        deviceId: getDeviceId() || undefined,
         items: items.map((cartItem) => ({
           menuItemId: cartItem.menuItem.id,
           quantity: cartItem.quantity,
@@ -186,7 +187,8 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
 
       const orderData = {
         businessId: business.id,
-        customerId: customer?.id,
+        customerId: customer?.id || getCustomerId() || undefined,
+        deviceId: getDeviceId() || undefined,
         items: items.map((cartItem) => ({
           menuItemId: cartItem.menuItem.id,
           quantity: cartItem.quantity,

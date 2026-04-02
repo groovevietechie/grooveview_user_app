@@ -97,6 +97,7 @@ export interface Order {
   delivery_address?: string
   transfer_code?: string
   payment_confirmed_at?: string
+  tokens_awarded?: boolean
   created_at: string
   updated_at: string
 }
@@ -267,6 +268,7 @@ export interface Cart {
 export interface OrderSubmission {
   businessId: string
   customerId?: string // Add customer ID for token tracking
+  deviceId?: string  // Device ID for customer_devices lookup
   items: {
     menuItemId: string
     quantity: number
@@ -286,6 +288,9 @@ export interface Customer {
   id: string
   sync_passcode: string
   reward_tokens: number // 1 token = 1 Naira, earned 2% from completed orders
+  full_name?: string
+  address?: string
+  profile_picture_url?: string
   created_at: string
   updated_at: string
 }

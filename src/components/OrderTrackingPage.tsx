@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import type { Business, Order } from "@/types/database"
 import { useTheme } from "@/contexts/ThemeContext"
@@ -8,8 +8,9 @@ import { getOrdersByIds } from "@/lib/api"
 import { getContrastColor, lightenColor, darkenColor } from "@/lib/color-utils"
 import { getDeviceOrders } from "@/lib/order-storage"
 import { getCustomerId } from "@/lib/device-identity"
-import { getCustomerOrders } from "@/lib/customer-api"
+import { getCustomerOrders, awardTokensForOrder } from "@/lib/customer-api"
 import { useBackNavigation } from "@/hooks/useBackNavigation"
+import { useCustomerProfile } from "@/hooks/useCustomerProfile"
 import BackButton from "@/components/BackButton"
 import {
   CheckCircleIcon,
@@ -19,6 +20,7 @@ import {
   ShoppingBagIcon,
   ChatBubbleLeftIcon,
   CalendarIcon,
+  GiftIcon,
 } from "@heroicons/react/24/outline"
 import { CheckCircleIcon as CheckCircleIconSolid } from "@heroicons/react/24/solid"
 
@@ -50,6 +52,10 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
   const [orders, setOrders] = useState<OrderWithItems[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedOrder, setSelectedOrder] = useState<OrderWithItems | null>(null)
+  const [claiming, setClaiming] = useState(false)
+  const [claimSuccess, setClaimSuccess] = useState<{ orderId: string; amount: number } | null>(null)
+  const [customerId, setCustomerId] = useState<string | null>(null)
+  const { refreshCustomerData } = useCustomerProfile()
 
   // Use the back navigation hook
   useBackNavigation({
@@ -68,41 +74,51 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
   const contrastColor = getContrastColor(primaryColor)
 
   useEffect(() => {
+    // Resolve customerId on the client side
+    setCustomerId(getCustomerId())
     loadOrders()
-    const interval = setInterval(loadOrders, 5000) // Poll every 5 seconds
+    const interval = setInterval(loadOrders, 5000)
     return () => clearInterval(interval)
   }, [])
 
-  // Update selectedOrder when orders are refreshed to reflect latest status
+  // Update selectedOrder when orders are refreshed — but preserve optimistic tokens_awarded=true
   useEffect(() => {
     if (selectedOrder) {
       const updatedOrder = orders.find(o => o.id === selectedOrder.id)
       if (updatedOrder) {
-        setSelectedOrder(updatedOrder)
+        // Keep tokens_awarded=true if we set it optimistically, even if DB hasn't caught up yet
+        setSelectedOrder({
+          ...updatedOrder,
+          tokens_awarded: selectedOrder.tokens_awarded || updatedOrder.tokens_awarded,
+        })
       }
     }
-  }, [orders, selectedOrder])
+  }, [orders])
 
   const loadOrders = async () => {
     try {
       const customerId = getCustomerId()
 
       if (customerId) {
-        // Customer has a profile - load all orders across devices
-        console.log("[v0] Loading orders for customer:", customerId)
         const customerOrders = await getCustomerOrders(customerId, business.id)
-        setOrders(customerOrders)
-      } else {
-        // No customer profile - use device-only orders
-        const deviceOrderIds = getDeviceOrders(business.id)
-        console.log("[v0] Loading orders for device:", deviceOrderIds)
 
+        // Merge with device-local orders (placed before profile was linked, customer_id=NULL)
+        const deviceOrderIds = getDeviceOrders(business.id)
+        let deviceOnlyOrders: OrderWithItems[] = []
+        if (deviceOrderIds.length > 0) {
+          const fetched = await getOrdersByIds(deviceOrderIds)
+          const customerOrderIds = new Set(customerOrders.map(o => o.id))
+          deviceOnlyOrders = fetched.filter(o => !customerOrderIds.has(o.id))
+        }
+
+        setOrders([...customerOrders, ...deviceOnlyOrders])
+      } else {
+        const deviceOrderIds = getDeviceOrders(business.id)
         if (deviceOrderIds.length === 0) {
           setOrders([])
           setLoading(false)
           return
         }
-
         const fetchedOrders = await getOrdersByIds(deviceOrderIds)
         setOrders(fetchedOrders)
       }
@@ -110,6 +126,33 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
       console.error("[v0] Error loading orders:", error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleClaimTokens = async (order: OrderWithItems) => {
+    const cid = customerId || getCustomerId()
+    if (!cid) {
+      alert("Please create a profile in Device Sync to earn and claim reward tokens.")
+      return
+    }
+
+    setClaiming(true)
+    try {
+      const result = await awardTokensForOrder(cid, order.id, order.total_amount)
+      if (result.success) {
+        const awarded = result.tokensAwarded ?? Math.round(order.total_amount * 0.02 * 100) / 100
+        setClaimSuccess({ orderId: order.id, amount: awarded })
+        setOrders(prev => prev.map(o => o.id === order.id ? { ...o, tokens_awarded: true } : o))
+        setSelectedOrder(prev => prev ? { ...prev, tokens_awarded: true } : prev)
+        await refreshCustomerData()
+      } else {
+        alert("Failed to claim tokens. Please try again.")
+      }
+    } catch (err) {
+      console.error("[v0] Claim tokens error:", err)
+      alert("An error occurred. Please try again.")
+    } finally {
+      setClaiming(false)
     }
   }
 
@@ -306,6 +349,24 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
                             {order.status}
                           </span>
                         </div>
+                        {/* Claim token button on card */}
+                        {order.status === "served" && !order.tokens_awarded && (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setSelectedOrder(order); handleClaimTokens(order) }}
+                            disabled={claiming}
+                            style={{ backgroundColor: primaryColor, color: contrastColor }}
+                            className="mt-3 w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg font-semibold text-xs shadow hover:opacity-90 active:scale-95 transition-all disabled:opacity-60"
+                          >
+                            <GiftIcon className="w-3.5 h-3.5" />
+                            {claiming && selectedOrder?.id === order.id ? "Claiming..." : "Claim Tokens"}
+                          </button>
+                        )}
+                        {order.status === "served" && order.tokens_awarded && (
+                          <div className="mt-3 flex items-center gap-1.5 justify-center">
+                            <CheckCircleIconSolid className="w-3.5 h-3.5" style={{ color: primaryColor }} />
+                            <span className="text-xs font-medium" style={{ color: themeShades.darker }}>Tokens claimed</span>
+                          </div>
+                        )}
                       </button>
                     ))}
                   </div>
@@ -361,6 +422,24 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
                             {order.status}
                           </span>
                         </div>
+                        {/* Claim token button on card */}
+                        {order.status === "served" && !order.tokens_awarded && (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setSelectedOrder(order); handleClaimTokens(order) }}
+                            disabled={claiming}
+                            style={{ backgroundColor: primaryColor, color: contrastColor }}
+                            className="mt-3 w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg font-semibold text-xs shadow hover:opacity-90 active:scale-95 transition-all disabled:opacity-60"
+                          >
+                            <GiftIcon className="w-3.5 h-3.5" />
+                            {claiming && selectedOrder?.id === order.id ? "Claiming..." : "Claim Tokens"}
+                          </button>
+                        )}
+                        {order.status === "served" && order.tokens_awarded && (
+                          <div className="mt-3 flex items-center gap-1.5 justify-center">
+                            <CheckCircleIconSolid className="w-3.5 h-3.5" style={{ color: primaryColor }} />
+                            <span className="text-xs font-medium" style={{ color: themeShades.darker }}>Tokens claimed</span>
+                          </div>
+                        )}
                       </button>
                     ))}
                   </div>
@@ -433,6 +512,53 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
                         ></div>
                       </div>
                     </div>
+
+                    {/* Claim Tokens — shown when served and not yet claimed, and customer has a profile */}
+                    {selectedOrder.status === "served" && !selectedOrder.tokens_awarded && (
+                      <div className="mt-6">
+                        {claimSuccess?.orderId === selectedOrder.id ? (
+                          <div
+                            className="flex items-center gap-3 p-4 rounded-xl border"
+                            style={{ backgroundColor: themeShades.lightest, borderColor: primaryColor }}
+                          >
+                            <CheckCircleIconSolid className="w-6 h-6 flex-shrink-0" style={{ color: primaryColor }} />
+                            <div>
+                              <p className="font-semibold text-sm" style={{ color: themeShades.darker }}>
+                                Tokens Claimed!
+                              </p>
+                              <p className="text-xs text-gray-600">
+                                ₦{claimSuccess.amount.toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} added to your reward balance
+                              </p>
+                            </div>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => handleClaimTokens(selectedOrder)}
+                            disabled={claiming}
+                            style={{ backgroundColor: primaryColor, color: contrastColor }}
+                            className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-semibold text-sm shadow-md hover:opacity-90 active:scale-95 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                          >
+                            <GiftIcon className="w-5 h-5" />
+                            {claiming
+                              ? "Claiming..."
+                              : `Claim ₦${(Math.round(selectedOrder.total_amount * 0.02 * 100) / 100).toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Reward Tokens (2%)`}
+                          </button>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Already claimed indicator */}
+                    {selectedOrder.status === "served" && selectedOrder.tokens_awarded && (
+                      <div
+                        className="mt-6 flex items-center gap-2 p-3 rounded-xl"
+                        style={{ backgroundColor: themeShades.lightest }}
+                      >
+                        <CheckCircleIconSolid className="w-4 h-4" style={{ color: primaryColor }} />
+                        <p className="text-xs font-medium" style={{ color: themeShades.darker }}>
+                          Reward tokens already claimed for this order
+                        </p>
+                      </div>
+                    )}
                   </div>
 
                   {/* Order Details */}
@@ -593,8 +719,7 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
                           </p>
                         )}
                       </div>
-                    )}
-                  </div>
+                    )}                  </div>
                 </div>
               </div>
             )}

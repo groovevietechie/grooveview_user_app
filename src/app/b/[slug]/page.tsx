@@ -30,7 +30,8 @@ async function getBusinessData(slug: string): Promise<{
 
 export default async function BusinessPage({ params }: PageProps) {
   const { slug } = await params
-  const { business, menuData } = await getBusinessData(slug)
+  const normalizedSlug = decodeURIComponent(slug).toLowerCase().replace(/\s+/g, "-")
+  const { business, menuData } = await getBusinessData(normalizedSlug)
 
   if (!business) {
     notFound()
@@ -86,7 +87,8 @@ export default async function BusinessPage({ params }: PageProps) {
 
 export async function generateMetadata({ params }: PageProps) {
   const { slug } = await params
-  const { business } = await getBusinessData(slug)
+  const normalizedSlug = decodeURIComponent(slug).toLowerCase().replace(/\s+/g, "-")
+  const { business } = await getBusinessData(normalizedSlug)
 
   if (!business) {
     return {
