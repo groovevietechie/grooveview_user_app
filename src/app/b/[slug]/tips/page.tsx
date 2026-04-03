@@ -5,7 +5,7 @@ import TipsPage from "@/components/TipsPage"
 
 interface PageProps {
   params: Promise<{ slug: string }>
-  searchParams: Promise<{ orderId?: string }>
+  searchParams: Promise<{ orderId?: string; waiterId?: string }>
 }
 
 async function getBusinessData(slug: string): Promise<Business | null> {
@@ -14,14 +14,20 @@ async function getBusinessData(slug: string): Promise<Business | null> {
 
 export default async function Tips({ params, searchParams }: PageProps) {
   const { slug } = await params
-  const { orderId } = await searchParams
+  const { orderId, waiterId } = await searchParams
   const business = await getBusinessData(slug)
 
   if (!business || !orderId) {
     notFound()
   }
 
-  return <TipsPage business={business} orderId={orderId} />
+  return (
+    <TipsPage
+      business={business}
+      orderId={orderId}
+      preselectedWaiterId={waiterId}
+    />
+  )
 }
 
 export async function generateMetadata({ params }: PageProps) {

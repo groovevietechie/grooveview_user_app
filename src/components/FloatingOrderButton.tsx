@@ -1,7 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { ShoppingBagIcon } from "@heroicons/react/24/solid"
+import { ClipboardDocumentListIcon } from "@heroicons/react/24/solid"
 
 interface FloatingOrderButtonProps {
   businessSlug: string
@@ -15,11 +15,12 @@ export default function FloatingOrderButton({ businessSlug, primaryColor }: Floa
     <button
       onClick={() => router.push(`/b/${businessSlug}/orders`)}
       style={{ backgroundColor: primaryColor }}
-      className="fixed bottom-8 right-8 z-30 text-white p-5 rounded-full shadow-2xl hover:shadow-3xl transition-all hover:scale-110 animate-pulse"
-      aria-label="View orders"
-      title="View your orders"
+      className="fixed bottom-8 left-6 z-30 text-white pl-4 pr-5 py-3 rounded-full shadow-2xl transition-all hover:scale-105 hover:shadow-3xl active:scale-95 flex items-center gap-2"
+      aria-label="Track your orders"
+      title="Track your orders"
     >
-      <ShoppingBagIcon className="w-6 h-6" />
+      <ClipboardDocumentListIcon className="w-5 h-5 flex-shrink-0" />
+      <span className="text-sm font-semibold whitespace-nowrap">My Orders</span>
     </button>
   )
 }

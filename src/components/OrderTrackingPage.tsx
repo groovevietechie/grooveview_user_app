@@ -169,7 +169,8 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
         await refreshCustomerData()
         // Redirect to tips page after a short delay so the success state is visible
         setTimeout(() => {
-          router.push(`/b/${business.slug}/tips?orderId=${order.id}`)
+          const waiterParam = order.waiter_id ? `&waiterId=${order.waiter_id}` : ""
+          router.push(`/b/${business.slug}/tips?orderId=${order.id}${waiterParam}`)
         }, 1200)
       } else {
         alert("Failed to claim tokens. Please try again.")

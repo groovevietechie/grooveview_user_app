@@ -8,6 +8,7 @@ import { useTheme } from "@/contexts/ThemeContext"
 import { getMenuItemOrderCounts } from "@/lib/api"
 import { getDeviceId, getCustomerId } from "@/lib/device-identity"
 import { trackActivity, updateDeviceActivity } from "@/lib/customer-api"
+import { getDeviceOrders } from "@/lib/order-storage"
 import { useCustomerProfile } from "@/hooks/useCustomerProfile"
 import MenuHeader from "./MenuHeader"
 import MenuList from "./MenuList"
@@ -57,8 +58,9 @@ export default function MenuPage({ business, menuData }: MenuPageProps) {
     }
 
     const checkRecentOrder = () => {
-      const hasRecentOrder = sessionStorage.getItem(`${business.id}_recent_order`) === "true"
-      setShowFloatingButton(hasRecentOrder)
+      // Show button if user has ever placed an order for this business (persisted in localStorage)
+      const hasOrders = getDeviceOrders(business.id).length > 0
+      setShowFloatingButton(hasOrders)
     }
 
     checkRecentOrder()

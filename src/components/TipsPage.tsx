@@ -19,9 +19,10 @@ import { StarIcon as StarOutlineIcon } from "@heroicons/react/24/outline"
 interface TipsPageProps {
   business: Business
   orderId: string
+  preselectedWaiterId?: string
 }
 
-const PRESET_AMOUNTS = [0, 100, 200, 500]
+const PRESET_AMOUNTS = [1000, 2000, 3000, 5000]
 const COMPLIMENTS = [
   "Excellent service",
   "Very attentive",
@@ -33,12 +34,14 @@ const COMPLIMENTS = [
 
 const STAR_LABELS = ["", "Poor", "Fair", "Good", "Great", "Excellent!"]
 
-export default function TipsPage({ business, orderId }: TipsPageProps) {
+export default function TipsPage({ business, orderId, preselectedWaiterId }: TipsPageProps) {
   const router = useRouter()
   const { primaryColor } = useTheme()
 
   const [waiters, setWaiters] = useState<Waiter[]>([])
   const [selectedWaiter, setSelectedWaiter] = useState<Waiter | null>(null)
+  // true when the waiter was pre-chosen at checkout — no picker shown
+  const [waiterLocked, setWaiterLocked] = useState(false)
   const [rating, setRating] = useState(5)
   const [hoverRating, setHoverRating] = useState(0)
   const [tipAmount, setTipAmount] = useState(500)
@@ -65,7 +68,19 @@ export default function TipsPage({ business, orderId }: TipsPageProps) {
     setLoadingWaiters(true)
     const data = await getAvailableWaiters(business.id)
     setWaiters(data)
-    if (data.length === 1) setSelectedWaiter(data[0])
+
+    if (preselectedWaiterId) {
+      // Waiter was chosen at checkout — lock them in
+      const match = data.find((w) => w.id === preselectedWaiterId)
+      if (match) {
+        setSelectedWaiter(match)
+        setWaiterLocked(true)
+      }
+    } else if (data.length === 1) {
+      // Only one waiter on duty — auto-select but don't lock (still show them)
+      setSelectedWaiter(data[0])
+    }
+
     setLoadingWaiters(false)
   }
 
@@ -316,12 +331,37 @@ export default function TipsPage({ business, orderId }: TipsPageProps) {
                 style={{ borderColor: primaryColor }}
               />
             </div>
+          ) : waiterLocked && selectedWaiter ? (
+            // Waiter was pre-chosen at checkout — show locked card, no picker
+            <div className="flex flex-col items-center gap-2">
+              <div className="relative">
+                {selectedWaiter.profile_image_url ? (
+                  <img
+                    src={selectedWaiter.profile_image_url}
+                    alt={selectedWaiter.name}
+                    className="w-20 h-20 rounded-full object-cover border-2 border-white shadow-md"
+                  />
+                ) : (
+                  <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center border-2 border-white shadow-md">
+                    <UserCircleIcon className="w-14 h-14 text-gray-400" />
+                  </div>
+                )}
+                <div
+                  className="absolute bottom-0 right-0 w-6 h-6 rounded-full flex items-center justify-center border-2 border-white"
+                  style={{ backgroundColor: primaryColor }}
+                >
+                  <CheckIcon className="w-3 h-3 text-white" />
+                </div>
+              </div>
+              <p className="font-bold text-gray-900 text-base">{selectedWaiter.name}</p>
+              <p className="text-xs text-gray-400">Your selected waiter</p>
+            </div>
           ) : waiters.length === 0 ? (
             <div className="text-center py-4 text-gray-400 text-sm">
               No waiters on duty today
             </div>
           ) : waiters.length === 1 ? (
-            // Single waiter — show centered card like the ride app
+            // Single waiter on duty — show centered card
             <div className="flex flex-col items-center gap-2">
               <div className="relative">
                 {waiters[0].profile_image_url ? (
@@ -345,7 +385,7 @@ export default function TipsPage({ business, orderId }: TipsPageProps) {
               <p className="font-bold text-gray-900 text-base">{waiters[0].name}</p>
             </div>
           ) : (
-            // Multiple waiters — horizontal scroll picker
+            // Multiple waiters, none pre-chosen — show picker
             <div>
               <p className="text-sm font-medium text-gray-600 mb-2 text-center">Select your waiter</p>
               <div className="flex gap-3 overflow-x-auto pb-2 justify-center flex-wrap">
