@@ -726,6 +726,7 @@ export async function submitOrder(orderData: OrderSubmission): Promise<string | 
         customer_phone: customerPhone,
         delivery_address: orderData.deliveryAddress,
         transfer_code: transferCode,
+        waiter_id: orderData.waiterId || null,
       }
       const midResult = await supabase.from("orders").insert(midOrderData).select().single()
       order = midResult.data
@@ -747,6 +748,7 @@ export async function submitOrder(orderData: OrderSubmission): Promise<string | 
       if (orderData.deviceId) patches.device_id = orderData.deviceId
       if (orderData.tokenPaymentAmount) patches.token_payment_amount = orderData.tokenPaymentAmount
       if (transferCode) patches.transfer_code = transferCode
+      if (orderData.waiterId) patches.waiter_id = orderData.waiterId
 
       if (Object.keys(patches).length > 0) {
         try {
