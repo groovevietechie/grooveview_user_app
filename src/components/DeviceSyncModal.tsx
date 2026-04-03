@@ -7,6 +7,8 @@ import {
   getDeviceId,
   getDeviceName,
   generateDeviceFingerprint,
+  setCustomerId,
+  clearCustomerId,
 } from "@/lib/device-identity"
 import {
   createCustomerProfile,
@@ -78,6 +80,7 @@ export default function DeviceSyncModal({
       const deviceId = getDeviceId()
       const customerData = await getCustomerByDeviceId(deviceId)
       if (customerData) {
+        setCustomerId(customerData.id) // persist so other pages can read it
         const devicesData = await getCustomerDevices(customerData.id)
         setCustomer(customerData)
         setDevices(devicesData)
@@ -124,6 +127,7 @@ export default function DeviceSyncModal({
 
       setCustomer(finalCustomer)
       setDevices([result.device])
+      setCustomerId(finalCustomer.id) // persist for other pages
       onDataChange?.()
     } catch (err) {
       console.error("[DeviceSync] Error creating profile:", err)
@@ -198,6 +202,7 @@ export default function DeviceSyncModal({
       setCustomer(customerData)
       setShowLinkDevice(false)
       setPasscodeInput("")
+      setCustomerId(customerData.id) // persist for other pages
       await loadCustomerDataByDevice()
       onDataChange?.()
     } catch (err) {
@@ -219,6 +224,7 @@ export default function DeviceSyncModal({
       const success = await unlinkDevice(customer.id, deviceId)
       if (success) {
         if (deviceId === currentDeviceId) {
+          clearCustomerId() // remove from localStorage/cookie
           setCustomer(null)
           setDevices([])
         } else {

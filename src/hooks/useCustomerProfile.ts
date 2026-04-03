@@ -4,8 +4,8 @@
  */
 
 import { useState, useEffect } from "react"
-import { getCustomerId, getDeviceId } from "@/lib/device-identity"
-import { getCustomerDevices, updateDeviceActivity } from "@/lib/customer-api"
+import { getCustomerId, getDeviceId, setCustomerId } from "@/lib/device-identity"
+import { getCustomerDevices, updateDeviceActivity, getCustomerByDeviceId } from "@/lib/customer-api"
 import type { Customer, CustomerDevice } from "@/types/database"
 
 export function useCustomerProfile() {
@@ -15,8 +15,20 @@ export function useCustomerProfile() {
   const [error, setError] = useState<string | null>(null)
 
   const loadCustomerData = async () => {
-    const customerId = getCustomerId()
+    let customerId = getCustomerId()
     
+    // If no customerId in storage, try to find customer by device ID
+    if (!customerId) {
+      const deviceId = getDeviceId()
+      if (deviceId) {
+        const customerByDevice = await getCustomerByDeviceId(deviceId)
+        if (customerByDevice) {
+          setCustomerId(customerByDevice.id) // persist it
+          customerId = customerByDevice.id
+        }
+      }
+    }
+
     if (!customerId) {
       setCustomer(null)
       setDevices([])

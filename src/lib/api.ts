@@ -1,5 +1,5 @@
 import { supabase } from "./supabase"
-import type { Business, Menu, MenuCategory, MenuItem, OrderSubmission, ServiceConfiguration, ServiceOption, ServiceBooking, ServiceBookingSubmission, ServiceStatus, Staff } from "@/types/database"
+import type { Business, Menu, MenuCategory, MenuItem, OrderSubmission, ServiceConfiguration, ServiceOption, ServiceBooking, ServiceBookingSubmission, ServiceStatus, Staff, Waiter, Tip } from "@/types/database"
 
 // Business API
 export async function getBusinessBySlug(slug: string): Promise<Business | null> {
@@ -678,108 +678,83 @@ export async function submitOrder(orderData: OrderSubmission): Promise<string | 
       }
     }
 
-    // Prepare base order data (guaranteed to work with existing schema)
-    const baseOrderData = {
+    const paymentMethod = orderData.paymentMethod === 'tokens' ? 'cash' : orderData.paymentMethod
+    const paymentStatus = (orderData.paymentMethod === 'transfer' || orderData.paymentMethod === 'tokens') ? "paid" as const : "pending" as const
+    const totalAmount = orderData.items.reduce((total, item) => total + item.unitPrice * item.quantity, 0)
+
+    // Truly minimal — only original core columns guaranteed to exist
+    const minimalOrderData = {
       business_id: orderData.businessId,
-      customer_id: orderData.customerId || null,
-      device_id: orderData.deviceId || null,
       seat_label: orderData.seatLabel,
       customer_note: cleanCustomerNote || null,
       status: "new" as const,
-      payment_method: orderData.paymentMethod,
-      payment_status: (orderData.paymentMethod === 'transfer' || orderData.paymentMethod === 'tokens') ? "paid" as const : "pending" as const,
-      total_amount: orderData.items.reduce((total, item) => total + item.unitPrice * item.quantity, 0),
-      token_payment_amount: orderData.tokenPaymentAmount || 0,
+      payment_method: paymentMethod,
+      payment_status: paymentStatus,
+      total_amount: totalAmount,
     }
 
-    console.log("[v0] Base order data prepared:", baseOrderData)
+    console.log("[v0] Base order data prepared:", minimalOrderData)
 
-    // Try to create order with enhanced fields first, then fallback to basic
+    // Try to create order with enhanced fields first, then progressively fall back
     let order
     let orderError
-    
-    // First attempt: Enhanced order with new fields
+
+    // Attempt 1: Full enhanced order (all columns)
     const enhancedOrderData = {
-      ...baseOrderData,
+      ...minimalOrderData,
+      customer_id: orderData.customerId || null,
+      device_id: orderData.deviceId || null,
+      token_payment_amount: orderData.tokenPaymentAmount || 0,
       order_type: orderType,
       customer_phone: customerPhone,
       delivery_address: orderData.deliveryAddress,
       transfer_code: transferCode,
+      waiter_id: orderData.waiterId || null,
     }
-    
+
     console.log("[v0] Attempting enhanced order creation...")
-    const enhancedResult = await supabase
-      .from("orders")
-      .insert(enhancedOrderData)
-      .select()
-      .single()
-    
+    const enhancedResult = await supabase.from("orders").insert(enhancedOrderData).select().single()
     order = enhancedResult.data
     orderError = enhancedResult.error
-    
-    // If enhanced order failed, try basic order (backward compatibility)
+
+    // Attempt 2: Without newer optional columns (token_payment_amount, customer_id, device_id)
     if (orderError) {
-      console.log("[v0] Enhanced order creation failed, trying basic order:", {
-        message: orderError.message,
-        code: orderError.code,
-        hint: orderError.hint
-      })
-      
-      // Check if it's a payment method constraint error
-      if (orderError.message?.includes('payment_method') || orderError.message?.includes('check constraint')) {
-        console.log("[v0] Detected payment method constraint error, trying with 'cash' as workaround...")
-        
-        // Try with 'cash' payment method as workaround for constraint
-        const workaroundOrderData = {
-          ...baseOrderData,
-          payment_method: 'cash' as const, // Use cash to bypass constraint
-        }
-        
-        console.log("[v0] Attempting workaround order creation with cash payment method...")
-        const workaroundResult = await supabase
-          .from("orders")
-          .insert(workaroundOrderData)
-          .select()
-          .single()
-        
-        order = workaroundResult.data
-        orderError = workaroundResult.error
-        
-        if (!orderError && order) {
-          console.log("[v0] Workaround order successful, payment method stored as 'cash' but actual method is 'transfer'")
-        }
-      } else {
-        console.log("[v0] Attempting basic order creation...")
-        const basicResult = await supabase
-          .from("orders")
-          .insert(baseOrderData)
-          .select()
-          .single()
-        
-        order = basicResult.data
-        orderError = basicResult.error
+      console.log("[v0] Enhanced failed:", orderError.message, "— trying mid-tier...")
+      const midOrderData = {
+        ...minimalOrderData,
+        order_type: orderType,
+        customer_phone: customerPhone,
+        delivery_address: orderData.deliveryAddress,
+        transfer_code: transferCode,
       }
-      
-      // If basic order succeeded and we have a transfer code, try to update it
-      if (!orderError && order && transferCode) {
-        console.log("[v0] Basic order successful, attempting to add transfer code...")
+      const midResult = await supabase.from("orders").insert(midOrderData).select().single()
+      order = midResult.data
+      orderError = midResult.error
+    }
+
+    // Attempt 3: Truly minimal — original schema only
+    if (orderError) {
+      console.log("[v0] Mid-tier failed:", orderError.message, "— trying minimal...")
+      const minResult = await supabase.from("orders").insert(minimalOrderData).select().single()
+      order = minResult.data
+      orderError = minResult.error
+    }
+
+    // After any successful insert, try to patch in optional fields
+    if (!orderError && order) {
+      const patches: Record<string, unknown> = {}
+      if (orderData.customerId) patches.customer_id = orderData.customerId
+      if (orderData.deviceId) patches.device_id = orderData.deviceId
+      if (orderData.tokenPaymentAmount) patches.token_payment_amount = orderData.tokenPaymentAmount
+      if (transferCode) patches.transfer_code = transferCode
+
+      if (Object.keys(patches).length > 0) {
         try {
-          const { error: updateError } = await supabase
-            .from("orders")
-            .update({ transfer_code: transferCode })
-            .eq("id", order.id)
-          
-          if (updateError) {
-            console.log("[v0] Could not update transfer code:", updateError.message)
-          } else {
-            console.log("[v0] Transfer code added successfully to basic order")
-          }
-        } catch (updateException) {
-          console.log("[v0] Transfer code update exception:", updateException)
+          await supabase.from("orders").update(patches).eq("id", order.id)
+        } catch (_) {
+          // Non-fatal — order was created, optional fields just couldn't be patched
         }
       }
-    } else {
-      console.log("[v0] Enhanced order creation successful")
     }
 
     if (orderError) {
@@ -906,4 +881,107 @@ export async function getOrdersByIds(orderIds: string[]): Promise<any[]> {
 export async function getOrdersWithItems(businessId: string): Promise<any[]> {
   console.warn("[v0] getOrdersWithItems is deprecated. Use getOrdersByIds with device-specific order IDs instead.")
   return []
+}
+
+// Waiters API
+export async function getAvailableWaiters(businessId: string): Promise<Waiter[]> {
+  try {
+    const { data, error } = await supabase
+      .from("waiters")
+      .select("*")
+      .eq("business_id", businessId)
+      .eq("is_active", true)
+      .eq("is_available_today", true)
+      .order("name", { ascending: true })
+
+    if (error) {
+      console.error("[API] Waiters fetch failed:", error)
+      return []
+    }
+    return data || []
+  } catch (error) {
+    console.error("[API] Error fetching waiters:", error)
+    return []
+  }
+}
+
+// Tips API
+export async function submitTip(tipData: {
+  businessId: string
+  orderId: string
+  waiterId: string
+  customerId?: string
+  amount: number
+  rating?: number
+  compliments?: string[]
+  comment?: string
+}): Promise<{ tipId: string; transferCode: string } | null> {
+  try {
+    const transferCode = Math.floor(100000 + Math.random() * 900000).toString()
+    const { data, error } = await supabase
+      .from("tips")
+      .insert({
+        business_id: tipData.businessId,
+        order_id: tipData.orderId,
+        waiter_id: tipData.waiterId,
+        customer_id: tipData.customerId || null,
+        amount: tipData.amount,
+        payment_method: "transfer",
+        transfer_code: transferCode,
+        payment_status: "pending",
+        rating: tipData.rating || null,
+        compliments: tipData.compliments || [],
+        comment: tipData.comment || null,
+      })
+      .select()
+      .single()
+
+    if (error) {
+      console.error("[API] Tip submission failed:", error)
+      return null
+    }
+    return { tipId: data.id, transferCode }
+  } catch (error) {
+    console.error("[API] Error submitting tip:", error)
+    return null
+  }
+}
+
+export async function confirmTipPayment(tipId: string): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from("tips")
+      .update({
+        payment_status: "paid",
+        payment_confirmed_at: new Date().toISOString(),
+      })
+      .eq("id", tipId)
+
+    if (error) {
+      console.error("[API] Tip payment confirmation failed:", error)
+      return false
+    }
+    return true
+  } catch (error) {
+    console.error("[API] Error confirming tip payment:", error)
+    return false
+  }
+}
+
+export async function getTipsByOrder(orderId: string): Promise<Tip[]> {
+  try {
+    const { data, error } = await supabase
+      .from("tips")
+      .select("*")
+      .eq("order_id", orderId)
+
+    if (error) {
+      console.error("[API] Tips fetch failed:", error)
+      return []
+    }
+    return data || []
+  } catch (error) {
+    console.error("[API] Error fetching tips:", error)
+    return []
+  }
 }

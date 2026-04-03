@@ -21,7 +21,7 @@ export async function POST(
       return NextResponse.json({ error: "Invalid request" }, { status: 400 })
     }
 
-    // Fetch the order
+    // Fetch the order — tokens_awarded may not exist if migration hasn't run
     const { data: order, error: orderError } = await supabase
       .from("orders")
       .select("id, status, total_amount, tokens_awarded, device_id")
@@ -35,7 +35,7 @@ export async function POST(
 
     console.log(`[AwardTokens] Order: status=${order.status}, tokens_awarded=${order.tokens_awarded}, device_id=${order.device_id}`)
 
-    // Idempotency check
+    // Idempotency check — tokens_awarded column may be null if migration hasn't run
     if (order.tokens_awarded === true) {
       const { data: customer } = await supabase
         .from("customers")
@@ -93,6 +93,35 @@ export async function POST(
     }
 
     return NextResponse.json({ success: true, tokens_awarded: tokensToAward, new_balance: newBalance })
+
+    // Update customer balance
+    const { error: balanceError } = await supabase
+      .from("customers")
+      .update({ reward_tokens: newBalance })
+      .eq("id", customerId)
+
+    if (balanceError) {
+      console.error("[AwardTokens] Balance update error:", balanceError)
+      return NextResponse.json({ error: "Failed to update balance" }, { status: 500 })
+    }
+
+    // Mark order as awarded — column may not exist yet if migration hasn't run
+    const { error: flagError } = await supabase
+      .from("orders")
+      .update({ tokens_awarded: true })
+      .eq("id", order_id)
+
+    if (flagError) {
+      console.warn("[AwardTokens] tokens_awarded column missing — run database_migration_tokens_awarded.sql:", flagError?.message)
+      // Still return success since balance was updated; client uses localStorage as fallback
+    }
+
+    return NextResponse.json({
+      success: true,
+      tokens_awarded: tokensToAward,
+      new_balance: newBalance,
+      flag_saved: flagError == null,
+    })
   } catch (error) {
     console.error("[AwardTokens] Unexpected error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })

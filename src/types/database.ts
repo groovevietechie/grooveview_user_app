@@ -98,6 +98,7 @@ export interface Order {
   transfer_code?: string
   payment_confirmed_at?: string
   tokens_awarded?: boolean
+  waiter_id?: string
   created_at: string
   updated_at: string
 }
@@ -281,6 +282,7 @@ export interface OrderSubmission {
   paymentMethod: PaymentMethod
   tokenPaymentAmount?: number // Amount paid using tokens
   deliveryAddress?: string
+  waiterId?: string // Selected waiter
 }
 
 // Customer Profile Types
@@ -303,6 +305,34 @@ export interface CustomerDevice {
   device_name: string
   last_active_at: string
   created_at: string
+}
+
+export interface Waiter {
+  id: string
+  business_id: string
+  name: string
+  phone?: string
+  profile_image_url?: string
+  is_available_today: boolean
+  is_active: boolean
+  notes?: string
+  created_at: string
+  updated_at: string
+}
+
+export interface Tip {
+  id: string
+  business_id: string
+  order_id: string
+  waiter_id: string
+  customer_id?: string
+  amount: number
+  payment_method: string
+  transfer_code?: string
+  payment_status: PaymentStatus
+  payment_confirmed_at?: string
+  created_at: string
+  updated_at: string
 }
 
 export interface CustomerActivity {

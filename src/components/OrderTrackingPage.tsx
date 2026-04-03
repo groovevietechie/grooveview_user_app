@@ -55,6 +55,10 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
   const [claiming, setClaiming] = useState(false)
   const [claimSuccess, setClaimSuccess] = useState<{ orderId: string; amount: number } | null>(null)
   const [customerId, setCustomerId] = useState<string | null>(null)
+  // Track locally claimed order IDs so polling doesn't undo optimistic updates
+  // Persisted to localStorage so it survives page navigation
+  const CLAIMED_KEY = `claimed_orders_${business.id}`
+  const claimedOrderIds = useRef<Set<string>>(new Set())
   const { refreshCustomerData } = useCustomerProfile()
 
   // Use the back navigation hook
@@ -74,6 +78,14 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
   const contrastColor = getContrastColor(primaryColor)
 
   useEffect(() => {
+    // Restore claimed order IDs from localStorage
+    try {
+      const stored = localStorage.getItem(CLAIMED_KEY)
+      if (stored) {
+        claimedOrderIds.current = new Set(JSON.parse(stored))
+      }
+    } catch (_) {}
+
     // Resolve customerId on the client side
     setCustomerId(getCustomerId())
     loadOrders()
@@ -86,7 +98,6 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
     if (selectedOrder) {
       const updatedOrder = orders.find(o => o.id === selectedOrder.id)
       if (updatedOrder) {
-        // Keep tokens_awarded=true if we set it optimistically, even if DB hasn't caught up yet
         setSelectedOrder({
           ...updatedOrder,
           tokens_awarded: selectedOrder.tokens_awarded || updatedOrder.tokens_awarded,
@@ -111,7 +122,12 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
           deviceOnlyOrders = fetched.filter(o => !customerOrderIds.has(o.id))
         }
 
-        setOrders([...customerOrders, ...deviceOnlyOrders])
+        setOrders(prev => {
+          const merged = [...customerOrders, ...deviceOnlyOrders].map(o =>
+            claimedOrderIds.current.has(o.id) ? { ...o, tokens_awarded: true } : o
+          )
+          return merged
+        })
       } else {
         const deviceOrderIds = getDeviceOrders(business.id)
         if (deviceOrderIds.length === 0) {
@@ -120,7 +136,9 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
           return
         }
         const fetchedOrders = await getOrdersByIds(deviceOrderIds)
-        setOrders(fetchedOrders)
+        setOrders(fetchedOrders.map(o =>
+          claimedOrderIds.current.has(o.id) ? { ...o, tokens_awarded: true } : o
+        ))
       }
     } catch (error) {
       console.error("[v0] Error loading orders:", error)
@@ -141,10 +159,18 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
       const result = await awardTokensForOrder(cid, order.id, order.total_amount)
       if (result.success) {
         const awarded = result.tokensAwarded ?? Math.round(order.total_amount * 0.02 * 100) / 100
+        claimedOrderIds.current.add(order.id) // persist across polls
+        try {
+          localStorage.setItem(CLAIMED_KEY, JSON.stringify([...claimedOrderIds.current]))
+        } catch (_) {}
         setClaimSuccess({ orderId: order.id, amount: awarded })
         setOrders(prev => prev.map(o => o.id === order.id ? { ...o, tokens_awarded: true } : o))
         setSelectedOrder(prev => prev ? { ...prev, tokens_awarded: true } : prev)
         await refreshCustomerData()
+        // Redirect to tips page after a short delay so the success state is visible
+        setTimeout(() => {
+          router.push(`/b/${business.slug}/tips?orderId=${order.id}`)
+        }, 1200)
       } else {
         alert("Failed to claim tokens. Please try again.")
       }

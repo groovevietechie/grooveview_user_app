@@ -13,7 +13,9 @@ import { useBackNavigation } from "@/hooks/useBackNavigation"
 import { useCustomerProfile } from "@/hooks/useCustomerProfile"
 import { getCustomerId, getDeviceId } from "@/lib/device-identity"
 import BackButton from "@/components/BackButton"
-import { HomeIcon, BuildingOfficeIcon, TruckIcon, PhoneIcon, CurrencyDollarIcon } from "@heroicons/react/24/outline"
+import { HomeIcon, BuildingOfficeIcon, TruckIcon, PhoneIcon, CurrencyDollarIcon, UserCircleIcon } from "@heroicons/react/24/outline"
+import { getAvailableWaiters } from "@/lib/api"
+import type { Waiter } from "@/types/database"
 
 interface CheckoutPageProps {
   business: Business
@@ -43,10 +45,13 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
   const [tokenAmount, setTokenAmount] = useState(0)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isRedirecting, setIsRedirecting] = useState(false)
+  const [waiters, setWaiters] = useState<Waiter[]>([])
+  const [selectedWaiterId, setSelectedWaiterId] = useState<string>("")
 
   // Load customer data on mount
   useEffect(() => {
     refreshCustomerData()
+    getAvailableWaiters(business.id).then(setWaiters)
   }, [])
 
   const total = getTotal()
@@ -163,6 +168,7 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
         paymentMethod,
         tokenPaymentAmount: actualTokenAmount,
         deliveryAddress: orderType === "home" ? deliveryAddress : undefined,
+        waiterId: selectedWaiterId || undefined,
       }
 
       // Store order data and total for payment page
@@ -199,9 +205,10 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
         customerNote: orderType === "home" 
           ? `Phone: ${deliveryPhone}${customerNote.trim() ? `\n\nSpecial Instructions: ${customerNote.trim()}` : ''}`
           : customerNote.trim() || undefined,
-        paymentMethod: finalTotal === 0 ? "tokens" : paymentMethod,
+        paymentMethod: paymentMethod,
         tokenPaymentAmount: actualTokenAmount,
         deliveryAddress: orderType === "home" ? deliveryAddress : undefined,
+        waiterId: selectedWaiterId || undefined,
       }
 
       const orderId = await submitOrder(orderData)
@@ -376,9 +383,59 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
             )}
           </div>
 
+          {/* Waiter Selection */}
+          {waiters.length > 0 && (
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+              <h2 className="text-lg font-semibold mb-1">Choose Your Waiter</h2>
+              <p className="text-sm text-gray-500 mb-4">Optional — select who will serve you today</p>
+              <div className="flex gap-3 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => setSelectedWaiterId("")}
+                  className="flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all"
+                  style={
+                    !selectedWaiterId
+                      ? { borderColor: primaryColor, backgroundColor: `${primaryColor}10` }
+                      : { borderColor: "#e5e7eb" }
+                  }
+                >
+                  <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+                    <UserCircleIcon className="w-8 h-8 text-gray-400" />
+                  </div>
+                  <span className="text-xs font-medium text-gray-600">Any</span>
+                </button>
+                {waiters.map((waiter) => (
+                  <button
+                    key={waiter.id}
+                    type="button"
+                    onClick={() => setSelectedWaiterId(waiter.id)}
+                    className="flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all"
+                    style={
+                      selectedWaiterId === waiter.id
+                        ? { borderColor: primaryColor, backgroundColor: `${primaryColor}10` }
+                        : { borderColor: "#e5e7eb" }
+                    }
+                  >
+                    {waiter.profile_image_url ? (
+                      <img
+                        src={waiter.profile_image_url}
+                        alt={waiter.name}
+                        className="w-12 h-12 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+                        <UserCircleIcon className="w-8 h-8 text-gray-400" />
+                      </div>
+                    )}
+                    <span className="text-xs font-medium text-gray-800 max-w-[60px] truncate">{waiter.name}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Order Summary */}
-          <div className="bg-white rounded-lg shadow-sm border p-6">
-            <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
+          <div className="bg-white rounded-lg shadow-sm border p-6">            <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
             <div className="space-y-3">
               {items.map((cartItem) => (
                 <div key={cartItem.menuItem.id} className="flex justify-between items-start">
