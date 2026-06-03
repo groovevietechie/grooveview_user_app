@@ -89,6 +89,7 @@ export interface Order {
   payment_status: PaymentStatus
   total_amount: number
   token_payment_amount?: number // Amount paid using reward tokens
+  tokens_redeemed?: boolean // True once reward token usage has been deducted from the customer balance
   estimated_ready_time?: string
   estimated_delivery_time?: string
   business_comment?: string
@@ -290,6 +291,7 @@ export interface Customer {
   id: string
   sync_passcode: string
   reward_tokens: number // 1 token = 1 Naira, earned 2% from completed orders
+  reward_tokens_used?: number // Lifetime reward tokens spent
   full_name?: string
   address?: string
   profile_picture_url?: string

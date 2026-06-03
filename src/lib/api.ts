@@ -1,6 +1,33 @@
 import { supabase } from "./supabase"
 import type { Business, Menu, MenuCategory, MenuItem, OrderSubmission, ServiceConfiguration, ServiceOption, ServiceBooking, ServiceBookingSubmission, ServiceStatus, Staff, Waiter, Tip } from "@/types/database"
 
+const TOKEN_NOTE_PREFIX = "[reward_tokens_used:"
+const CUSTOMER_PROFILE_NOTE_PREFIX = "[customer_profile_id:"
+
+async function patchOrderField(orderId: string, field: string, value: unknown) {
+  try {
+    await supabase.from("orders").update({ [field]: value }).eq("id", orderId)
+  } catch {
+    // Optional schema fields are best-effort so older databases still place orders.
+  }
+}
+
+function appendOrderMetadata(note: string | null | undefined, tokenAmount: number, customerProfileId?: string): string | null {
+  const cleanNote = note?.trim()
+  const markers: string[] = []
+
+  if (customerProfileId) {
+    markers.push(`${CUSTOMER_PROFILE_NOTE_PREFIX}${customerProfileId}]`)
+  }
+
+  if (tokenAmount > 0) {
+    markers.push(`${TOKEN_NOTE_PREFIX}${tokenAmount}]`)
+  }
+
+  if (markers.length === 0) return cleanNote || null
+  return cleanNote ? `${cleanNote}\n${markers.join("\n")}` : markers.join("\n")
+}
+
 // Business API
 export async function getBusinessBySlug(slug: string): Promise<Business | null> {
   // Normalize slug: decode URI encoding and replace spaces with hyphens
@@ -678,15 +705,18 @@ export async function submitOrder(orderData: OrderSubmission): Promise<string | 
       }
     }
 
-    const paymentMethod = orderData.paymentMethod === 'tokens' ? 'cash' : orderData.paymentMethod
-    const paymentStatus = (orderData.paymentMethod === 'transfer' || orderData.paymentMethod === 'tokens') ? "paid" as const : "pending" as const
     const totalAmount = orderData.items.reduce((total, item) => total + item.unitPrice * item.quantity, 0)
+    const tokenPaymentAmount = Math.max(0, Math.min(orderData.tokenPaymentAmount || 0, totalAmount))
+    const remainingAmount = Math.max(0, totalAmount - tokenPaymentAmount)
+    const cleanCustomerNoteWithTokenMetadata = appendOrderMetadata(cleanCustomerNote, tokenPaymentAmount, orderData.customerId)
+    const paymentMethod = orderData.paymentMethod === 'tokens' ? 'cash' : orderData.paymentMethod
+    const paymentStatus = (orderData.paymentMethod === 'transfer' || orderData.paymentMethod === 'tokens' || remainingAmount === 0) ? "paid" as const : "pending" as const
 
     // Truly minimal — only original core columns guaranteed to exist
     const minimalOrderData = {
       business_id: orderData.businessId,
       seat_label: orderData.seatLabel,
-      customer_note: cleanCustomerNote || null,
+      customer_note: cleanCustomerNoteWithTokenMetadata,
       status: "new" as const,
       payment_method: paymentMethod,
       payment_status: paymentStatus,
@@ -702,9 +732,9 @@ export async function submitOrder(orderData: OrderSubmission): Promise<string | 
     // Attempt 1: Full enhanced order (all columns)
     const enhancedOrderData = {
       ...minimalOrderData,
-      customer_id: orderData.customerId || null,
       device_id: orderData.deviceId || null,
-      token_payment_amount: orderData.tokenPaymentAmount || 0,
+      token_payment_amount: tokenPaymentAmount,
+      customer_profile_id: orderData.customerId || null,
       order_type: orderType,
       customer_phone: customerPhone,
       delivery_address: orderData.deliveryAddress,
@@ -744,18 +774,34 @@ export async function submitOrder(orderData: OrderSubmission): Promise<string | 
     // After any successful insert, try to patch in optional fields
     if (!orderError && order) {
       const patches: Record<string, unknown> = {}
-      if (orderData.customerId) patches.customer_id = orderData.customerId
+      if (orderData.customerId) patches.customer_profile_id = orderData.customerId
       if (orderData.deviceId) patches.device_id = orderData.deviceId
-      if (orderData.tokenPaymentAmount) patches.token_payment_amount = orderData.tokenPaymentAmount
+      if (tokenPaymentAmount) patches.token_payment_amount = tokenPaymentAmount
       if (transferCode) patches.transfer_code = transferCode
       if (orderData.waiterId) patches.waiter_id = orderData.waiterId
 
       if (Object.keys(patches).length > 0) {
         try {
           await supabase.from("orders").update(patches).eq("id", order.id)
-        } catch (_) {
+        } catch {
           // Non-fatal — order was created, optional fields just couldn't be patched
         }
+      }
+    }
+
+    if (!orderError && order) {
+      if (orderData.customerId) await patchOrderField(order.id, "customer_profile_id", orderData.customerId)
+      if (orderData.deviceId) await patchOrderField(order.id, "device_id", orderData.deviceId)
+      if (tokenPaymentAmount) await patchOrderField(order.id, "token_payment_amount", tokenPaymentAmount)
+      if (transferCode) await patchOrderField(order.id, "transfer_code", transferCode)
+      if (orderData.waiterId) await patchOrderField(order.id, "waiter_id", orderData.waiterId)
+    }
+
+    if (!orderError && order && tokenPaymentAmount) {
+      try {
+        await supabase.from("orders").update({ tokens_redeemed: false }).eq("id", order.id)
+      } catch {
+        // Non-fatal: this column is added by database_migration_token_redemption_tracking.sql.
       }
     }
 

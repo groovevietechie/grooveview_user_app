@@ -38,6 +38,10 @@ interface OrderWithItems extends Order {
   }>
 }
 
+const TOKEN_NOTE_PATTERN = /\[reward_tokens_used:(\d+(?:\.\d+)?)\]/i
+const CUSTOMER_PROFILE_NOTE_PATTERN = /\[customer_profile_id:[^\]]+\]/i
+const TOKEN_REDEEMED_NOTE_PATTERN = /\[reward_tokens_redeemed\]/i
+
 const statusSteps = [
   { key: "new", label: "Order Received", icon: ShoppingBagIcon },
   { key: "accepted", label: "Accepted", icon: CheckCircleIcon },
@@ -196,6 +200,30 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
   }
 
   const formatCurrency = (amount: number) => `₦${amount.toLocaleString()}`
+  const getTokenAmountFromNote = (note?: string) => {
+    const match = note?.match(TOKEN_NOTE_PATTERN)
+    return match ? Number(match[1]) || 0 : 0
+  }
+  const getCleanCustomerNote = (note?: string) =>
+    note
+      ?.replace(TOKEN_NOTE_PATTERN, "")
+      .replace(CUSTOMER_PROFILE_NOTE_PATTERN, "")
+      .replace(TOKEN_REDEEMED_NOTE_PATTERN, "")
+      .trim()
+  const getTokenAmount = (order: OrderWithItems) => Math.max(0, order.token_payment_amount || getTokenAmountFromNote(order.customer_note))
+  const getAmountDue = (order: OrderWithItems) => Math.max(0, order.total_amount - getTokenAmount(order))
+  const getPaymentMethodDisplay = (order: OrderWithItems) => {
+    const tokenAmount = getTokenAmount(order)
+    const baseMethod = order.payment_method === "transfer"
+      ? "Bank Transfer"
+      : order.payment_method === "cash"
+        ? "Cash / POS"
+        : order.payment_method
+
+    if (tokenAmount <= 0) return baseMethod
+    if (getAmountDue(order) <= 0) return "Reward Tokens"
+    return `${baseMethod} + Reward Tokens`
+  }
 
   const getPaymentStatusBadge = (status: string) => {
     const colors: { [key: string]: { bg: string; text: string } } = {
@@ -364,7 +392,7 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
                         <p className="text-xs text-gray-600 mb-2">{new Date(order.created_at).toLocaleTimeString()}</p>
                         <div className="flex items-center justify-between">
                           <span className="text-sm font-semibold text-gray-700">
-                            {formatCurrency(order.total_amount)}
+                            {formatCurrency(getAmountDue(order))}
                           </span>
                           <span
                             className="text-xs px-2 py-1 rounded font-medium capitalize"
@@ -437,7 +465,7 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
                         <p className="text-xs text-gray-600 mb-2">{new Date(order.created_at).toLocaleTimeString()}</p>
                         <div className="flex items-center justify-between">
                           <span className="text-sm font-semibold text-gray-700">
-                            {formatCurrency(order.total_amount)}
+                            {formatCurrency(getAmountDue(order))}
                           </span>
                           <span
                             className="text-xs px-2 py-1 rounded font-medium capitalize"
@@ -597,7 +625,7 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
                       </div>
                       <div>
                         <p className="text-sm text-gray-600 mb-1">Payment Method</p>
-                        <p className="font-semibold text-gray-900 capitalize">{selectedOrder.payment_method}</p>
+                        <p className="font-semibold text-gray-900 capitalize">{getPaymentMethodDisplay(selectedOrder)}</p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-600 mb-1">Order Time</p>
@@ -686,7 +714,7 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
                     </div>
 
                     {/* Customer Note */}
-                    {selectedOrder.customer_note && (
+                    {getCleanCustomerNote(selectedOrder.customer_note) && (
                       <div className="border-t mt-6 pt-6" style={{ borderColor: themeShades.lightest }}>
                         <h4 className="font-semibold text-gray-900 mb-2">Special Instructions</h4>
                         <p
@@ -696,7 +724,7 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
                             color: themeShades.darker,
                           }}
                         >
-                          "{selectedOrder.customer_note}"
+                          {getCleanCustomerNote(selectedOrder.customer_note)}
                         </p>
                       </div>
                     )}
@@ -728,6 +756,28 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
                         {formatCurrency(selectedOrder.total_amount)}
                       </p>
                     </div>
+
+                    {getTokenAmount(selectedOrder) > 0 && (
+                      <div className="mt-4 space-y-3">
+                        <div
+                          className="flex justify-between items-center rounded-lg px-4 py-3 border"
+                          style={{ backgroundColor: themeShades.lightest, borderColor: themeShades.light }}
+                        >
+                          <p className="text-sm font-semibold" style={{ color: themeShades.darker }}>
+                            Reward Tokens Used
+                          </p>
+                          <p className="text-lg font-bold" style={{ color: primaryColor }}>
+                            -{formatCurrency(getTokenAmount(selectedOrder))}
+                          </p>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <p className="text-lg font-semibold text-gray-900">Amount to Pay</p>
+                          <p className="text-2xl font-bold" style={{ color: primaryColor }}>
+                            {formatCurrency(getAmountDue(selectedOrder))}
+                          </p>
+                        </div>
+                      </div>
+                    )}
 
                     {(selectedOrder.status === "preparing" || selectedOrder.status === "ready") && (
                       <div

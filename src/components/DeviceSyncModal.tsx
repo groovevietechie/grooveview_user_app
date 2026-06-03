@@ -81,8 +81,10 @@ export default function DeviceSyncModal({
       const customerData = await getCustomerByDeviceId(deviceId)
       if (customerData) {
         setCustomerId(customerData.id) // persist so other pages can read it
+        await fetch(`/api/customers/${customerData.id}/reconcile-token-orders`, { method: "POST" })
+        const refreshedCustomer = await fetch(`/api/customers/${customerData.id}`).then(res => res.ok ? res.json() : customerData)
         const devicesData = await getCustomerDevices(customerData.id)
-        setCustomer(customerData)
+        setCustomer(refreshedCustomer)
         setDevices(devicesData)
         await updateDeviceActivity(customerData.id, deviceId)
       } else {

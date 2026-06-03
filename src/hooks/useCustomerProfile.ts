@@ -40,6 +40,8 @@ export function useCustomerProfile() {
     setError(null)
 
     try {
+      await fetch(`/api/customers/${customerId}/reconcile-token-orders`, { method: "POST" })
+
       // Fetch customer and devices
       const [customerData, devicesData] = await Promise.all([
         fetch(`/api/customers/${customerId}`).then(res => res.ok ? res.json() : null),
