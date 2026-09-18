@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useEffect } from "react"
 import Image from "next/image"
 import type { Menu, MenuCategory, MenuItem, ServiceConfiguration, Business } from "@/types/database"
-import { MagnifyingGlassIcon, SparklesIcon, CogIcon, ArrowRightIcon } from "@heroicons/react/24/outline"
+import { MagnifyingGlassIcon, SparklesIcon, CogIcon, ArrowRightIcon, BuildingStorefrontIcon, ShoppingBagIcon, WrenchScrewdriverIcon, AdjustmentsHorizontalIcon, ChevronRightIcon } from "@heroicons/react/24/outline"
 import { lightenColor } from "@/lib/color-utils"
 import { getServiceConfigurations } from "@/lib/api"
 
@@ -203,15 +203,15 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
     searchedItems.length === 0
 
   return (
-    <div className="w-full space-y-2 pb-1">
+    <div className="lounge-menu-content w-full space-y-2 pb-1">
       {/* Header */}
       <div className="mb-2">
         <div className="flex items-center justify-between mb-6">
           <div className="text-left">
-            <h2 className="text-xl font-bold text-gray-900 tracking-tight mb-2">
-              Discover Our Menu
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight mb-2">
+              Your night, your way.
             </h2>
-            <p className="text-gray-600 text-xs">Choose from our curated selection</p>
+            <p className="text-gray-600 text-sm">Pick a craving and let the good times begin.</p>
           </div>
           <button
             onClick={() => {
@@ -219,27 +219,28 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
               const event = new CustomEvent('openDeviceSync')
               window.dispatchEvent(event)
             }}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm shadow-lg hover:shadow-xl transition-all hover:scale-105 active:scale-95 whitespace-nowrap"
+            aria-label="Link this device"
+            className="lounge-device-button flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm shadow-lg hover:shadow-xl transition-all hover:scale-105 active:scale-95 whitespace-nowrap"
             style={{ backgroundColor: themeColor, color: 'white' }}
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
             </svg>
-            <span>Link this device</span>
+            <span className="hidden sm:inline">Link this device</span>
           </button>
         </div>
         
         {/* Search Bar */}
         <div className="relative mb-2">
           <div className="absolute inset-0 bg-gradient-to-r from-gray-100 via-white to-gray-100 rounded-2xl blur-sm opacity-60"></div>
-          <div className="relative">
+          <div className="relative lounge-search-control">
             <MagnifyingGlassIcon
               style={{ color: themeColor }}
               className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none"
             />
             <input
               type="text"
-              placeholder="Search menus, items, or services..."
+              placeholder="Search drinks, food, or experiences..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-14 pr-6 py-4 rounded-2xl border-2 outline-none transition-all text-sm font-medium bg-white/90 backdrop-blur-sm shadow-lg hover:shadow-xl focus:shadow-2xl placeholder:text-gray-400"
@@ -247,28 +248,29 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
                 borderColor: searchQuery ? themeColor : "#E5E7EB",
               }}
             />
+            <button type="button" onClick={() => setSearchQuery("")} aria-label="Clear search" className="lounge-filter-button">
+              <AdjustmentsHorizontalIcon className="w-5 h-5" />
+            </button>
           </div>
         </div>
 
         {/* Enhanced Tabs */}
         {!searchQuery.trim() && (
-          <div className="relative mb-6 flex justify-center">
-            <div className="inline-flex gap-0.5 p-1 bg-gray-100 rounded-2xl overflow-x-auto scrollbar-hide">
+          <div className="lounge-category-switcher relative mb-8 grid grid-cols-1 sm:grid-cols-3 gap-3">
               {tabs.map((tab, index) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`relative flex-shrink-0 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 min-w-[80px] ${
+                  className={`lounge-category-button relative text-left px-4 py-3 rounded-2xl text-sm font-semibold transition-all duration-300 ${
                     activeTab === tab.id
-                      ? 'text-white shadow-lg transform scale-105 z-10'
+                      ? 'is-active text-white shadow-lg z-10'
                       : 'text-gray-600 hover:text-gray-800 hover:bg-white/50'
                   }`}
-                  style={activeTab === tab.id ? { 
-                    backgroundColor: themeColor,
-                    boxShadow: `0 8px 25px -5px ${themeColor}40`
-                  } : {}}
                 >
-                  <div className="text-center relative z-10">
+                  <div className="relative z-10 flex items-center gap-3">
+                    <span className="lounge-category-icon">
+                      {tab.id === "services" ? <WrenchScrewdriverIcon /> : index === 0 ? <BuildingStorefrontIcon /> : <ShoppingBagIcon />}
+                    </span>
                     <div className="font-semibold">{tab.name}</div>
                     {tab.count > 0 && (
                       <div className={`text-xs mt-0.5 ${
@@ -277,18 +279,10 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
                         {tab.count} {tab.count === 1 ? 'item' : 'items'}
                       </div>
                     )}
+                    <ChevronRightIcon className="lounge-category-chevron" />
                   </div>
-                  
-                  {/* Active tab indicator */}
-                  {activeTab === tab.id && (
-                    <div 
-                      className="absolute inset-0 rounded-xl opacity-20"
-                      style={{ backgroundColor: 'white' }}
-                    />
-                  )}
                 </button>
               ))}
-            </div>
           </div>
         )}
       </div>

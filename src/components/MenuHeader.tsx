@@ -4,7 +4,7 @@ import Image from "next/image"
 import { useRouter, usePathname } from "next/navigation"
 import type { Business } from "@/types/database"
 import { useBackNavigation } from "@/hooks/useBackNavigation"
-import { HomeIcon } from "@heroicons/react/24/outline"
+import { HomeIcon, Bars3Icon, ChatBubbleOvalLeftEllipsisIcon, InformationCircleIcon, UserCircleIcon } from "@heroicons/react/24/outline"
 
 interface MenuHeaderProps {
   business: Business
@@ -28,22 +28,23 @@ export default function MenuHeader({ business }: MenuHeaderProps) {
   const subtitle = nameParts.slice(1).join(' ')
 
   return (
-    <header className="bg-black shadow-lg">
-      <div className="max-w-5xl mx-auto px-2 py-4">
-        <div className="flex flex-col items-center text-center">
+    <header className="lounge-header sticky top-0 z-30">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center min-w-0 gap-3">
           {/* Business Logo */}
           {business.logo_url ? (
-            <div className="mb-1">
+            <div className="flex-shrink-0">
               <Image
                 src={business.logo_url}
                 alt={business.name}
-                width={40}
-                height={40}
-                className="rounded-full object-cover"
+                width={48}
+                height={48}
+                className="rounded-full object-cover lounge-logo"
               />
             </div>
           ) : ( 
-            <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mb-1">
+            <div className="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center lounge-logo">
               <span className="text-white text-xl font-bold">
                 {business.name.charAt(0).toUpperCase()}
               </span>
@@ -51,32 +52,31 @@ export default function MenuHeader({ business }: MenuHeaderProps) {
           )}
 
           {/* Business Name */}
-          <div className="mb-2">
-            <h1 className="text-white text-2xl font-bold mb-1">
+          <div className="min-w-0">
+            <h1 className="text-white text-xl sm:text-2xl font-bold leading-none truncate">
               {mainName}
             </h1>
             {subtitle && (
-              <h4 className="text-yellow-400 text-sm font-semibold">
+              <h4 className="text-yellow-400 text-xs sm:text-sm font-semibold mt-1 truncate">
                 {subtitle}
               </h4>
             )}
           </div>
 
-          {/* Thick Yellow Divider */}
-          <div className="w-full max-w-xl h-1 bg-yellow-400 mb-2"></div>
+          <nav className="lounge-desktop-nav" aria-label="Primary navigation">
+            <a className="is-active" href="#top"><HomeIcon /> Home</a>
+            <a href="#lounge-menu">Menu</a>
+            <a href="#lounge-experience"><InformationCircleIcon /> About</a>
+            <a href="#lounge-contact"><ChatBubbleOvalLeftEllipsisIcon /> Contact</a>
+            <button type="button" aria-label="Your profile"><UserCircleIcon /></button>
+            <button type="button" aria-label="Open navigation"><Bars3Icon /></button>
+          </nav>
+          </div>
 
-          {/* Business Address */}
-          {business.address && (
-            <p className="text-gray-300 text-sm">
-              {business.address}
-            </p>
-          )}
-
-          {/* Home Button (if not on menu page) */}
           {showHomeButton && (
             <button
               onClick={() => router.push(`/b/${business.slug}`)}
-              className="mt-4 text-white p-2 hover:bg-gray-800 rounded-lg transition-colors"
+              className="text-white p-2 hover:bg-white/10 rounded-lg transition-colors"
               title="Back to menu"
               aria-label="Back to menu"
             >

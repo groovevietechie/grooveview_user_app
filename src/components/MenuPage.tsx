@@ -17,7 +17,7 @@ import ServiceSidebar from "./ServiceSidebar"
 import FloatingOrderButton from "./FloatingOrderButton"
 import BackButtonHandler from "./BackButtonHandler"
 import DeviceSyncModal from "./DeviceSyncModal"
-import { ShoppingCartIcon, DevicePhoneMobileIcon } from "@heroicons/react/24/outline"
+import { ShoppingCartIcon, MapPinIcon, SparklesIcon } from "@heroicons/react/24/outline"
 import { useMenuNavigation } from "@/hooks/useMenuNavigation"
 
 interface MenuPageProps {
@@ -93,25 +93,33 @@ export default function MenuPage({ business, menuData }: MenuPageProps) {
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <BackButtonHandler onBack={handleBack}>
-        <div 
-          className="min-h-screen relative"
-          style={{
-            backgroundImage: 'url(/menu_page_background.jpeg)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat'
-          }}
-        >
-          {/* Background overlay for opacity */}
-          <div className="absolute inset-0 bg-white opacity-10"></div>
+        <div id="top" className="lounge-shell min-h-screen relative overflow-hidden">
+          <div className="lounge-ambient lounge-ambient-one" />
+          <div className="lounge-ambient lounge-ambient-two" />
           
           {/* Content wrapper */}
           <div className="relative z-10">
             {/* Header */}
             <MenuHeader business={business} />
 
+            <section className="lounge-hero max-w-6xl mx-3 sm:mx-auto mt-4 overflow-hidden">
+              <div className="lounge-hero-image" />
+              <div className="lounge-hero-glow" />
+              <div className="relative z-10 px-6 py-10 sm:px-10 sm:py-16 max-w-2xl">
+                <div className="lounge-kicker"><SparklesIcon className="w-4 h-4" /> Welcome to</div>
+                <h2>{business.name.replace(/serviced lounge/i, "").trim() || business.name}<br /><span>Serviced Lounge</span></h2>
+                <p className="lounge-hero-values">Good Drinks <b>•</b> Great Vibes <b>•</b> Unforgettable Moments</p>
+                {business.address && <div className="lounge-location"><MapPinIcon className="w-5 h-5" /> {business.address}</div>}
+                <a href="#lounge-menu" className="lounge-hero-cta">Explore the menu <span>→</span></a>
+              </div>
+              <div className="lounge-hero-orb" />
+            </section>
+
+            <div id="lounge-experience" className="sr-only">Premium lounge experiences and curated service.</div>
+            <div id="lounge-contact" className="sr-only">Contact information is available from the lounge.</div>
+
             {/* Main Content */}
-            <div className="max-w-4xl mx-auto px-2 py-4">
+            <div id="lounge-menu" className="max-w-6xl mx-auto px-3 sm:px-5 py-8">
               <div className="flex gap-2">
                 {/* Menu Content */}
                 <div className="flex-1">
@@ -154,7 +162,7 @@ export default function MenuPage({ business, menuData }: MenuPageProps) {
           {isCartOpen && (
             <div className="fixed inset-0 z-50 lg:hidden">
               <div className="absolute inset-0 bg-black bg-opacity-50" onClick={() => setIsCartOpen(false)} />
-              <div className="absolute right-0 top-0 h-full w-full max-w-sm bg-white shadow-xl overflow-y-auto">
+              <div className="absolute right-0 top-0 h-full w-full max-w-sm lounge-mobile-cart shadow-xl overflow-y-auto">
                 <CartSidebar business={business} onClose={() => setIsCartOpen(false)} />
               </div>
             </div>

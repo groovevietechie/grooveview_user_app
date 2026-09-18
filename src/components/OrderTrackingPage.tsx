@@ -258,7 +258,7 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
 
   return (
     <div
-      className="min-h-screen"
+      className="lounge-order-tracking min-h-screen"
       style={{
         background: `linear-gradient(135deg, ${themeShades.lightest} 0%, #ffffff 50%, ${themeShades.lightest} 100%)`,
       }}

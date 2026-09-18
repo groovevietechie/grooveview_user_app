@@ -190,7 +190,7 @@ export default function TipsPage({ business, orderId, preselectedWaiterId }: Tip
   // ── Payment ───────────────────────────────────────────────────────────────
   if (step === "payment") {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="lounge-followup min-h-screen bg-gray-50">
         <div className="max-w-md mx-auto px-4 py-8 space-y-5">
           <div className="text-center space-y-1">
             <div
@@ -283,7 +283,7 @@ export default function TipsPage({ business, orderId, preselectedWaiterId }: Tip
 
   // ── Review & Tip (main screen) ────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-white">
+    <div className="lounge-followup min-h-screen bg-white">
       <div className="max-w-md mx-auto px-4 pt-8 pb-10 space-y-6">
 
         {/* Close / Skip */}

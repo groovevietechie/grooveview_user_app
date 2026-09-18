@@ -27,7 +27,7 @@ export default function ItemsGrid({ category, items, onBack, themeColor, orderCo
   }, [items, searchQuery])
 
   return (
-    <div className="w-full space-y-6 pb-8">
+    <div className="lounge-menu-content w-full space-y-6 pb-8">
       <div className="flex items-start gap-4 mb-8">
         <button
           onClick={onBack}

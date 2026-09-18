@@ -55,7 +55,7 @@ export default function MenuItemCard({ item, themeColor, orderCount = 0 }: MenuI
 
   return (
     <>
-      <div className="menu-card bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 group">
+      <div className="lounge-product-card menu-card bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 group">
         {item.image_url ? (
           <div className="relative h-40 bg-gradient-to-br from-gray-100 to-gray-50 overflow-hidden">
             <Image

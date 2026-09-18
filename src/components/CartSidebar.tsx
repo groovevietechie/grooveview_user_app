@@ -37,7 +37,7 @@ export default function CartSidebar({ business, onClose }: CartSidebarProps) {
 
   if (items.length === 0) {
     return (
-      <div style={{ backgroundColor: lightBg }} className="rounded-2xl shadow-lg border p-6 h-fit animate-slide-in">
+      <div style={{ backgroundColor: lightBg }} className="lounge-cart rounded-2xl shadow-lg border p-6 h-fit animate-slide-in">
         <div className="text-center py-8">
           <ShoppingBagIcon style={{ color: primaryColor }} className="w-12 h-12 mx-auto mb-4 opacity-50" />
           <p style={{ color: textColor }} className="mb-4 font-medium">
@@ -54,7 +54,7 @@ export default function CartSidebar({ business, onClose }: CartSidebarProps) {
   return (
     <div
       style={{ backgroundColor: lightBg }}
-      className="rounded-2xl shadow-lg border h-fit overflow-hidden animate-slide-in"
+      className="lounge-cart rounded-2xl shadow-lg border h-fit overflow-hidden animate-slide-in"
     >
       {/* Header */}
       <div style={{ backgroundColor: primaryColor }} className="p-4 flex items-center justify-between">

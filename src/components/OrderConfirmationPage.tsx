@@ -37,7 +37,7 @@ export default function OrderConfirmationPage({ business, orderId, showSuccess }
         />
       )}
 
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="lounge-followup min-h-screen bg-gray-50 flex items-center justify-center px-4">
         <div className="bg-white rounded-xl shadow-lg p-8 max-w-md w-full text-center">
           <div
             style={{ backgroundColor: primaryColor, color: "white" }}
