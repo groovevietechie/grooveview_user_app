@@ -159,7 +159,11 @@ body {
 @media (min-width: 850px) { .lounge-desktop-nav { display: flex; } }
 
 .lounge-hero { position: relative; min-height: 315px; border: 1px solid rgba(89, 148, 255, .35); border-radius: 28px; background: #05111f; box-shadow: 0 28px 70px rgba(0, 0, 0, .45); }
-.lounge-hero-image { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(2, 8, 18, .98) 0%, rgba(2, 8, 18, .86) 45%, rgba(2, 8, 18, .3) 100%), linear-gradient(135deg, rgba(1, 7, 18, .3), rgba(84, 16, 146, .3)), url('/menu_page_background.jpeg') center/cover; filter: saturate(1.45) contrast(1.13); transform: scale(1.02); }
+.lounge-hero-image { position: absolute; inset: 0; background-size: cover; background-position: center; filter: saturate(1.45) contrast(1.13); transform: scale(1.02); opacity: 0; transition: opacity 1.2s ease; }
+.lounge-hero-image.is-active { opacity: 1; }
+.lounge-hero-dots { position: absolute; z-index: 2; left: 50%; bottom: 1.1rem; display: flex; gap: .5rem; transform: translateX(-50%); }
+.lounge-hero-dot { width: .5rem; height: .5rem; border-radius: 999px; border: none; background: rgba(255, 255, 255, .35); transition: background .25s ease, transform .25s ease; cursor: pointer; }
+.lounge-hero-dot.is-active { background: var(--lounge-gold); transform: scale(1.3); }
 .lounge-hero-glow { position: absolute; right: 10%; top: -30%; width: 21rem; height: 21rem; border-radius: 50%; background: radial-gradient(circle, rgba(147, 58, 255, .38), transparent 68%); filter: blur(14px); }
 .lounge-kicker { display: inline-flex; align-items: center; gap: .45rem; margin-bottom: 1rem; color: var(--lounge-gold); font-size: .68rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
 .lounge-hero h2 { color: #f8fbff; font-size: clamp(2rem, 5vw, 4rem); font-weight: 800; line-height: .98; letter-spacing: -.055em; }
@@ -209,6 +213,15 @@ body {
 .lounge-product-card .text-gray-500 { color: #aab8cb !important; }
 .lounge-product-card .bg-gray-50, .lounge-product-card .bg-white { background-color: rgba(255, 255, 255, .065) !important; }
 .lounge-product-card .border-gray-100, .lounge-product-card .border-gray-200 { border-color: rgba(149, 184, 244, .2) !important; }
+
+.lounge-trust-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: .75rem; padding: 1.1rem 1.25rem; border-radius: 20px; border: 1px solid rgba(97, 139, 225, .22); background: linear-gradient(145deg, rgba(13, 33, 64, .7), rgba(5, 17, 35, .7)); backdrop-filter: blur(16px); box-shadow: 0 14px 30px rgba(0, 0, 0, .22); }
+.lounge-trust-item { display: flex; align-items: center; gap: .65rem; }
+.lounge-trust-item svg { flex: 0 0 auto; width: 1.4rem; height: 1.4rem; color: var(--lounge-gold); filter: drop-shadow(0 0 8px rgba(246, 201, 69, .35)); }
+.lounge-trust-title { color: #f4f8ff; font-size: .82rem; font-weight: 700; line-height: 1.1; }
+.lounge-trust-sub { color: #9fb1cc; font-size: .68rem; margin-top: .15rem; }
+@media (max-width: 640px) {
+  .lounge-trust-strip { grid-template-columns: 1fr; gap: 1rem; padding: 1.1rem; }
+}
 
 .lounge-cart { background: rgba(7, 20, 41, .95) !important; border-color: rgba(103, 151, 239, .3) !important; color: #edf5ff; box-shadow: 0 18px 42px rgba(0, 0, 0, .38) !important; }
 .lounge-cart .bg-white { background: rgba(255, 255, 255, .055) !important; }

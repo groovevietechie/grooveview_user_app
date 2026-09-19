@@ -17,7 +17,7 @@ import ServiceSidebar from "./ServiceSidebar"
 import FloatingOrderButton from "./FloatingOrderButton"
 import BackButtonHandler from "./BackButtonHandler"
 import DeviceSyncModal from "./DeviceSyncModal"
-import { ShoppingCartIcon, MapPinIcon, SparklesIcon } from "@heroicons/react/24/outline"
+import { ShoppingCartIcon, MapPinIcon, SparklesIcon, ShieldCheckIcon, BoltIcon, HeartIcon } from "@heroicons/react/24/outline"
 import { useMenuNavigation } from "@/hooks/useMenuNavigation"
 
 interface MenuPageProps {
@@ -34,6 +34,8 @@ export default function MenuPage({ business, menuData }: MenuPageProps) {
   const [showFloatingButton, setShowFloatingButton] = useState(false)
   const [orderCounts, setOrderCounts] = useState<Record<string, number>>({})
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false)
+  const [heroSlide, setHeroSlide] = useState(0)
+  const heroImages = ["/back1.png", "/back2.png", "/back3.png"]
   const { getItemCount, setBusinessId } = useCartStore()
   const { getServiceItemCount, setBusinessId: setServiceBusinessId } = useServiceStore()
   const { setPrimaryColor } = useTheme()
@@ -41,6 +43,14 @@ export default function MenuPage({ business, menuData }: MenuPageProps) {
   
   // Pre-load customer profile data on mount
   const customerProfile = useCustomerProfile()
+
+  // Auto-advance hero carousel
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setHeroSlide((prev) => (prev + 1) % heroImages.length)
+    }, 5000)
+    return () => clearInterval(interval)
+  }, [heroImages.length])
 
   useEffect(() => {
     setBusinessId(business.id)
@@ -103,7 +113,13 @@ export default function MenuPage({ business, menuData }: MenuPageProps) {
             <MenuHeader business={business} />
 
             <section className="lounge-hero max-w-6xl mx-3 sm:mx-auto mt-4 overflow-hidden">
-              <div className="lounge-hero-image" />
+              {heroImages.map((src, index) => (
+                <div
+                  key={src}
+                  className={`lounge-hero-image ${index === heroSlide ? "is-active" : ""}`}
+                  style={{ backgroundImage: `linear-gradient(90deg, rgba(2, 8, 18, .98) 0%, rgba(2, 8, 18, .86) 45%, rgba(2, 8, 18, .3) 100%), linear-gradient(135deg, rgba(1, 7, 18, .3), rgba(84, 16, 146, .3)), url('${src}')` }}
+                />
+              ))}
               <div className="lounge-hero-glow" />
               <div className="relative z-10 px-6 py-10 sm:px-10 sm:py-16 max-w-2xl">
                 <div className="lounge-kicker"><SparklesIcon className="w-4 h-4" /> Welcome to</div>
@@ -113,6 +129,17 @@ export default function MenuPage({ business, menuData }: MenuPageProps) {
                 <a href="#lounge-menu" className="lounge-hero-cta">Explore the menu <span>→</span></a>
               </div>
               <div className="lounge-hero-orb" />
+              <div className="lounge-hero-dots">
+                {heroImages.map((src, index) => (
+                  <button
+                    key={src}
+                    type="button"
+                    aria-label={`Show slide ${index + 1}`}
+                    onClick={() => setHeroSlide(index)}
+                    className={`lounge-hero-dot ${index === heroSlide ? "is-active" : ""}`}
+                  />
+                ))}
+              </div>
             </section>
 
             <div id="lounge-experience" className="sr-only">Premium lounge experiences and curated service.</div>
@@ -136,6 +163,33 @@ export default function MenuPage({ business, menuData }: MenuPageProps) {
                 {/* Desktop Cart/Service Sidebar */}
                 <div className="hidden lg:block w-80 flex-shrink-0">
                   {getSidebarContent()}
+                </div>
+              </div>
+            </div>
+
+            {/* Trust / Feature Strip */}
+            <div className="max-w-6xl mx-auto px-3 sm:px-5 pb-10">
+              <div className="lounge-trust-strip">
+                <div className="lounge-trust-item">
+                  <ShieldCheckIcon className="w-5 h-5" />
+                  <div>
+                    <p className="lounge-trust-title">Quality Drinks</p>
+                    <p className="lounge-trust-sub">Premium brands only</p>
+                  </div>
+                </div>
+                <div className="lounge-trust-item">
+                  <BoltIcon className="w-5 h-5" />
+                  <div>
+                    <p className="lounge-trust-title">Fast Service</p>
+                    <p className="lounge-trust-sub">Quick & easy ordering</p>
+                  </div>
+                </div>
+                <div className="lounge-trust-item">
+                  <HeartIcon className="w-5 h-5" />
+                  <div>
+                    <p className="lounge-trust-title">Relaxed Vibes</p>
+                    <p className="lounge-trust-sub">Your comfort, our priority</p>
+                  </div>
                 </div>
               </div>
             </div>

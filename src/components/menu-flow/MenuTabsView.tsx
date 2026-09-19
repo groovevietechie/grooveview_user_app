@@ -320,7 +320,7 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
                       <button
                         key={`${item.id}-${category.id}`}
                         onClick={() => handleItemSelect(item, category)}
-                        className="group text-left p-5 bg-white border border-gray-200 rounded-2xl hover:shadow-xl transition-all duration-300 hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-offset-2 active:scale-[0.98] hover:border-gray-300"
+                        className="lounge-product-card group text-left p-5 bg-white border border-gray-200 rounded-2xl hover:shadow-xl transition-all duration-300 hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-offset-2 active:scale-[0.98] hover:border-gray-300"
                         style={
                           {
                             "--tw-ring-color": `${themeColor}40`,
@@ -410,7 +410,7 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
                           className={`group rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-offset-2 active:scale-[0.98] ${
                             isService
                               ? 'bg-gradient-to-br from-gray-900 to-black text-white h-28 flex items-center justify-center'
-                              : 'bg-white border border-gray-200 text-left hover:border-gray-300'
+                              : 'lounge-product-card bg-white border border-gray-200 text-left hover:border-gray-300'
                           }`}
                           style={
                             {
@@ -545,7 +545,7 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
                     className={`group rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-offset-2 active:scale-[0.98] ${
                       isService
                         ? 'bg-gradient-to-br from-gray-900 to-black text-white h-32 flex items-center justify-center'
-                        : 'bg-white border border-gray-200 text-left hover:border-gray-300'
+                        : 'lounge-product-card bg-white border border-gray-200 text-left hover:border-gray-300'
                     }`}
                     style={
                       {
