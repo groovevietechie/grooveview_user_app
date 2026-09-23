@@ -235,8 +235,37 @@ body {
 .lounge-followup .text-gray-500, .lounge-followup .text-gray-600, .lounge-followup .text-gray-700 { color: #aebed5 !important; }
 .lounge-followup input, .lounge-followup textarea { color: #eef6ff !important; background: rgba(3, 14, 30, .72) !important; border-color: rgba(106, 156, 245, .35) !important; }
 
+/* Reference-inspired menu surface: confident typography, luminous borders, and image-first cards. */
+.lounge-shell { background-color: #020914 !important; }
+.lounge-header { min-height: 76px; }
+.lounge-header > div { max-width: 1280px; }
+.lounge-hero { max-width: 1280px; min-height: 430px; margin-top: 0; border-width: 0 0 1px; border-radius: 0 0 32px 32px; }
+.lounge-hero-image { background-position: center 58%; }
+.lounge-hero::after { content: ""; position: absolute; inset: auto 0 0; height: 38%; background: linear-gradient(transparent, rgba(1, 8, 20, .72)); pointer-events: none; }
+.lounge-hero h2 { font-size: clamp(3.2rem, 7vw, 5.8rem); }
+.lounge-hero .relative.z-10 { padding-top: 5.5rem; }
+.lounge-menu-content { max-width: 1280px; margin: 0 auto; }
+.lounge-menu-content > div:first-child h2 { font-size: clamp(1.65rem, 3vw, 2.25rem); }
+.lounge-search-control { border: 1px solid rgba(103, 157, 246, .52); box-shadow: 0 0 0 5px rgba(34, 99, 194, .06), 0 16px 40px rgba(0, 0, 0, .25); }
+.lounge-category-switcher { gap: 1.25rem; }
+.lounge-category-button { min-height: 98px; border-radius: 28px; padding-inline: 1.25rem; }
+.lounge-category-button .font-semibold { font-size: 1.08rem; }
+.lounge-category-icon { width: 3.45rem; height: 3.45rem; }
+.lounge-product-card { border-radius: 22px !important; }
+.lounge-product-card > div:first-child { height: 190px; }
+.lounge-product-card .menu-card-content { padding: 1.1rem 1.25rem 1.25rem; }
+.lounge-menu-content .grid.grid-cols-2 { gap: 1.25rem; }
+.lounge-menu-content .grid.grid-cols-2 > button { border-radius: 22px; border-color: rgba(87, 137, 224, .42); background: linear-gradient(145deg, rgba(14, 35, 69, .95), rgba(4, 16, 34, .95)); }
+.lounge-menu-content .grid.grid-cols-2 > button:hover { border-color: #f7cf2d; box-shadow: 0 0 24px rgba(247, 207, 45, .14); }
+
+@media (min-width: 850px) {
+  .lounge-header .lounge-logo { width: 58px; height: 58px; }
+  .lounge-header h1 { font-size: 2rem; }
+  .lounge-hero .relative.z-10 { padding-left: 4rem; }
+}
+
 @media (max-width: 640px) {
-  .lounge-hero { min-height: 350px; border-radius: 22px; }
+  .lounge-hero { min-height: 350px; border-radius: 0 0 22px 22px; }
   .lounge-hero-image { background-position: 64% center; }
   .lounge-hero-image::after { content: ""; position: absolute; inset: 0; background: rgba(2, 8, 18, .15); }
   .lounge-hero-orb { width: 7.5rem; height: 7.5rem; }
