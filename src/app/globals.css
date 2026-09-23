@@ -287,7 +287,7 @@ body {
 .lounge-category-icon { flex: 0 0 auto; width: 2.1rem; height: 2.1rem; }
 .lounge-category-icon svg { width: 1.05rem; height: 1.05rem; }
 .lounge-category-button .font-semibold { font-size: .74rem; line-height: 1; }
-.lounge-category-count { position: absolute; top: -.28rem; right: -.18rem; z-index: 2; flex: 0 0 auto; margin-top: 0 !important; padding: .13rem .28rem; border: 1px solid rgba(255, 224, 112, .62); border-radius: 999px; color: #fff2a8; background: rgba(13, 31, 61, .94); box-shadow: 0 2px 7px rgba(0, 0, 0, .3); font-size: .4rem; font-weight: 700; letter-spacing: .01em; line-height: 1; white-space: nowrap; }
+.lounge-category-count { position: absolute; top: -.28rem; right: -.18rem; z-index: 2; display: inline-flex; width: max-content; max-width: none; flex: 0 0 auto; margin-top: 0 !important; padding: .13rem .28rem; border: 1px solid rgba(255, 224, 112, .62); border-radius: 999px; color: #fff2a8; background: rgba(13, 31, 61, .94); box-shadow: 0 2px 7px rgba(0, 0, 0, .3); font-size: .4rem; font-weight: 700; letter-spacing: .01em; line-height: 1; white-space: nowrap; }
 .lounge-category-chevron { flex: 0 0 auto; width: .85rem; height: .85rem; }
 .lounge-category-button .font-semibold { font-size: 1.08rem; }
 .lounge-category-icon { width: 3.45rem; height: 3.45rem; }
@@ -360,7 +360,7 @@ body {
   .lounge-category-icon svg { width: .9rem; height: .9rem; }
   .lounge-category-copy { min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: .08rem; }
   .lounge-category-button .font-semibold { font-size: .58rem; line-height: 1; }
-  .lounge-category-count { top: -.22rem; right: -.16rem; border: 1px solid rgba(255, 224, 112, .62); padding: .1rem .2rem; background: rgba(13, 31, 61, .94); font-size: .34rem; }
+  .lounge-category-count { top: -.22rem; right: -.16rem; width: max-content; max-width: none; border: 1px solid rgba(255, 224, 112, .62); padding: .1rem .2rem; background: rgba(13, 31, 61, .94); font-size: .34rem; }
   .lounge-category-chevron { display: block; width: .62rem; height: .62rem; margin-left: auto; }
   .lounge-category-button.is-active { box-shadow: 0 0 12px rgba(246, 201, 69, .25); }
 }
