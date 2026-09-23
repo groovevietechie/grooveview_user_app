@@ -263,6 +263,7 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
                     </span>
                     <div className="lounge-category-copy">
                       <div className="lounge-category-name-row">
+                        <div className="font-semibold truncate">{tab.name}</div>
                         {tab.count > 0 && (
                           <div className={`lounge-category-count text-xs ${
                             activeTab === tab.id ? 'opacity-90' : 'opacity-60'
@@ -270,7 +271,6 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
                             {tab.count} {tab.count === 1 ? 'item' : 'items'}
                           </div>
                         )}
-                        <div className="font-semibold truncate">{tab.name}</div>
                       </div>
                     </div>
                     <ChevronRightIcon className="lounge-category-chevron" />
