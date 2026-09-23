@@ -4,7 +4,7 @@ import Image from "next/image"
 import { useRouter, usePathname } from "next/navigation"
 import type { Business } from "@/types/database"
 import { useBackNavigation } from "@/hooks/useBackNavigation"
-import { HomeIcon, Bars3Icon, ChatBubbleOvalLeftEllipsisIcon, InformationCircleIcon, UserCircleIcon } from "@heroicons/react/24/outline"
+import { HomeIcon, ChatBubbleOvalLeftEllipsisIcon, InformationCircleIcon, UserCircleIcon, BuildingStorefrontIcon } from "@heroicons/react/24/outline"
 
 interface MenuHeaderProps {
   business: Business
@@ -63,15 +63,21 @@ export default function MenuHeader({ business }: MenuHeaderProps) {
             )}
           </div>
 
-          <nav className="lounge-desktop-nav" aria-label="Primary navigation">
-            <a className="is-active" href="#top"><HomeIcon /> Home</a>
-            <a href="#lounge-menu">Menu</a>
-            <a href="#lounge-experience"><InformationCircleIcon /> About</a>
-            <a href="#lounge-contact"><ChatBubbleOvalLeftEllipsisIcon /> Contact</a>
-            <button type="button" aria-label="Your profile"><UserCircleIcon /></button>
-            <button type="button" aria-label="Open navigation"><Bars3Icon /></button>
-          </nav>
           </div>
+
+          <nav className="lounge-desktop-nav" aria-label="Primary navigation">
+            <a className="is-active" href="#top"><HomeIcon /> <span>Home</span></a>
+            <a href="#lounge-menu"><BuildingStorefrontIcon /> <span>Menu</span></a>
+            <a href="#lounge-experience"><InformationCircleIcon /> <span>About</span></a>
+            <a href="#lounge-contact"><ChatBubbleOvalLeftEllipsisIcon /> <span>Contact</span></a>
+            <button
+              type="button"
+              aria-label="Link this device"
+              onClick={() => window.dispatchEvent(new CustomEvent("openDeviceSync"))}
+            >
+              <UserCircleIcon />
+            </button>
+          </nav>
 
           {showHomeButton && (
             <button

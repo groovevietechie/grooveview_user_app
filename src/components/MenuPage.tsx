@@ -34,6 +34,8 @@ export default function MenuPage({ business, menuData }: MenuPageProps) {
   const [showFloatingButton, setShowFloatingButton] = useState(false)
   const [orderCounts, setOrderCounts] = useState<Record<string, number>>({})
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false)
+  const [heroSlide, setHeroSlide] = useState(0)
+  const heroImages = ["/back1.png", "/back2.png", "/back3.png"]
   const { getItemCount, setBusinessId } = useCartStore()
   const { getServiceItemCount, setBusinessId: setServiceBusinessId } = useServiceStore()
   const { setPrimaryColor } = useTheme()
@@ -41,6 +43,14 @@ export default function MenuPage({ business, menuData }: MenuPageProps) {
   
   // Pre-load customer profile data on mount
   const customerProfile = useCustomerProfile()
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setHeroSlide((current) => (current + 1) % heroImages.length)
+    }, 5000)
+
+    return () => window.clearInterval(timer)
+  }, [heroImages.length])
 
   useEffect(() => {
     setBusinessId(business.id)
@@ -102,17 +112,29 @@ export default function MenuPage({ business, menuData }: MenuPageProps) {
             {/* Header */}
             <MenuHeader business={business} />
 
-            <section className="lounge-hero max-w-6xl mx-3 sm:mx-auto mt-4 overflow-hidden">
-              <div className="lounge-hero-image" />
+            <section className="lounge-hero max-w-6xl mx-3 sm:mx-auto mt-4 overflow-hidden" aria-label="Lounge welcome">
+              <div
+                className="lounge-hero-image"
+                style={{ backgroundImage: `url(${heroImages[heroSlide]})` }}
+                aria-hidden="true"
+              />
               <div className="lounge-hero-glow" />
-              <div className="relative z-10 px-6 py-10 sm:px-10 sm:py-16 max-w-2xl">
-                <div className="lounge-kicker"><SparklesIcon className="w-4 h-4" /> Welcome to</div>
-                <h2>{business.name.replace(/serviced lounge/i, "").trim() || business.name}<br /><span>Serviced Lounge</span></h2>
+              <div className="relative z-10 px-6 py-7 sm:px-10 sm:py-10 max-w-xl">
+                <h2><span className="lounge-brand-name">{business.name.replace(/serviced lounge/i, "").trim() || business.name}</span><span className="lounge-brand-subtitle">Serviced Lounge</span></h2>
                 <p className="lounge-hero-values">Good Drinks <b>•</b> Great Vibes <b>•</b> Unforgettable Moments</p>
-                {business.address && <div className="lounge-location"><MapPinIcon className="w-5 h-5" /> {business.address}</div>}
-                <a href="#lounge-menu" className="lounge-hero-cta">Explore the menu <span>→</span></a>
+                {business.address && <div className="lounge-location"><MapPinIcon className="w-4 h-4" /> {business.address}</div>}
               </div>
-              <div className="lounge-hero-orb" />
+              <div className="lounge-hero-dots" aria-label={`Slide ${heroSlide + 1} of ${heroImages.length}`}>
+                {heroImages.map((image, index) => (
+                  <button
+                    key={image}
+                    type="button"
+                    className={index === heroSlide ? "is-active" : ""}
+                    onClick={() => setHeroSlide(index)}
+                    aria-label={`Show hero slide ${index + 1}`}
+                  />
+                ))}
+              </div>
             </section>
 
             <div id="lounge-experience" className="sr-only">Premium lounge experiences and curated service.</div>

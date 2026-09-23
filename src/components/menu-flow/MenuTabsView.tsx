@@ -43,6 +43,7 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
   const [activeTab, setActiveTab] = useState<TabType>(initialActiveTab || defaultTab)
   const [services, setServices] = useState<ServiceConfiguration[]>([])
   const [servicesLoading, setServicesLoading] = useState(false)
+  const [isFilterOpen, setIsFilterOpen] = useState(false)
 
   // Calculate order counts for categories and menus
   const getCategoryOrderCount = (categoryId: string): number => {
@@ -117,8 +118,8 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
         serviceData: service
       }))
     } else {
-      // Filter categories by selected menu
-      return categories.filter(cat => cat.menu_id === activeTab)
+      // Filter categories by selected menu, or show every category for All
+      return activeTab === "all" ? categories : categories.filter(cat => cat.menu_id === activeTab)
     }
   }, [activeTab, categories, services])
 
@@ -204,33 +205,8 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
 
   return (
     <div className="lounge-menu-content w-full space-y-2 pb-1">
-      {/* Header */}
+      {/* Search Bar */}
       <div className="mb-2">
-        <div className="flex items-center justify-between mb-6">
-          <div className="text-left">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight mb-2">
-              Your night, your way.
-            </h2>
-            <p className="text-gray-600 text-sm">Pick a craving and let the good times begin.</p>
-          </div>
-          <button
-            onClick={() => {
-              // Trigger sync modal - we'll need to pass this as a prop
-              const event = new CustomEvent('openDeviceSync')
-              window.dispatchEvent(event)
-            }}
-            aria-label="Link this device"
-            className="lounge-device-button flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm shadow-lg hover:shadow-xl transition-all hover:scale-105 active:scale-95 whitespace-nowrap"
-            style={{ backgroundColor: themeColor, color: 'white' }}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
-            </svg>
-            <span className="hidden sm:inline">Link this device</span>
-          </button>
-        </div>
-        
-        {/* Search Bar */}
         <div className="relative mb-2">
           <div className="absolute inset-0 bg-gradient-to-r from-gray-100 via-white to-gray-100 rounded-2xl blur-sm opacity-60"></div>
           <div className="relative lounge-search-control">
@@ -248,15 +224,29 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
                 borderColor: searchQuery ? themeColor : "#E5E7EB",
               }}
             />
-            <button type="button" onClick={() => setSearchQuery("")} aria-label="Clear search" className="lounge-filter-button">
+            <button
+              type="button"
+              onClick={() => setIsFilterOpen((open) => !open)}
+              aria-label="Filter menu categories"
+              aria-expanded={isFilterOpen}
+              className={`lounge-filter-button ${isFilterOpen ? "is-active" : ""}`}
+            >
               <AdjustmentsHorizontalIcon className="w-5 h-5" />
             </button>
           </div>
+          {isFilterOpen && (
+            <div className="lounge-filter-panel" role="group" aria-label="Filter by menu">
+              <button type="button" onClick={() => { setActiveTab("all"); setSearchQuery("") }} className={activeTab === "all" ? "is-selected" : ""}>All</button>
+              {tabs.map((tab) => (
+                <button key={tab.id} type="button" onClick={() => { setActiveTab(tab.id); setSearchQuery(""); setIsFilterOpen(false) }} className={activeTab === tab.id ? "is-selected" : ""}>{tab.name}</button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Enhanced Tabs */}
         {!searchQuery.trim() && (
-          <div className="lounge-category-switcher relative mb-8 grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="lounge-category-switcher relative mb-8 grid grid-cols-3 gap-2">
               {tabs.map((tab, index) => (
                 <button
                   key={tab.id}
@@ -271,14 +261,18 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
                     <span className="lounge-category-icon">
                       {tab.id === "services" ? <WrenchScrewdriverIcon /> : index === 0 ? <BuildingStorefrontIcon /> : <ShoppingBagIcon />}
                     </span>
-                    <div className="font-semibold">{tab.name}</div>
-                    {tab.count > 0 && (
-                      <div className={`text-xs mt-0.5 ${
-                        activeTab === tab.id ? 'opacity-90' : 'opacity-60'
-                      }`}>
-                        {tab.count} {tab.count === 1 ? 'item' : 'items'}
+                    <div className="lounge-category-copy">
+                      <div className="lounge-category-name-row">
+                        <div className="font-semibold truncate">{tab.name}</div>
+                        {tab.count > 0 && (
+                          <div className={`lounge-category-count text-xs ${
+                            activeTab === tab.id ? 'opacity-90' : 'opacity-60'
+                          }`}>
+                            {tab.count} {tab.count === 1 ? 'item' : 'items'}
+                          </div>
+                        )}
                       </div>
-                    )}
+                    </div>
                     <ChevronRightIcon className="lounge-category-chevron" />
                   </div>
                 </button>
