@@ -123,7 +123,6 @@ export default function MenuPage({ business, menuData }: MenuPageProps) {
                 <h2><span className="lounge-brand-name">{business.name.replace(/serviced lounge/i, "").trim() || business.name}</span><span className="lounge-brand-subtitle">Serviced Lounge</span></h2>
                 <p className="lounge-hero-values">Good Drinks <b>•</b> Great Vibes <b>•</b> Unforgettable Moments</p>
                 {business.address && <div className="lounge-location"><MapPinIcon className="w-4 h-4" /> {business.address}</div>}
-                <a href="#lounge-menu" className="lounge-hero-cta">Explore Menu <span>→</span></a>
               </div>
               <div className="lounge-hero-dots" aria-label={`Slide ${heroSlide + 1} of ${heroImages.length}`}>
                 {heroImages.map((image, index) => (
