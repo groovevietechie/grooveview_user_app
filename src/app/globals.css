@@ -338,11 +338,18 @@ body {
   .lounge-category-button .font-semibold { font-size: .62rem; }
   .lounge-category-count { padding: .14rem .27rem; font-size: .44rem; }
   .lounge-category-chevron { display: block; width: .7rem; height: .7rem; }
+  .lounge-product-card { min-width: 0; border-width: 1px !important; border-radius: 13px !important; }
+  .lounge-product-card:nth-child(odd) { border-width: 1px !important; }
   .lounge-product-card > div:first-child { height: 112px; }
-  .lounge-product-card .menu-card-content { padding: .58rem .62rem .65rem; }
-  .lounge-product-card h4 { font-size: .78rem; }
-  .lounge-product-card .menu-card-content p { font-size: .54rem; }
-  .lounge-product-card .lounge-add-button, .lounge-product-card .lounge-customize-button { min-height: 25px; padding: .25rem .48rem; font-size: .52rem !important; }
+  .lounge-product-card .menu-card-content { padding: .52rem .58rem .58rem; }
+  .lounge-product-card h4 { font-family: Georgia, "Times New Roman", serif; font-size: .78rem; line-height: 1; }
+  .lounge-product-card .menu-card-content p { font-size: .52rem; line-height: 1.2; }
+  .lounge-product-card .absolute.top-2 { top: .35rem; }
+  .lounge-product-card .absolute.top-2.left-2, .lounge-product-card .absolute.top-2.right-2 { padding: .16rem .32rem; font-size: .42rem; border-radius: 999px; }
+  .lounge-product-card .lounge-quantity-control { display: none; }
+  .lounge-product-card .lounge-add-button, .lounge-product-card .lounge-customize-button { min-height: 24px; padding: .22rem .42rem; font-size: .5rem !important; border-radius: 999px !important; }
+  .lounge-product-card .text-lg { font-size: .68rem; }
+  .lounge-menu-content .grid.grid-cols-2 { gap: .55rem; }
   .lounge-hero { min-height: 0; aspect-ratio: 1671 / 420; border-radius: 0 0 22px 22px; }
   .lounge-hero-image { background-position: 62% center; }
   .lounge-product-card > div:first-child { height: 112px; }
@@ -350,7 +357,9 @@ body {
   .lounge-product-card h4 { font-size: .78rem; }
   .lounge-product-card .menu-card-content p { font-size: .54rem; }
   .lounge-product-card .lounge-quantity-control { display: none; }
-  .lounge-product-card .lounge-add-button, .lounge-product-card .lounge-customize-button { min-height: 25px; padding: .25rem .48rem; font-size: .52rem !important; }
+  .lounge-product-card .lounge-add-button, .lounge-product-card .lounge-customize-button { min-height: 24px; padding: .22rem .42rem; font-size: .5rem !important; border-radius: 999px !important; }
+  .lounge-product-card .menu-card-content > div:first-child { margin-bottom: .35rem; }
+  .lounge-product-card .text-yellow-500, .lounge-product-card .text-yellow-600, .lounge-product-card [class*="text-amber"] { font-size: .66rem; }
   .lounge-hero-image::after { content: ""; position: absolute; inset: 0; background: rgba(2, 8, 18, .15); }
   .lounge-hero-orb { width: 7.5rem; height: 7.5rem; }
   .lounge-menu-content .inline-flex.gap-0\.5 { max-width: 100%; }
