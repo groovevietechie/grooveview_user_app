@@ -68,7 +68,7 @@ export default function MenuItemCard({ item, themeColor, orderCount = 0 }: MenuI
 
             {/* Price badge */}
             <div
-              className="absolute top-2 left-2 px-2.5 py-1 rounded-lg backdrop-blur-md font-bold text-xs shadow-lg"
+              className="lounge-price-badge absolute top-2 left-2 px-2.5 py-1 rounded-lg backdrop-blur-md font-bold text-xs shadow-lg"
               style={{
                 backgroundColor: `${themeColor}F0`,
                 color: contrastColor,
@@ -199,6 +199,16 @@ export default function MenuItemCard({ item, themeColor, orderCount = 0 }: MenuI
                 <PlusIcon className="w-4 h-4" />
               </button>
             </div>
+
+            {quantity === 0 && (
+              <button
+                onClick={hasRequiredOptions ? () => { setQuantity(1); setShowOptionsModal(true) } : handleQuickAdd}
+                className="lounge-order-now lounge-add-button w-full font-bold py-2.5 px-3 rounded-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] hover:shadow-md text-sm flex items-center justify-center gap-2"
+                style={{ backgroundColor: themeColor, color: contrastColor }}
+              >
+                Order Now
+              </button>
+            )}
 
             {/* Action buttons - show when quantity > 0 */}
             {quantity > 0 && (

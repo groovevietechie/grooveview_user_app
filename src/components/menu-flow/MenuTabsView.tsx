@@ -401,7 +401,7 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
                         <button
                           key={category.id}
                           onClick={() => handleCategorySelect(category)}
-                          className={`group rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-offset-2 active:scale-[0.98] ${
+className={`lounge-category-card group relative rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-offset-2 active:scale-[0.98] ${
                             isService
                               ? 'bg-gradient-to-br from-gray-900 to-black text-white h-28 flex items-center justify-center'
                               : 'bg-white border border-gray-200 text-left hover:border-gray-300'
@@ -423,7 +423,7 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
                             </div>
                           ) : (
                             <>
-                              <div className="relative h-28 overflow-hidden">
+                              <div className="lounge-category-media relative h-28 overflow-hidden">
                                 {category.image_url ? (
                                   <Image
                                     src={category.image_url}
