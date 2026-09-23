@@ -162,10 +162,10 @@ export default function MenuItemCard({ item, themeColor, orderCount = 0 }: MenuI
             )}
           </div>
 
-          <div className="menu-card-actions space-y-3">
+          <div className="menu-card-actions lounge-item-actions">
             {/* Quantity selector - always show */}
             <div
-              className="flex items-center gap-2 p-2 rounded-lg border-2 transition-all duration-200"
+              className="lounge-quantity-control flex items-center gap-2 p-2 rounded-lg border-2 transition-all duration-200"
               style={{
                 borderColor: quantity > 0 ? themeColor : "#E5E7EB",
                 backgroundColor: quantity > 0 ? lightBg : "#F9FAFB",
@@ -211,7 +211,7 @@ export default function MenuItemCard({ item, themeColor, orderCount = 0 }: MenuI
                     backgroundColor: hasRequiredOptions ? "#E5E7EB" : themeColor,
                     color: hasRequiredOptions ? "#9CA3AF" : contrastColor,
                   }}
-                  className="w-full font-bold py-2.5 px-3 rounded-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] hover:shadow-md disabled:hover:scale-100 disabled:hover:shadow-none text-sm flex items-center justify-center gap-2 disabled:cursor-not-allowed"
+                  className="lounge-add-button w-full font-bold py-2.5 px-3 rounded-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] hover:shadow-md disabled:hover:scale-100 disabled:hover:shadow-none text-sm flex items-center justify-center gap-2 disabled:cursor-not-allowed"
                 >
                   {hasRequiredOptions 
                     ? "Select Required Options First" 
@@ -223,7 +223,7 @@ export default function MenuItemCard({ item, themeColor, orderCount = 0 }: MenuI
                 {hasOptions && (
                   <button
                     onClick={() => setShowOptionsModal(true)}
-                    className="w-full font-bold py-2.5 px-3 rounded-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] hover:shadow-md text-sm flex items-center justify-center gap-2 border-2"
+                    className="lounge-customize-button w-full font-bold py-2.5 px-3 rounded-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] hover:shadow-md text-sm flex items-center justify-center gap-2 border-2"
                     style={{
                       borderColor: themeColor,
                       backgroundColor: "white",
