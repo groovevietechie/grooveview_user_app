@@ -536,7 +536,7 @@ className="lounge-category-badge absolute top-2 right-2 backdrop-blur-md px-2 py
                   <button
                     key={category.id}
                     onClick={() => handleCategorySelect(category)}
-                    className={`group rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-offset-2 active:scale-[0.98] ${
+                    className={`lounge-category-card group relative rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-offset-2 active:scale-[0.98] ${
                       isService
                         ? 'bg-gradient-to-br from-gray-900 to-black text-white h-32 flex items-center justify-center'
                         : 'bg-white border border-gray-200 text-left hover:border-gray-300'
@@ -559,7 +559,7 @@ className="lounge-category-badge absolute top-2 right-2 backdrop-blur-md px-2 py
                       </div>
                     ) : (
                       <>
-                        <div className="relative h-32 overflow-hidden">
+                        <div className="lounge-category-media relative h-32 overflow-hidden">
                           {category.image_url ? (
                             <Image
                               src={category.image_url}
@@ -578,14 +578,14 @@ className="lounge-category-badge absolute top-2 right-2 backdrop-blur-md px-2 py
                               />
                             </div>
                           )}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+                          <div className="lounge-category-overlay absolute inset-0"></div>
                           
                           {/* Order count badge - top right */}
                           {(() => {
                             const count = getCategoryOrderCount(category.id)
                             return count > 0 ? (
                               <div 
-                                className="absolute top-2 right-2 bg-white/95 backdrop-blur-sm px-2 py-1 rounded-lg shadow-lg"
+                                className="lounge-category-badge absolute top-2 right-2 backdrop-blur-md px-2 py-1 rounded-full shadow-lg"
                                 style={{
                                   boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2)'
                                 }}
@@ -597,7 +597,7 @@ className="lounge-category-badge absolute top-2 right-2 backdrop-blur-md px-2 py
                             ) : null
                           })()}
                           
-                          <div className="absolute bottom-4 left-4 right-4">
+                          <div className="lounge-category-bottom absolute bottom-4 left-4 right-4">
                             <h4 className="text-white font-bold text-sm leading-tight mb-1">
                               {category.name}
                             </h4>
