@@ -246,7 +246,7 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
 
         {/* Enhanced Tabs */}
         {!searchQuery.trim() && (
-          <div className="lounge-category-switcher relative mb-8 grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="lounge-category-switcher relative mb-8 grid grid-cols-3 gap-2">
               {tabs.map((tab, index) => (
                 <button
                   key={tab.id}
@@ -261,9 +261,9 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
                     <span className="lounge-category-icon">
                       {tab.id === "services" ? <WrenchScrewdriverIcon /> : index === 0 ? <BuildingStorefrontIcon /> : <ShoppingBagIcon />}
                     </span>
-                    <div className="font-semibold">{tab.name}</div>
+                    <div className="font-semibold truncate">{tab.name}</div>
                     {tab.count > 0 && (
-                      <div className={`text-xs mt-0.5 ${
+                      <div className={`lounge-category-count text-xs mt-0.5 ${
                         activeTab === tab.id ? 'opacity-90' : 'opacity-60'
                       }`}>
                         {tab.count} {tab.count === 1 ? 'item' : 'items'}
