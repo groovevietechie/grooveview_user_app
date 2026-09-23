@@ -442,14 +442,14 @@ className={`lounge-category-card group relative rounded-2xl overflow-hidden shad
                                     />
                                   </div>
                                 )}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+<div className="lounge-category-overlay absolute inset-0"></div>
                                 
                                 {/* Order count badge - top right */}
                                 {(() => {
                                   const count = getCategoryOrderCount(category.id)
                                   return count > 0 ? (
                                     <div 
-                                      className="absolute top-2 right-2 bg-white/95 backdrop-blur-sm px-2 py-1 rounded-lg shadow-lg"
+className="lounge-category-badge absolute top-2 right-2 backdrop-blur-md px-2 py-1 rounded-full shadow-lg"
                                       style={{
                                         boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2)'
                                       }}
@@ -461,7 +461,7 @@ className={`lounge-category-card group relative rounded-2xl overflow-hidden shad
                                   ) : null
                                 })()}
                                 
-                                <div className="absolute bottom-3 left-4 right-4">
+                                <div className="lounge-category-bottom absolute bottom-3 left-4 right-4">
                                   <h4 className="text-white font-bold text-sm leading-tight mb-1">
                                     {category.name}
                                   </h4>
