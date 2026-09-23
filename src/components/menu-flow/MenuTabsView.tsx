@@ -261,14 +261,16 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
                     <span className="lounge-category-icon">
                       {tab.id === "services" ? <WrenchScrewdriverIcon /> : index === 0 ? <BuildingStorefrontIcon /> : <ShoppingBagIcon />}
                     </span>
-                    <div className="font-semibold truncate">{tab.name}</div>
-                    {tab.count > 0 && (
-                      <div className={`lounge-category-count text-xs mt-0.5 ${
-                        activeTab === tab.id ? 'opacity-90' : 'opacity-60'
-                      }`}>
-                        {tab.count} {tab.count === 1 ? 'item' : 'items'}
-                      </div>
-                    )}
+                    <div className="lounge-category-copy">
+                      <div className="font-semibold truncate">{tab.name}</div>
+                      {tab.count > 0 && (
+                        <div className={`lounge-category-count text-xs mt-0.5 ${
+                          activeTab === tab.id ? 'opacity-90' : 'opacity-60'
+                        }`}>
+                          {tab.count} {tab.count === 1 ? 'item' : 'items'}
+                        </div>
+                      )}
+                    </div>
                     <ChevronRightIcon className="lounge-category-chevron" />
                   </div>
                 </button>

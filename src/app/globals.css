@@ -354,13 +354,15 @@ body {
   .lounge-hero-orb { width: 7.5rem; height: 7.5rem; }
   .lounge-menu-content .inline-flex.gap-0\.5 { max-width: 100%; }
   .lounge-category-switcher { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .45rem; }
-  .lounge-category-button { min-height: 74px; padding: .55rem !important; }
-  .lounge-category-button > div { display: grid !important; gap: .15rem !important; justify-items: center; text-align: center; }
-  .lounge-category-icon { width: 2.25rem; height: 2.25rem; }
-  .lounge-category-icon svg { width: 1.15rem; height: 1.15rem; }
-  .lounge-category-button .font-semibold { font-size: .76rem; }
-  .lounge-category-button .text-xs { position: static; font-size: .64rem; }
-  .lounge-category-chevron { display: none; }
+  .lounge-category-button { min-height: 40px; padding: .28rem .38rem !important; border-radius: 999px; }
+  .lounge-category-button > div { display: flex !important; align-items: center; gap: .32rem !important; justify-items: initial; text-align: left; }
+  .lounge-category-icon { width: 1.75rem; height: 1.75rem; }
+  .lounge-category-icon svg { width: .9rem; height: .9rem; }
+  .lounge-category-copy { min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: .08rem; }
+  .lounge-category-button .font-semibold { font-size: .58rem; line-height: 1; }
+  .lounge-category-count { border: 0; padding: 0; font-size: .43rem; line-height: 1; }
+  .lounge-category-chevron { display: block; width: .62rem; height: .62rem; margin-left: auto; }
+  .lounge-category-button.is-active { box-shadow: 0 0 12px rgba(246, 201, 69, .25); }
 }
 
 /* Added slide-in animation for cart sidebar entrance and exit */
