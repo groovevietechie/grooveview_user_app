@@ -121,7 +121,7 @@ export default function MenuPage({ business, menuData }: MenuPageProps) {
               <div className="lounge-hero-glow" />
               <div className="relative z-10 px-6 py-7 sm:px-10 sm:py-10 max-w-xl">
                 <div className="lounge-kicker"><SparklesIcon className="w-3 h-3" /> Welcome to</div>
-                <h2>{business.name.replace(/serviced lounge/i, "").trim() || business.name}<br /><span>Serviced Lounge</span></h2>
+                <h2><span className="lounge-brand-name">{business.name.replace(/serviced lounge/i, "").trim() || business.name}</span><span className="lounge-brand-subtitle">Serviced Lounge</span></h2>
                 <p className="lounge-hero-values">Good Drinks <b>•</b> Great Vibes <b>•</b> Unforgettable Moments</p>
                 {business.address && <div className="lounge-location"><MapPinIcon className="w-4 h-4" /> {business.address}</div>}
                 <a href="#lounge-menu" className="lounge-hero-cta">Explore Menu <span>→</span></a>
