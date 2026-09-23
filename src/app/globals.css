@@ -239,11 +239,18 @@ body {
 .lounge-shell { background-color: #020914 !important; }
 .lounge-header { min-height: 76px; }
 .lounge-header > div { max-width: 1280px; }
-.lounge-hero { max-width: 1280px; min-height: 430px; margin-top: 0; border-width: 0 0 1px; border-radius: 0 0 32px 32px; }
-.lounge-hero-image { background-position: center 58%; }
+.lounge-hero { max-width: 1280px; min-height: 0; aspect-ratio: 1671 / 320; margin-top: 0; border-width: 0 0 1px; border-radius: 0 0 32px 32px; }
+.lounge-hero-image { background-position: center; background-repeat: no-repeat; background-size: cover; transition: background-image .55s ease-in-out; }
+.lounge-hero-image::before { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(2, 8, 18, .82), rgba(2, 8, 18, .34) 58%, rgba(2, 8, 18, .08)); }
 .lounge-hero::after { content: ""; position: absolute; inset: auto 0 0; height: 38%; background: linear-gradient(transparent, rgba(1, 8, 20, .72)); pointer-events: none; }
-.lounge-hero h2 { font-size: clamp(3.2rem, 7vw, 5.8rem); }
-.lounge-hero .relative.z-10 { padding-top: 5.5rem; }
+.lounge-hero h2 { font-size: clamp(1.65rem, 4.8vw, 3.7rem); }
+.lounge-hero .relative.z-10 { padding-top: clamp(1.25rem, 3vw, 3.25rem); }
+.lounge-hero .lounge-hero-values { margin-top: .55rem; font-size: clamp(.58rem, 1.15vw, .9rem); }
+.lounge-hero .lounge-location { margin-top: .55rem; font-size: clamp(.5rem, .95vw, .72rem); }
+.lounge-hero .lounge-hero-cta { margin-top: .8rem; padding: .48rem .75rem .48rem .9rem; gap: .8rem; font-size: clamp(.58rem, 1vw, .78rem); }
+.lounge-hero-dots { position: absolute; z-index: 3; bottom: .55rem; left: 50%; display: flex; gap: .45rem; transform: translateX(-50%); }
+.lounge-hero-dots button { width: .42rem; height: .42rem; padding: 0; border: 0; border-radius: 999px; background: rgba(225, 235, 255, .55); transition: width .2s ease, background .2s ease; }
+.lounge-hero-dots button.is-active { width: .62rem; background: var(--lounge-gold); }
 .lounge-menu-content { max-width: 1280px; margin: 0 auto; }
 .lounge-menu-content > div:first-child h2 { font-size: clamp(1.65rem, 3vw, 2.25rem); }
 .lounge-search-control { border: 1px solid rgba(103, 157, 246, .52); box-shadow: 0 0 0 5px rgba(34, 99, 194, .06), 0 16px 40px rgba(0, 0, 0, .25); }
@@ -265,8 +272,8 @@ body {
 }
 
 @media (max-width: 640px) {
-  .lounge-hero { min-height: 350px; border-radius: 0 0 22px 22px; }
-  .lounge-hero-image { background-position: 64% center; }
+  .lounge-hero { min-height: 0; aspect-ratio: 1671 / 420; border-radius: 0 0 22px 22px; }
+  .lounge-hero-image { background-position: 62% center; }
   .lounge-hero-image::after { content: ""; position: absolute; inset: 0; background: rgba(2, 8, 18, .15); }
   .lounge-hero-orb { width: 7.5rem; height: 7.5rem; }
   .lounge-menu-content .inline-flex.gap-0\.5 { max-width: 100%; }
