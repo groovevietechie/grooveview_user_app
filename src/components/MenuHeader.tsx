@@ -63,11 +63,13 @@ export default function MenuHeader({ business }: MenuHeaderProps) {
             )}
           </div>
 
+          </div>
+
           <nav className="lounge-desktop-nav" aria-label="Primary navigation">
-            <a className="is-active" href="#top"><HomeIcon /> Home</a>
-            <a href="#lounge-menu"><BuildingStorefrontIcon /> Menu</a>
-            <a href="#lounge-experience"><InformationCircleIcon /> About</a>
-            <a href="#lounge-contact"><ChatBubbleOvalLeftEllipsisIcon /> Contact</a>
+            <a className="is-active" href="#top"><HomeIcon /> <span>Home</span></a>
+            <a href="#lounge-menu"><BuildingStorefrontIcon /> <span>Menu</span></a>
+            <a href="#lounge-experience"><InformationCircleIcon /> <span>About</span></a>
+            <a href="#lounge-contact"><ChatBubbleOvalLeftEllipsisIcon /> <span>Contact</span></a>
             <button
               type="button"
               aria-label="Link this device"
@@ -76,7 +78,6 @@ export default function MenuHeader({ business }: MenuHeaderProps) {
               <UserCircleIcon />
             </button>
           </nav>
-          </div>
 
           {showHomeButton && (
             <button

@@ -149,8 +149,8 @@ body {
 
 .lounge-header { background: rgba(2, 10, 22, .78); border-bottom: 1px solid rgba(137, 179, 255, .16); backdrop-filter: blur(20px); }
 .lounge-logo { border: 2px solid rgba(246, 201, 69, .9); box-shadow: 0 0 0 5px rgba(246, 201, 69, .08), 0 0 26px rgba(47, 140, 255, .28); }
-.lounge-desktop-nav { display: flex; align-items: center; gap: .2rem; color: #dce8f9; font-size: .83rem; font-weight: 600; }
-.lounge-desktop-nav a { display: inline-flex; align-items: center; gap: .45rem; padding: .72rem 1rem; border-radius: 999px; transition: background .2s ease, color .2s ease; }
+.lounge-desktop-nav { display: flex; align-items: center; justify-content: flex-end; gap: .15rem; margin-left: auto; color: #dce8f9; font-size: .72rem; font-weight: 600; white-space: nowrap; }
+.lounge-desktop-nav a { display: inline-flex; align-items: center; gap: .32rem; padding: .58rem .62rem; border-radius: 999px; transition: background .2s ease, color .2s ease; }
 .lounge-desktop-nav a svg { width: 1.1rem; height: 1.1rem; }
 .lounge-desktop-nav a:hover, .lounge-desktop-nav .is-active { color: #ffe461; background: rgba(246, 201, 69, .13); }
 .lounge-desktop-nav button { display: grid; width: 2.55rem; height: 2.55rem; place-items: center; border: 1px solid rgba(118, 164, 244, .32); border-radius: 50%; color: #eef6ff; background: rgba(37, 83, 157, .23); transition: transform .2s ease, background .2s ease; }
@@ -196,6 +196,10 @@ body {
 .lounge-category-button { min-height: 86px; color: #e7effa !important; border: 1px solid rgba(79, 130, 220, .58); background: linear-gradient(135deg, rgba(22, 51, 101, .78), rgba(5, 20, 44, .82)) !important; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06), 0 12px 22px rgba(0, 0, 0, .18); }
 .lounge-category-button:hover { transform: translateY(-3px); border-color: rgba(115, 169, 255, .95); }
 .lounge-category-button.is-active { border-color: #f9d12c; background: linear-gradient(100deg, rgba(130, 93, 9, .8), rgba(72, 48, 5, .74)) !important; box-shadow: inset 0 0 18px rgba(255, 213, 61, .12), 0 0 18px rgba(249, 209, 44, .2); }
+.lounge-category-button { border-width: 1px; border-color: rgba(92, 142, 229, .55); background: linear-gradient(145deg, rgba(20, 45, 87, .9), rgba(5, 18, 38, .96)) !important; }
+.lounge-category-button.is-active { border-width: 2px; color: #fff9dc !important; }
+.lounge-category-button .font-semibold { color: #f4f7ff; font-family: Georgia, "Times New Roman", serif; font-size: .96rem; }
+.lounge-category-button .text-xs { font-size: .65rem; }
 .lounge-category-icon { display: grid; width: 3.1rem; height: 3.1rem; flex: 0 0 auto; place-items: center; border-radius: 50%; color: #dfeaff; background: rgba(115, 156, 247, .22); }
 .lounge-category-icon svg { width: 1.55rem; height: 1.55rem; }
 .lounge-category-button.is-active .lounge-category-icon { color: #fff8ca; background: rgba(246, 201, 69, .26); }
@@ -203,7 +207,14 @@ body {
 .lounge-category-button .text-xs { position: absolute; left: 4.15rem; bottom: .8rem; color: #b7c9e5; }
 .lounge-category-chevron { width: 1.2rem; height: 1.2rem; margin-left: auto; color: #e5efff; }
 
-.lounge-product-card { background: linear-gradient(145deg, rgba(13, 33, 64, .96), rgba(5, 17, 35, .96)) !important; border-color: rgba(97, 139, 225, .32) !important; box-shadow: 0 14px 30px rgba(0, 0, 0, .28) !important; }
+.lounge-product-card { background: linear-gradient(145deg, rgba(13, 33, 64, .96), rgba(5, 17, 35, .96)) !important; border: 1px solid rgba(91, 137, 224, .58) !important; border-radius: 16px !important; box-shadow: 0 14px 30px rgba(0, 0, 0, .28) !important; overflow: hidden; }
+.lounge-product-card:nth-child(odd) { border-color: rgba(246, 201, 69, .9) !important; box-shadow: 0 0 0 1px rgba(246, 201, 69, .28), 0 14px 30px rgba(0, 0, 0, .3) !important; }
+.lounge-product-card h3, .lounge-product-card h4 { font-family: Georgia, "Times New Roman", serif; letter-spacing: -.02em; }
+.lounge-product-card .text-yellow-500, .lounge-product-card .text-yellow-600, .lounge-product-card [class*="text-amber"] { color: #f9d52f !important; }
+.lounge-product-card button { border-radius: 999px !important; font-size: .7rem !important; font-weight: 800 !important; }
+.lounge-product-card button[style*="background"] { background: linear-gradient(135deg, #ffe76b, #f2b914) !important; color: #17130a !important; }
+.lounge-product-card > div:first-child { position: relative; }
+.lounge-product-card > div:first-child::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, rgba(0, 0, 0, .02) 35%, rgba(1, 8, 20, .82)); }
 .lounge-product-card:hover { transform: translateY(-5px); border-color: rgba(246, 201, 69, .7) !important; box-shadow: 0 22px 45px rgba(0, 0, 0, .46), 0 0 22px rgba(47, 140, 255, .13) !important; }
 .lounge-product-card .text-gray-900 { color: #f4f8ff !important; }
 .lounge-product-card .text-gray-500 { color: #aab8cb !important; }
@@ -243,7 +254,7 @@ body {
 .lounge-hero-image { background-position: center; background-repeat: no-repeat; background-size: cover; transition: background-image .55s ease-in-out; }
 .lounge-hero-image::before { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(2, 8, 18, .82), rgba(2, 8, 18, .34) 58%, rgba(2, 8, 18, .08)); }
 .lounge-hero::after { content: ""; position: absolute; inset: auto 0 0; height: 38%; background: linear-gradient(transparent, rgba(1, 8, 20, .72)); pointer-events: none; }
-.lounge-hero h2 { font-family: Georgia, "Times New Roman", serif; font-size: clamp(1.45rem, 4.2vw, 3.2rem); text-shadow: 0 4px 24px rgba(0, 0, 0, .55); animation: lounge-title-in .8s ease both; }
+.lounge-hero h2 { font-family: Georgia, "Times New Roman", serif; font-size: clamp(1.25rem, 3.6vw, 2.75rem); line-height: .94; text-shadow: 0 4px 24px rgba(0, 0, 0, .55); animation: lounge-title-in .8s ease both; }
 .lounge-hero h2 span { animation: lounge-gold-pulse 3.8s ease-in-out infinite; }
 @keyframes lounge-title-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes lounge-gold-pulse { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.18); } }
