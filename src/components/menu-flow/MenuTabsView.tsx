@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useEffect } from "react"
 import Image from "next/image"
 import type { Menu, MenuCategory, MenuItem, ServiceConfiguration, Business } from "@/types/database"
-import { MagnifyingGlassIcon, SparklesIcon, CogIcon, ArrowRightIcon, BuildingStorefrontIcon, ShoppingBagIcon, WrenchScrewdriverIcon, AdjustmentsHorizontalIcon, ChevronRightIcon } from "@heroicons/react/24/outline"
+import { MagnifyingGlassIcon, SparklesIcon, CogIcon, ArrowRightIcon, BuildingStorefrontIcon, ShoppingBagIcon, WrenchScrewdriverIcon, AdjustmentsHorizontalIcon, ChevronRightIcon, LockClosedIcon } from "@heroicons/react/24/outline"
 import { lightenColor } from "@/lib/color-utils"
 import { getServiceConfigurations } from "@/lib/api"
 
@@ -187,13 +187,15 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
     ...(drinksMenu ? [{
       id: drinksMenu.id,
       name: drinksMenu.name,
+      image_url: drinksMenu.image_url,
       count: categories.filter(cat => cat.menu_id === drinksMenu.id).length
     }] : []),
     // Other menus
     ...otherMenus.map(menu => ({
-      id: menu.id,
-      name: menu.name,
-      count: categories.filter(cat => cat.menu_id === menu.id).length
+    id: menu.id,
+    name: menu.name,
+    image_url: menu.image_url,
+    count: categories.filter(cat => cat.menu_id === menu.id).length
     })),
     // Services last
     { id: "services", name: "Services", count: services.length }
@@ -257,23 +259,18 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
                       : 'text-gray-600 hover:text-gray-800 hover:bg-white/50'
                   }`}
                 >
-                  <div className="relative z-10 flex items-center gap-3">
-                    <span className="lounge-category-icon">
-                      {tab.id === "services" ? <WrenchScrewdriverIcon /> : index === 0 ? <BuildingStorefrontIcon /> : <ShoppingBagIcon />}
-                    </span>
-                    <div className="lounge-category-copy">
-                      <div className="lounge-category-name-row">
-                        <div className="font-semibold truncate">{tab.name}</div>
-                        {tab.count > 0 && (
-                          <div className={`lounge-category-count text-xs ${
-                            activeTab === tab.id ? 'opacity-90' : 'opacity-60'
-                          }`}>
-                            {tab.count} {tab.count === 1 ? 'item' : 'items'}
-                          </div>
-                        )}
-                      </div>
+                  {tab.image_url && <Image src={tab.image_url} alt="" fill sizes="(max-width: 640px) 50vw, 360px" className="lounge-category-image" />}
+                  <div className="lounge-category-scrim" aria-hidden="true" />
+                  <div className="lounge-category-topline">
+                    <span className="lounge-category-count"><LockClosedIcon /> {tab.count} {tab.count === 1 ? 'item' : 'items'}</span>
+                    <span className="lounge-category-heart" aria-hidden="true">♡</span>
+                  </div>
+                  <div className="lounge-category-overlay">
+                    <div className="min-w-0">
+                      <div className="font-semibold truncate">{tab.name}</div>
+                      <p>{tab.count} {tab.count === 1 ? 'category' : 'categories'}</p>
                     </div>
-                    <ChevronRightIcon className="lounge-category-chevron" />
+                    <span className="lounge-category-arrow">Order Now&nbsp; ›</span>
                   </div>
                 </button>
               ))}
