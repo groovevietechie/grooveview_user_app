@@ -324,7 +324,7 @@ body {
 .menu-card .lounge-product-media { position: relative; height: 154px; overflow: hidden; }
 .menu-card .lounge-product-scrim { position: absolute; inset: 0; z-index: 1; background: linear-gradient(180deg, rgba(0, 0, 0, .08) 25%, rgba(1, 8, 20, .9) 100%); pointer-events: none; }
 .menu-card-topline { position: absolute; inset: .45rem .45rem auto; z-index: 3; display: flex; align-items: flex-start; justify-content: space-between; }
-.menu-card .lounge-order-badge { display: inline-flex; align-items: center; gap: .28rem; padding: .22rem .48rem; border: 1px solid rgba(246, 201, 69, .68); border-radius: 999px; color: #fff2ae; background: rgba(19, 27, 42, .82); font-size: .55rem; font-weight: 700; line-height: 1; }
+.menu-card .lounge-order-badge { display: inline-flex; align-items: center; gap: .28rem; padding: .22rem .48rem; border: 1px solid #f6c945; border-radius: 999px; color: #ffffff; background: linear-gradient(135deg, #f6c945, #c88d12); box-shadow: 0 2px 8px rgba(246, 201, 69, .32); font-size: .55rem; font-weight: 700; line-height: 1; }
 .menu-card .lounge-order-badge svg { width: .65rem; height: .65rem; }
 .menu-card .lounge-heart-button { display: grid; place-items: center; width: 1.5rem; height: 1.5rem; border: 1px solid rgba(222, 235, 255, .62); border-radius: 50%; color: #f8fbff; background: rgba(3, 12, 25, .56); }
 .menu-card .lounge-heart-button svg { width: .82rem; height: .82rem; }
