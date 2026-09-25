@@ -10,6 +10,7 @@ import { getDeviceId, getCustomerId } from "@/lib/device-identity"
 import { trackActivity, updateDeviceActivity } from "@/lib/customer-api"
 import { getDeviceOrders } from "@/lib/order-storage"
 import { useCustomerProfile } from "@/hooks/useCustomerProfile"
+import { useEngagementPopup } from "@/hooks/useEngagementPopup"
 import MenuHeader from "./MenuHeader"
 import MenuList from "./MenuList"
 import CartSidebar from "./CartSidebar"
@@ -17,6 +18,7 @@ import ServiceSidebar from "./ServiceSidebar"
 import FloatingOrderButton from "./FloatingOrderButton"
 import BackButtonHandler from "./BackButtonHandler"
 import DeviceSyncModal from "./DeviceSyncModal"
+import EngagementPopup from "./popups/EngagementPopup"
 import { ShoppingCartIcon, MapPinIcon, SparklesIcon } from "@heroicons/react/24/outline"
 import { useMenuNavigation } from "@/hooks/useMenuNavigation"
 
@@ -40,6 +42,7 @@ export default function MenuPage({ business, menuData }: MenuPageProps) {
   const { getServiceItemCount, setBusinessId: setServiceBusinessId } = useServiceStore()
   const { setPrimaryColor } = useTheme()
   const { handleBack } = useMenuNavigation()
+  const { currentPopup, showPopup, dismissPopup, confirmPopup } = useEngagementPopup()
   
   // Pre-load customer profile data on mount
   const customerProfile = useCustomerProfile()
@@ -84,10 +87,41 @@ export default function MenuPage({ business, menuData }: MenuPageProps) {
     }
     window.addEventListener('openDeviceSync', handleOpenDeviceSync)
 
+    // Trigger engagement popup on page load with delay
+    const popupTimer = setTimeout(() => {
+      const popupTypes = ['spinWheel', 'couponOffer', 'limitedOffer']
+      const randomType = popupTypes[Math.floor(Math.random() * popupTypes.length)]
+
+      if (randomType === 'spinWheel') {
+        showPopup({
+          type: 'spinWheel',
+          title: 'Spin to get ₦300,000',
+          subtitle: 'Coupon bundle',
+        })
+      } else if (randomType === 'couponOffer') {
+        showPopup({
+          type: 'couponOffer',
+          title: 'Get it with just 1 order',
+          amount: 300000,
+          description: 'Coupon bundle',
+          expiresIn: '09/25/2026',
+        })
+      } else {
+        showPopup({
+          type: 'limitedOffer',
+          title: 'Get it with just 1 order',
+          amount: 300000,
+          description: 'Coupon bundle',
+          expiresIn: '03:59:15',
+        })
+      }
+    }, 2000) // Show popup 2 seconds after page load
+
     return () => {
       window.removeEventListener('openDeviceSync', handleOpenDeviceSync)
+      clearTimeout(popupTimer)
     }
-  }, [business.id, business.theme_color_hex, setBusinessId, setServiceBusinessId, setPrimaryColor])
+  }, [business.id, business.theme_color_hex, setBusinessId, setServiceBusinessId, setPrimaryColor, showPopup])
 
   const itemCount = getItemCount()
   const serviceItemCount = getServiceItemCount()
@@ -202,6 +236,16 @@ export default function MenuPage({ business, menuData }: MenuPageProps) {
             preloadedDevices={customerProfile.devices}
             onDataChange={customerProfile.refreshCustomerData}
           />
+
+          {/* Engagement Popup */}
+          {currentPopup && (
+            <EngagementPopup
+              popupData={currentPopup}
+              themeColor={business.theme_color_hex}
+              onClose={dismissPopup}
+              onConfirm={confirmPopup}
+            />
+          )}
         </div>
       </BackButtonHandler>
     </Suspense>

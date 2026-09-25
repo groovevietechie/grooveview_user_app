@@ -51,6 +51,14 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
     return categoryItems.reduce((total, item) => total + (orderCounts[item.id] || 0), 0)
   }
 
+  // Get minimum price for a category
+  const getCategoryMinPrice = (categoryId: string): number | null => {
+    const categoryItems = items.filter(item => item.category_id === categoryId)
+    if (categoryItems.length === 0) return null
+    const minPrice = Math.min(...categoryItems.map(item => item.price))
+    return minPrice
+  }
+
   const getMenuOrderCount = (menuId: string): number => {
     const menuCategories = categories.filter(cat => cat.menu_id === menuId)
     return menuCategories.reduce((total, cat) => total + getCategoryOrderCount(cat.id), 0)
@@ -264,13 +272,6 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
                     <div className="lounge-category-copy">
                       <div className="lounge-category-name-row">
                         <div className="font-semibold truncate">{tab.name}</div>
-                        {tab.count > 0 && (
-                          <div className={`lounge-category-count text-xs ${
-                            activeTab === tab.id ? 'opacity-90' : 'opacity-60'
-                          }`}>
-                            {tab.count} {tab.count === 1 ? 'item' : 'items'}
-                          </div>
-                        )}
                       </div>
                     </div>
                     <ChevronRightIcon className="lounge-category-chevron" />
@@ -529,17 +530,19 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-5">
+            <div className="grid grid-cols-2 gap-6">
               {filteredCategories.map((category, index) => {
                 const isService = (category as any).isService
+                const orderCount = getCategoryOrderCount(category.id)
+                
                 return (
                   <button
                     key={category.id}
                     onClick={() => handleCategorySelect(category)}
-                    className={`group rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-offset-2 active:scale-[0.98] ${
+                    className={`group relative rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-offset-2 active:scale-[0.98] before:absolute before:inset-0 before:rounded-2xl before:pointer-events-none before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-500 ${
                       isService
-                        ? 'bg-gradient-to-br from-gray-900 to-black text-white h-32 flex items-center justify-center'
-                        : 'bg-white border border-gray-200 text-left hover:border-gray-300'
+                        ? 'bg-gradient-to-br from-gray-900 to-black text-white h-40 flex items-center justify-center'
+                        : 'h-48 flex flex-col relative'
                     }`}
                     style={
                       {
@@ -548,6 +551,27 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
                       } as React.CSSProperties
                     }
                   >
+                    {!isService && (
+                      <>
+                        <div 
+                          className="absolute inset-0 rounded-2xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                          style={{
+                            background: `radial-gradient(circle at 50% 50%, ${themeColor}40, transparent 70%)`,
+                            animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                          }}
+                        />
+                        <div
+                          className="absolute inset-0 rounded-2xl pointer-events-none"
+                          style={{
+                            border: `2px solid transparent`,
+                            background: `linear-gradient(rgba(2,10,22,0.78), rgba(2,10,22,0.78)) padding-box, linear-gradient(135deg, #f6c945, #ffd52e) border-box`,
+                            opacity: 0,
+                            animation: `card-glow-edge 3s ease-in-out infinite`,
+                            animationDelay: `${index * 100}ms`,
+                          }}
+                        />
+                      </>
+                    )}
                     {isService ? (
                       <div className="text-center p-5">
                         <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
@@ -559,7 +583,8 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
                       </div>
                     ) : (
                       <>
-                        <div className="relative h-32 overflow-hidden">
+                        {/* Image container */}
+                        <div className="relative flex-1 overflow-hidden bg-gray-900">
                           {category.image_url ? (
                             <Image
                               src={category.image_url}
@@ -570,7 +595,7 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
                           ) : (
                             <div
                               className="w-full h-full flex items-center justify-center"
-                              style={{ backgroundColor: lightenColor(themeColor, 95) }}
+                              style={{ backgroundColor: lightenColor(themeColor, 85) }}
                             >
                               <SparklesIcon
                                 className="w-12 h-12 opacity-30"
@@ -578,40 +603,56 @@ const MenuTabsView: React.FC<MenuTabsViewProps> = ({
                               />
                             </div>
                           )}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
                           
-                          {/* Order count badge - top right */}
-                          {(() => {
-                            const count = getCategoryOrderCount(category.id)
-                            return count > 0 ? (
-                              <div 
-                                className="absolute top-2 right-2 bg-white/95 backdrop-blur-sm px-2 py-1 rounded-lg shadow-lg"
-                                style={{
-                                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2)'
-                                }}
-                              >
-                                <span className="text-xs font-bold" style={{ color: themeColor }}>
-                                  {count} {count === 1 ? 'Order' : 'Orders'}
-                                </span>
-                              </div>
-                            ) : null
-                          })()}
+                          {/* Dark gradient overlay */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
                           
-                          <div className="absolute bottom-4 left-4 right-4">
-                            <h4 className="text-white font-bold text-sm leading-tight mb-1">
+                          {/* Order count badge - top left (dark navy gradient) */}
+                          {orderCount > 0 && (
+                            <div 
+                              className="absolute top-3 left-3 px-3 py-1.5 rounded-lg shadow-lg flex items-center gap-1.5 font-bold text-xs text-white/90 backdrop-blur-sm"
+                              style={{ 
+                                background: 'linear-gradient(135deg, rgba(22, 51, 101, 0.9), rgba(5, 20, 44, 0.9))',
+                                border: '1px solid rgba(89, 148, 255, 0.35)'
+                              }}
+                            >
+                              <span className="block w-1.5 h-1.5 rounded-full" style={{ backgroundColor: themeColor }}></span>
+                              <span>{orderCount} {orderCount === 1 ? 'Order' : 'Orders'}</span>
+                            </div>
+                          )}
+                          
+                          {/* Favorite icon - top right */}
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              // Add favorite functionality here
+                            }}
+                            className="absolute top-3 right-3 w-8 h-8 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/30 transition-colors"
+                            aria-label="Add to favorites"
+                          >
+                            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                            </svg>
+                          </button>
+                        </div>
+
+                        {/* Bottom section with title and price on same row */}
+                        <div className="relative z-10 bg-gradient-to-t from-black/40 to-transparent px-4 py-4">
+                          <div className="flex items-end justify-between gap-3">
+                            <h4 className="text-white font-bold text-sm leading-tight">
                               {category.name}
                             </h4>
-                            {category.description && (
-                              <p className="text-white/90 text-xs line-clamp-2 leading-relaxed">
-                                {category.description}
-                              </p>
-                            )}
+                            {(() => {
+                              const minPrice = getCategoryMinPrice(category.id)
+                              return minPrice !== null ? (
+                                <p className="text-white/90 text-sm font-semibold whitespace-nowrap">
+                                  ₦{minPrice.toLocaleString()}+
+                                </p>
+                              ) : null
+                            })()}
                           </div>
                         </div>
-                        <div
-                          className="h-1.5 w-0 group-hover:w-full transition-all duration-500 ease-out"
-                          style={{ backgroundColor: themeColor }}
-                        />
                       </>
                     )}
                   </button>
