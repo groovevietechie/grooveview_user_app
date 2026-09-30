@@ -40,7 +40,7 @@ export default function SuccessToast({ message, orderId, businessSlug, onDismiss
             </p>
             <a
               href={`/b/${businessSlug}/orders`}
-              className="text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+              className="text-sm font-semibold text-amber-600 hover:text-amber-700 transition-colors"
             >
               View Orders →
             </a>

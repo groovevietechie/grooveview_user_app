@@ -32,7 +32,7 @@ export default function ExperiencePromptPopup({
         style={{ boxShadow: `0 18px 55px rgba(0, 0, 0, .42), 0 0 0 1px ${themeColor}26` }}
       >
         <div className="pointer-events-none absolute -right-16 -top-20 h-52 w-52 rounded-full opacity-30 blur-3xl" style={{ backgroundColor: themeColor }} />
-        <div className="pointer-events-none absolute -bottom-24 -left-16 h-44 w-44 rounded-full bg-blue-500/30 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-24 -left-16 h-44 w-44 rounded-full bg-amber-500/30 blur-3xl" />
 
         <button
           type="button"

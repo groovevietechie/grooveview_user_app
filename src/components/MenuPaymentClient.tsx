@@ -315,13 +315,13 @@ export default function MenuPaymentClient({
             {/* Transfer Code */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">Transfer Remark/Reference</label>
-              <div className="flex items-center gap-2 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <span className="flex-1 font-mono text-xl font-bold text-blue-900">
+              <div className="flex items-center gap-2 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                <span className="flex-1 font-mono text-xl font-bold text-amber-900">
                   {transferCode}
                 </span>
                 <button
                   onClick={() => copyToClipboard(transferCode, "code")}
-                  className="p-2 rounded-lg hover:bg-blue-200 transition-colors text-blue-600"
+                  className="p-2 rounded-lg hover:bg-amber-200 transition-colors text-amber-600"
                 >
                   {copiedField === "code" ? (
                     <CheckIcon className="w-5 h-5 text-green-600" />
@@ -330,7 +330,7 @@ export default function MenuPaymentClient({
                   )}
                 </button>
               </div>
-              <p className="text-xs text-blue-700 bg-blue-50 p-2 rounded">
+              <p className="text-xs text-amber-700 bg-amber-50 p-2 rounded">
                 <strong>Important:</strong> Use this code as your transfer remark/reference so we can identify your payment
               </p>
             </div>

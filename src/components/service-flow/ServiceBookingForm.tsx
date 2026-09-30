@@ -400,7 +400,7 @@ export default function ServiceBookingForm({
                   onClick={() => setSelectedDuration(duration)}
                   className={`p-4 border rounded-lg text-left transition-all ${
                     selectedDuration?.label === duration.label
-                      ? 'border-blue-500 bg-blue-50 text-blue-700'
+                      ? 'border-amber-500 bg-amber-50 text-amber-700'
                       : 'border-gray-300 hover:border-gray-400'
                   }`}
                 >
@@ -425,7 +425,7 @@ export default function ServiceBookingForm({
               type="checkbox"
               checked={preOrderEnabled}
               onChange={(e) => setPreOrderEnabled(e.target.checked)}
-              className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+              className="w-5 h-5 text-amber-600 bg-gray-100 border-gray-300 rounded focus:ring-amber-500 focus:ring-2"
             />
             <span className="text-sm font-medium text-gray-700">
               Pre-order Food and Drinks for the event

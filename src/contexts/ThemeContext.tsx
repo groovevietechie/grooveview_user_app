@@ -14,7 +14,7 @@ interface ThemeProviderProps {
 }
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
-  const [primaryColor, setPrimaryColor] = useState('#3B82F6') // Default blue
+  const [primaryColor, setPrimaryColor] = useState('#1e3a8a') // Default dark navy blue
 
   return (
     <ThemeContext.Provider value={{ primaryColor, setPrimaryColor }}>

@@ -277,33 +277,33 @@ export default function DeviceSyncModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4">
-      <div className="bg-white w-full sm:max-w-md sm:rounded-3xl rounded-t-3xl shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-gradient-to-b from-slate-900 via-blue-950 to-black w-full sm:max-w-md sm:rounded-3xl rounded-t-3xl shadow-2xl max-h-[90vh] overflow-y-auto border border-blue-900/50 relative">
+        {/* Futuristic gradient accents */}
+        <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-amber-400/20 to-transparent rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+        
         {/* Header */}
-        <div className="sticky top-0 bg-white/95 backdrop-blur-md border-b border-gray-100 p-4 flex items-center justify-between rounded-t-3xl">
+        <div className="sticky top-0 bg-gradient-to-r from-slate-900/95 via-blue-950/95 to-black/95 backdrop-blur-md border-b border-amber-400/20 p-4 flex items-center justify-between rounded-t-3xl relative z-10">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl" style={{ backgroundColor: lightColor }}>
-              <DevicePhoneMobileIcon className="w-5 h-5" style={{ color: primaryColor }} />
+            <div className="p-2.5 rounded-xl bg-gradient-to-br from-amber-400/20 to-amber-400/10 border border-amber-400/30">
+              <DevicePhoneMobileIcon className="w-5 h-5 text-amber-400" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-gray-900">Device Sync</h2>
-              <p className="text-xs text-gray-500">Manage your devices</p>
+              <h2 className="text-lg font-bold text-amber-50">Device Sync</h2>
+              <p className="text-xs text-amber-200/70">Manage your devices</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors">
-            <XMarkIcon className="w-5 h-5 text-gray-600" />
+          <button onClick={onClose} className="p-2 rounded-full hover:bg-white/10 transition-colors text-amber-200/70 hover:text-amber-300">
+            <XMarkIcon className="w-5 h-5" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-4">
+        <div className="p-4 relative z-10">
           {/* Loading */}
           {loading && (
             <div className="flex justify-center py-16">
               <div className="animate-spin">
-                <div
-                  className="w-10 h-10 border-4 rounded-full"
-                  style={{ borderColor: lightColor, borderTopColor: primaryColor }}
-                />
+                <div className="w-10 h-10 border-4 rounded-full border-amber-400/30 border-t-amber-400"></div>
               </div>
             </div>
           )}
@@ -312,14 +312,11 @@ export default function DeviceSyncModal({
           {!loading && !customer && !showLinkDevice && (
             <div className="py-6">
               <div className="text-center mb-6">
-                <div
-                  className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4"
-                  style={{ backgroundColor: lightColor }}
-                >
-                  <SparklesIcon className="w-8 h-8" style={{ color: primaryColor }} />
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 bg-gradient-to-br from-amber-400/20 to-amber-400/10 border border-amber-400/30">
+                  <SparklesIcon className="w-8 h-8 text-amber-400" />
                 </div>
-                <h3 className="text-lg font-bold text-gray-900 mb-1">No Profile Yet</h3>
-                <p className="text-sm text-gray-600">Sync your orders across devices</p>
+                <h3 className="text-lg font-bold text-amber-50 mb-1">No Profile Yet</h3>
+                <p className="text-sm text-amber-200/70">Sync your orders across devices</p>
               </div>
 
               {/* Optional profile fields */}
@@ -328,17 +325,17 @@ export default function DeviceSyncModal({
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="relative w-20 h-20 rounded-full border-2 border-dashed flex items-center justify-center overflow-hidden transition-all hover:opacity-80"
-                    style={{ borderColor: primaryColor }}
+                    className="relative w-20 h-20 rounded-full border-2 border-dashed flex items-center justify-center overflow-hidden transition-all hover:opacity-80 bg-gradient-to-br from-slate-800 to-blue-950"
+                    style={{ borderColor: '#fbbf24' }}
                   >
                     {profileForm.profile_picture_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={profileForm.profile_picture_url} alt="Profile" className="w-full h-full object-cover" />
                     ) : (
-                      <UserCircleIcon className="w-10 h-10 text-gray-400" />
+                      <UserCircleIcon className="w-10 h-10 text-amber-400/40" />
                     )}
                   </button>
-                  <p className="text-xs text-gray-500">Tap to add photo (optional)</p>
+                  <p className="text-xs text-amber-200/70">Tap to add photo (optional)</p>
                   <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleProfilePictureChange} />
                 </div>
 
@@ -347,31 +344,29 @@ export default function DeviceSyncModal({
                   value={profileForm.full_name}
                   onChange={(e) => setProfileForm((f) => ({ ...f, full_name: e.target.value }))}
                   placeholder="Full name (optional)"
-                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 text-sm focus:outline-none focus:border-gray-400"
+                  className="w-full px-4 py-3 rounded-xl border-2 border-amber-400/20 bg-slate-800/50 text-amber-50 text-sm focus:outline-none focus:border-amber-400/50 focus:bg-slate-800/80 transition-all placeholder:text-amber-200/30"
                 />
                 <input
                   type="text"
                   value={profileForm.address}
                   onChange={(e) => setProfileForm((f) => ({ ...f, address: e.target.value }))}
                   placeholder="Address (optional)"
-                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 text-sm focus:outline-none focus:border-gray-400"
+                  className="w-full px-4 py-3 rounded-xl border-2 border-amber-400/20 bg-slate-800/50 text-amber-50 text-sm focus:outline-none focus:border-amber-400/50 focus:bg-slate-800/80 transition-all placeholder:text-amber-200/30"
                 />
               </div>
 
-              {error && <p className="text-xs text-red-600 mb-3 text-center">{error}</p>}
+              {error && <p className="text-xs text-red-400 mb-3 text-center">{error}</p>}
 
               <div className="flex flex-col gap-2">
                 <button
                   onClick={handleCreateProfile}
-                  style={{ backgroundColor: primaryColor, color: contrastColor }}
-                  className="w-full px-4 py-3 rounded-xl font-semibold text-sm shadow-lg hover:shadow-xl transition-all active:scale-95"
+                  className="w-full px-4 py-3 rounded-xl font-semibold text-sm shadow-lg hover:shadow-xl transition-all active:scale-95 bg-gradient-to-r from-amber-400 to-amber-500 text-slate-900 hover:from-amber-300 hover:to-amber-400"
                 >
                   Create Profile
                 </button>
                 <button
                   onClick={() => setShowLinkDevice(true)}
-                  className="w-full px-4 py-3 rounded-xl font-semibold text-sm border-2 transition-all active:scale-95"
-                  style={{ borderColor: primaryColor, color: primaryColor }}
+                  className="w-full px-4 py-3 rounded-xl font-semibold text-sm border-2 border-amber-400/40 text-amber-400 hover:bg-amber-400/10 transition-all active:scale-95"
                 >
                   I Have a Passcode
                 </button>
@@ -384,14 +379,14 @@ export default function DeviceSyncModal({
             <div>
               <button
                 onClick={() => { setShowLinkDevice(false); setError(""); setPasscodeInput("") }}
-                className="text-sm text-gray-600 mb-4 hover:text-gray-900"
+                className="text-sm text-amber-400/70 mb-4 hover:text-amber-400 transition-colors"
               >
                 ← Back
               </button>
               <div className="space-y-4">
                 <div>
-                  <h3 className="font-bold text-gray-900 mb-1">Link This Device</h3>
-                  <p className="text-xs text-gray-600 mb-3">Enter your 6-digit passcode</p>
+                  <h3 className="font-bold text-amber-50 mb-1">Link This Device</h3>
+                  <p className="text-xs text-amber-200/70 mb-3">Enter your 6-digit passcode</p>
                   <input
                     type="text"
                     value={passcodeInput}
@@ -401,16 +396,15 @@ export default function DeviceSyncModal({
                       setError("")
                     }}
                     placeholder="000000"
-                    className="w-full px-4 py-3 rounded-xl border-2 text-center text-xl font-mono tracking-widest mb-3"
-                    style={{ borderColor: error ? "#dc2626" : primaryColor }}
+                    className="w-full px-4 py-3 rounded-xl border-2 text-center text-2xl font-mono tracking-widest mb-3 bg-slate-800/50 text-amber-400 focus:outline-none focus:bg-slate-800/80"
+                    style={{ borderColor: error ? "#f87171" : '#fbbf24' }}
                     maxLength={6}
                   />
-                  {error && <p className="text-xs text-red-600 mb-3">{error}</p>}
+                  {error && <p className="text-xs text-red-400 mb-3">{error}</p>}
                   <button
                     onClick={handleLinkDevice}
                     disabled={loading || passcodeInput.length !== 6}
-                    style={{ backgroundColor: primaryColor, color: contrastColor }}
-                    className="w-full px-4 py-3 rounded-xl font-semibold text-sm shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
+                    className="w-full px-4 py-3 rounded-xl font-semibold text-sm shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 bg-gradient-to-r from-amber-400 to-amber-500 text-slate-900 hover:from-amber-300 hover:to-amber-400"
                   >
                     {loading ? "Linking..." : "Link Device"}
                   </button>
@@ -427,27 +421,27 @@ export default function DeviceSyncModal({
                 <div className="space-y-3">
                   <button
                     onClick={() => { setShowEditProfile(false); setError("") }}
-                    className="text-sm text-gray-600 hover:text-gray-900"
+                    className="text-sm text-amber-400/70 hover:text-amber-400 transition-colors"
                   >
                     ← Back
                   </button>
-                  <h3 className="font-bold text-gray-900">Edit Profile</h3>
+                  <h3 className="font-bold text-amber-50">Edit Profile</h3>
 
                   <div className="flex flex-col items-center gap-2">
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="relative w-20 h-20 rounded-full border-2 border-dashed flex items-center justify-center overflow-hidden hover:opacity-80 transition-all"
-                      style={{ borderColor: primaryColor }}
+                      className="relative w-20 h-20 rounded-full border-2 border-dashed flex items-center justify-center overflow-hidden hover:opacity-80 transition-all bg-gradient-to-br from-slate-800 to-blue-950"
+                      style={{ borderColor: '#fbbf24' }}
                     >
                       {profileForm.profile_picture_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={profileForm.profile_picture_url} alt="Profile" className="w-full h-full object-cover" />
                       ) : (
-                        <UserCircleIcon className="w-10 h-10 text-gray-400" />
+                        <UserCircleIcon className="w-10 h-10 text-amber-400/40" />
                       )}
                     </button>
-                    <p className="text-xs text-gray-500">Tap to change photo</p>
+                    <p className="text-xs text-amber-200/70">Tap to change photo</p>
                     <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleProfilePictureChange} />
                   </div>
 
@@ -456,23 +450,22 @@ export default function DeviceSyncModal({
                     value={profileForm.full_name}
                     onChange={(e) => setProfileForm((f) => ({ ...f, full_name: e.target.value }))}
                     placeholder="Full name"
-                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 text-sm focus:outline-none focus:border-gray-400"
+                    className="w-full px-4 py-3 rounded-xl border-2 border-amber-400/20 bg-slate-800/50 text-amber-50 text-sm focus:outline-none focus:border-amber-400/50 focus:bg-slate-800/80 transition-all placeholder:text-amber-200/30"
                   />
                   <input
                     type="text"
                     value={profileForm.address}
                     onChange={(e) => setProfileForm((f) => ({ ...f, address: e.target.value }))}
                     placeholder="Address"
-                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 text-sm focus:outline-none focus:border-gray-400"
+                    className="w-full px-4 py-3 rounded-xl border-2 border-amber-400/20 bg-slate-800/50 text-amber-50 text-sm focus:outline-none focus:border-amber-400/50 focus:bg-slate-800/80 transition-all placeholder:text-amber-200/30"
                   />
 
-                  {error && <p className="text-xs text-red-600">{error}</p>}
+                  {error && <p className="text-xs text-red-400">{error}</p>}
 
                   <button
                     onClick={handleSaveProfile}
                     disabled={savingProfile}
-                    style={{ backgroundColor: primaryColor, color: contrastColor }}
-                    className="w-full px-4 py-3 rounded-xl font-semibold text-sm shadow-lg transition-all disabled:opacity-50 active:scale-95"
+                    className="w-full px-4 py-3 rounded-xl font-semibold text-sm shadow-lg transition-all disabled:opacity-50 active:scale-95 bg-gradient-to-r from-amber-400 to-amber-500 text-slate-900 hover:from-amber-300 hover:to-amber-400"
                   >
                     {savingProfile ? "Saving..." : "Save Profile"}
                   </button>
@@ -480,161 +473,140 @@ export default function DeviceSyncModal({
               ) : (
                 <>
                   {/* Profile Info Card */}
-                  <div
-                    className="p-4 rounded-2xl border flex items-center gap-3"
-                    style={{ backgroundColor: lightColor, borderColor: primaryColor }}
-                  >
-                    <div
-                      className="w-14 h-14 rounded-full flex-shrink-0 overflow-hidden border-2"
-                      style={{ borderColor: primaryColor }}
-                    >
-                      {customer.profile_picture_url ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={customer.profile_picture_url} alt="Profile" className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-white">
-                          <UserCircleIcon className="w-8 h-8 text-gray-400" />
-                        </div>
-                      )}
+                  <div className="p-4 rounded-2xl border border-amber-400/30 bg-gradient-to-br from-slate-800/50 to-blue-900/50 backdrop-blur-sm">
+                    <div className="flex items-center gap-3">
+                      <div className="w-14 h-14 rounded-full flex-shrink-0 overflow-hidden border-2 border-amber-400/50">
+                        {customer.profile_picture_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={customer.profile_picture_url} alt="Profile" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-700 to-blue-900">
+                            <UserCircleIcon className="w-8 h-8 text-amber-400/50" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-amber-50 text-sm truncate">
+                          {customer.full_name || "No name set"}
+                        </p>
+                        <p className="text-xs text-amber-200/70 truncate">
+                          {customer.address || "No address set"}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setProfileForm({
+                            full_name: customer.full_name || "",
+                            address: customer.address || "",
+                            profile_picture_url: customer.profile_picture_url || "",
+                          })
+                          setShowEditProfile(true)
+                        }}
+                        className="p-2 rounded-lg hover:bg-amber-400/10 transition-colors flex-shrink-0 text-amber-400 hover:text-amber-300"
+                      >
+                        <PencilIcon className="w-4 h-4" />
+                      </button>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold text-gray-900 text-sm truncate">
-                        {customer.full_name || "No name set"}
-                      </p>
-                      <p className="text-xs text-gray-600 truncate">
-                        {customer.address || "No address set"}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => {
-                        setProfileForm({
-                          full_name: customer.full_name || "",
-                          address: customer.address || "",
-                          profile_picture_url: customer.profile_picture_url || "",
-                        })
-                        setShowEditProfile(true)
-                      }}
-                      className="p-2 rounded-lg hover:bg-white transition-colors flex-shrink-0"
-                      title="Edit profile"
-                    >
-                      <PencilIcon className="w-4 h-4" style={{ color: primaryColor }} />
-                    </button>
                   </div>
 
                   {/* Reward Tokens */}
-                  <div
-                    className="p-4 rounded-2xl border"
-                    style={{ backgroundColor: lightColor, borderColor: primaryColor }}
-                  >
-                    <div className="flex items-center justify-between mb-2">
+                  <div className="p-4 rounded-2xl border border-amber-400/30 bg-gradient-to-br from-slate-800/50 to-blue-900/50 backdrop-blur-sm">
+                    <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2">
-                        <div className="p-1.5 rounded-lg" style={{ backgroundColor: "white" }}>
-                          <CurrencyDollarIcon className="w-5 h-5" style={{ color: primaryColor }} />
+                        <div className="p-1.5 rounded-lg bg-gradient-to-br from-amber-400/20 to-amber-400/10 border border-amber-400/30">
+                          <CurrencyDollarIcon className="w-5 h-5 text-amber-400" />
                         </div>
-                        <h3 className="font-bold text-gray-900 text-sm">Reward Tokens</h3>
+                        <h3 className="font-bold text-amber-50 text-sm">Reward Tokens</h3>
                       </div>
                       <div className="flex items-center gap-2">
                         <button
                           onClick={loadCustomerDataByDevice}
-                          className="p-1 rounded-lg hover:bg-white transition-colors"
-                          title="Refresh balance"
+                          className="p-1 rounded-lg hover:bg-amber-400/10 transition-colors text-amber-400"
                         >
-                          <ArrowPathIcon className="w-4 h-4" style={{ color: primaryColor }} />
+                          <ArrowPathIcon className="w-4 h-4" />
                         </button>
-                        <p className="text-2xl font-bold" style={{ color: primaryColor }}>
+                        <p className="text-2xl font-bold text-amber-400">
                           ₦{(customer.reward_tokens || 0).toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </p>
                       </div>
                     </div>
-                    <div className="bg-white rounded-lg p-3 mt-2">
-                      <p className="text-xs text-gray-600">💰 Earn 2% tokens on every completed order across all your devices</p>
-                      <p className="text-xs text-gray-600 mt-1">🎁 Use tokens to pay for your orders (1 token = ₦1)</p>
+                    <div className="bg-slate-700/30 rounded-lg p-3 border border-amber-400/10">
+                      <p className="text-xs text-amber-200/80">💰 Earn 2% tokens on every completed order across all your devices</p>
+                      <p className="text-xs text-amber-200/80 mt-1">🎁 Use tokens to pay for your orders (1 token = ₦1)</p>
                     </div>
                   </div>
 
                   {/* Passcode */}
-                  <div
-                    className="p-4 rounded-2xl border"
-                    style={{ backgroundColor: lightColor, borderColor: primaryColor }}
-                  >
+                  <div className="p-4 rounded-2xl border border-amber-400/30 bg-gradient-to-br from-slate-800/50 to-blue-900/50 backdrop-blur-sm">
                     <div className="flex items-center justify-between mb-3">
-                      <h3 className="font-bold text-gray-900 text-sm">Your Passcode</h3>
+                      <h3 className="font-bold text-amber-50 text-sm">Your Passcode</h3>
                       <button
                         onClick={handleRegeneratePasscode}
                         disabled={regenerating}
-                        className="text-xs px-2 py-1 rounded-lg border transition-all flex items-center gap-1"
-                        style={{ borderColor: primaryColor, color: primaryColor }}
+                        className="text-xs px-2 py-1 rounded-lg border border-amber-400/40 text-amber-400 hover:bg-amber-400/10 transition-all flex items-center gap-1"
                       >
                         <ArrowPathIcon className={`w-3 h-3 ${regenerating ? "animate-spin" : ""}`} />
                         New
                       </button>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div
-                        className="flex-1 px-4 py-3 rounded-xl text-center bg-white"
-                        style={{ border: `2px solid ${primaryColor}` }}
-                      >
-                        <p className="text-2xl font-bold tracking-widest" style={{ color: primaryColor }}>
+                      <div className="flex-1 px-4 py-3 rounded-xl text-center bg-slate-700/30 border-2 border-amber-400/40">
+                        <p className="text-2xl font-bold tracking-widest text-amber-400">
                           {formatPasscode(customer.sync_passcode)}
                         </p>
                       </div>
                       <button
                         onClick={copyPasscode}
-                        className="p-3 rounded-xl transition-all"
-                        style={{ border: `2px solid ${primaryColor}`, backgroundColor: copied ? lightColor : "white" }}
+                        className="p-3 rounded-xl transition-all border-2 border-amber-400/40 hover:bg-amber-400/10 text-amber-400"
                       >
                         {copied ? (
-                          <CheckIcon className="w-5 h-5" style={{ color: primaryColor }} />
+                          <CheckIcon className="w-5 h-5" />
                         ) : (
-                          <ClipboardDocumentIcon className="w-5 h-5" style={{ color: primaryColor }} />
+                          <ClipboardDocumentIcon className="w-5 h-5" />
                         )}
                       </button>
                     </div>
-                    <p className="text-xs text-gray-600 mt-2">Use this code to link other devices</p>
+                    <p className="text-xs text-amber-200/70 mt-2">Use this code to link other devices</p>
                   </div>
 
                   {/* Linked Devices */}
                   <div>
-                    <h3 className="font-bold text-gray-900 mb-2 text-sm">Devices ({devices.length})</h3>
+                    <h3 className="font-bold text-amber-50 mb-2 text-sm">Devices ({devices.length})</h3>
                     <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
                       {devices.map((device) => {
                         const isCurrentDevice = device.device_id === getDeviceId()
                         return (
                           <div
                             key={device.id}
-                            className="p-3 rounded-xl border flex items-center justify-between"
+                            className="p-3 rounded-xl border flex items-center justify-between transition-all"
                             style={{
-                              backgroundColor: isCurrentDevice ? lightColor : "white",
-                              borderColor: isCurrentDevice ? primaryColor : "#e5e7eb",
+                              backgroundColor: isCurrentDevice ? 'rgba(251, 191, 36, 0.08)' : 'rgba(30, 58, 138, 0.15)',
+                              borderColor: isCurrentDevice ? '#fbbf24' : '#1e3a8a',
                             }}
                           >
                             <div className="flex items-center gap-2 flex-1 min-w-0">
-                              <div className="p-1.5 rounded-lg flex-shrink-0" style={{ backgroundColor: lightColor }}>
-                                <DevicePhoneMobileIcon className="w-4 h-4" style={{ color: primaryColor }} />
+                              <div className="p-1.5 rounded-lg flex-shrink-0 bg-gradient-to-br from-amber-400/20 to-amber-400/10 border border-amber-400/30">
+                                <DevicePhoneMobileIcon className="w-4 h-4 text-amber-400" />
                               </div>
                               <div className="min-w-0 flex-1">
-                                <p className="font-semibold text-gray-900 text-sm truncate">
+                                <p className="font-semibold text-amber-50 text-sm truncate">
                                   {device.device_name}
                                   {isCurrentDevice && (
-                                    <span
-                                      className="ml-1 text-xs px-1.5 py-0.5 rounded-full"
-                                      style={{ backgroundColor: primaryColor, color: contrastColor }}
-                                    >
+                                    <span className="ml-1 text-xs px-1.5 py-0.5 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 text-slate-900 font-semibold">
                                       This
                                     </span>
                                   )}
                                 </p>
-                                <p className="text-xs text-gray-600 truncate">
+                                <p className="text-xs text-amber-200/70 truncate">
                                   {new Date(device.last_active_at).toLocaleDateString()}
                                 </p>
                               </div>
                             </div>
                             <button
                               onClick={() => handleUnlinkDevice(device.device_id)}
-                              className="p-1.5 rounded-lg hover:bg-red-50 transition-colors flex-shrink-0"
-                              title="Unlink"
+                              className="p-1.5 rounded-lg hover:bg-red-500/20 transition-colors flex-shrink-0 text-red-400 hover:text-red-300"
                             >
-                              <TrashIcon className="w-4 h-4 text-red-600" />
+                              <TrashIcon className="w-4 h-4" />
                             </button>
                           </div>
                         )
@@ -643,8 +615,8 @@ export default function DeviceSyncModal({
                   </div>
 
                   {error && (
-                    <div className="p-3 rounded-xl bg-red-50 border border-red-200">
-                      <p className="text-xs text-red-600">{error}</p>
+                    <div className="p-3 rounded-xl bg-red-500/10 border border-red-400/30">
+                      <p className="text-xs text-red-400">{error}</p>
                     </div>
                   )}
                 </>

@@ -418,7 +418,7 @@ export default function TechTaskerSolutionsPage() {
                 <h3 className="text-lg font-bold">Order Mix</h3>
                 <p className="text-sm text-slate-500">Weekly order count and value</p>
               </div>
-              <BarChart3 className="h-5 w-5 text-blue-600" />
+              <BarChart3 className="h-5 w-5 text-amber-600" />
             </div>
 
             <div className="grid min-h-64 grid-cols-4 items-end gap-3 border-b border-l border-slate-200 px-3 pb-3">

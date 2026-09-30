@@ -336,9 +336,9 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
                 </div>
                 
                 {/* Room Service Info */}
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <h4 className="font-medium text-blue-900 mb-2">Room Service Information</h4>
-                  <ul className="text-sm text-blue-800 space-y-1">
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                  <h4 className="font-medium text-amber-900 mb-2">Room Service Information</h4>
+                  <ul className="text-sm text-amber-800 space-y-1">
                     <li>• Estimated delivery time: 20-30 minutes</li>
                     <li>• Service available 24/7</li>
                     <li>• Please ensure someone is available to receive the order</li>
@@ -479,19 +479,19 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
                         onChange={(e) => setUseTokens(e.target.checked)}
                         className="sr-only peer"
                       />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-amber-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
                     </label>
                   </div>
                   
                   {useTokens && (
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 space-y-2">
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 space-y-2">
                       <div className="flex justify-between text-sm">
-                        <span className="text-blue-800">Available Tokens:</span>
-                        <span className="font-semibold text-blue-900">₦{availableTokens.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                        <span className="text-amber-800">Available Tokens:</span>
+                        <span className="font-semibold text-amber-900">₦{availableTokens.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                       </div>
                       <div className="flex justify-between text-sm">
-                        <span className="text-blue-800">Using:</span>
-                        <span className="font-semibold text-blue-900">-₦{actualTokenAmount.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                        <span className="text-amber-800">Using:</span>
+                        <span className="font-semibold text-amber-900">-₦{actualTokenAmount.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                       </div>
                       <input
                         type="range"
@@ -503,7 +503,7 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
                         className="w-full"
                         style={{ accentColor: primaryColor }}
                       />
-                      <p className="text-xs text-blue-700">
+                      <p className="text-xs text-amber-700">
                         💡 Slide to adjust token amount (max: ₦{maxTokensToUse.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})
                       </p>
                     </div>
@@ -583,8 +583,8 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
                   <span>Bank Transfer</span>
                 </label>
                 {paymentMethod === "transfer" && (
-                  <div className="ml-6 mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="text-sm text-blue-800">
+                  <div className="ml-6 mt-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                    <p className="text-sm text-amber-800">
                       💡 You'll proceed to payment first, then your order will be placed after payment confirmation
                     </p>
                   </div>
