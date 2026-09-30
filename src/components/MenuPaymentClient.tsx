@@ -174,17 +174,17 @@ export default function MenuPaymentClient({
 
   if (isConfirming) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-black flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p className="text-gray-600">Placing your order...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-400 mx-auto mb-4"></div>
+          <p className="text-amber-200">Placing your order...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="lounge-followup min-h-screen bg-gray-50">
+    <div className="lounge-followup min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-black">
       <div className="max-w-2xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-6">
@@ -198,71 +198,61 @@ export default function MenuPaymentClient({
         <div className="max-w-md mx-auto space-y-6">
           {/* Header */}
           <div className="text-center space-y-2">
-            <div 
-              className="w-16 h-16 mx-auto rounded-full flex items-center justify-center"
-              style={{ backgroundColor: `${primaryColor}20` }}
-            >
-              <BanknotesIcon 
-                className="w-8 h-8" 
-                style={{ color: primaryColor }} 
-              />
+            <div className="w-16 h-16 mx-auto rounded-full flex items-center justify-center bg-amber-400/20">
+              <BanknotesIcon className="w-8 h-8 text-amber-400" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2 className="text-2xl font-bold text-amber-50">
               Complete Payment
             </h2>
-            <p className="text-gray-600">
+            <p className="text-amber-200/70">
               Transfer the amount below to complete your order
             </p>
           </div>
 
           {/* Timer */}
-          <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4 text-center">
+          <div className="bg-amber-900/30 border border-amber-400/50 rounded-2xl p-4 text-center">
             <div className="flex items-center justify-center gap-2 mb-2">
-              <ClockIcon className="w-5 h-5 text-yellow-600" />
-              <span className="font-semibold text-yellow-800">Time Remaining</span>
+              <ClockIcon className="w-5 h-5 text-amber-400" />
+              <span className="font-semibold text-amber-200">Time Remaining</span>
             </div>
-            <div className="text-2xl font-bold text-yellow-900">
+            <div className="text-2xl font-bold text-amber-300">
               {formatTime(timeRemaining)}
             </div>
-            <p className="text-sm text-yellow-700 mt-1">
+            <p className="text-sm text-amber-200/80 mt-1">
               Complete payment within this time to secure your order
             </p>
           </div>
 
           {/* Amount to Pay */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-6 text-center">
-            <p className="text-sm text-gray-500 mb-2">Amount to Pay</p>
-            <div 
-              className="text-3xl font-bold mb-2"
-              style={{ color: primaryColor }}
-            >
+          <div className="bg-gradient-to-br from-slate-800 to-slate-900 border border-amber-400/30 rounded-2xl p-6 text-center">
+            <p className="text-sm text-amber-200/70 mb-2">Amount to Pay</p>
+            <div className="text-3xl font-bold mb-2 text-amber-400">
               {formatPrice(totalAmount)}
             </div>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-amber-200/60">
               Transfer Code: {transferCode}
             </p>
           </div>
 
           {/* Bank Details */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-6 space-y-4">
-            <h3 className="font-semibold text-lg text-gray-900 text-center">
+          <div className="bg-gradient-to-br from-slate-800 to-slate-900 border border-amber-400/30 rounded-2xl p-6 space-y-4">
+            <h3 className="font-semibold text-lg text-amber-50 text-center">
               Bank Transfer Details
             </h3>
             
             {/* Account Number */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Account Number</label>
-              <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
-                <span className="flex-1 font-mono text-lg font-semibold">
+              <label className="text-sm font-medium text-amber-200">Account Number</label>
+              <div className="flex items-center gap-2 p-3 bg-slate-700/50 rounded-lg border border-amber-400/20">
+                <span className="flex-1 font-mono text-lg font-semibold text-amber-50">
                   {business.payment_account_number || "Not Available"}
                 </span>
                 <button
                   onClick={() => copyToClipboard(business.payment_account_number || "", "account")}
-                  className="p-2 rounded-lg hover:bg-gray-200 transition-colors"
-                  style={{ color: primaryColor }}
+                  className="p-2 rounded-lg hover:bg-amber-400/20 transition-colors text-amber-400"
                 >
                   {copiedField === "account" ? (
-                    <CheckIcon className="w-5 h-5 text-green-600" />
+                    <CheckIcon className="w-5 h-5 text-green-400" />
                   ) : (
                     <ClipboardDocumentIcon className="w-5 h-5" />
                   )}
@@ -272,18 +262,17 @@ export default function MenuPaymentClient({
 
             {/* Account Name */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Account Name</label>
-              <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
-                <span className="flex-1 font-semibold">
+              <label className="text-sm font-medium text-amber-200">Account Name</label>
+              <div className="flex items-center gap-2 p-3 bg-slate-700/50 rounded-lg border border-amber-400/20">
+                <span className="flex-1 font-semibold text-amber-50">
                   {business.payment_account_name || "Not Available"}
                 </span>
                 <button
                   onClick={() => copyToClipboard(business.payment_account_name || "", "name")}
-                  className="p-2 rounded-lg hover:bg-gray-200 transition-colors"
-                  style={{ color: primaryColor }}
+                  className="p-2 rounded-lg hover:bg-amber-400/20 transition-colors text-amber-400"
                 >
                   {copiedField === "name" ? (
-                    <CheckIcon className="w-5 h-5 text-green-600" />
+                    <CheckIcon className="w-5 h-5 text-green-400" />
                   ) : (
                     <ClipboardDocumentIcon className="w-5 h-5" />
                   )}
@@ -293,18 +282,17 @@ export default function MenuPaymentClient({
 
             {/* Bank Name */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Bank Name</label>
-              <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
-                <span className="flex-1 font-semibold">
+              <label className="text-sm font-medium text-amber-200">Bank Name</label>
+              <div className="flex items-center gap-2 p-3 bg-slate-700/50 rounded-lg border border-amber-400/20">
+                <span className="flex-1 font-semibold text-amber-50">
                   {business.payment_bank || "Not Available"}
                 </span>
                 <button
                   onClick={() => copyToClipboard(business.payment_bank || "", "bank")}
-                  className="p-2 rounded-lg hover:bg-gray-200 transition-colors"
-                  style={{ color: primaryColor }}
+                  className="p-2 rounded-lg hover:bg-amber-400/20 transition-colors text-amber-400"
                 >
                   {copiedField === "bank" ? (
-                    <CheckIcon className="w-5 h-5 text-green-600" />
+                    <CheckIcon className="w-5 h-5 text-green-400" />
                   ) : (
                     <ClipboardDocumentIcon className="w-5 h-5" />
                   )}
@@ -314,32 +302,32 @@ export default function MenuPaymentClient({
 
             {/* Transfer Code */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Transfer Remark/Reference</label>
-              <div className="flex items-center gap-2 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                <span className="flex-1 font-mono text-xl font-bold text-amber-900">
+              <label className="text-sm font-medium text-amber-200">Transfer Remark/Reference</label>
+              <div className="flex items-center gap-2 p-4 bg-amber-900/30 border border-amber-400/50 rounded-lg">
+                <span className="flex-1 font-mono text-xl font-bold text-amber-300">
                   {transferCode}
                 </span>
                 <button
                   onClick={() => copyToClipboard(transferCode, "code")}
-                  className="p-2 rounded-lg hover:bg-amber-200 transition-colors text-amber-600"
+                  className="p-2 rounded-lg hover:bg-amber-400/20 transition-colors text-amber-400"
                 >
                   {copiedField === "code" ? (
-                    <CheckIcon className="w-5 h-5 text-green-600" />
+                    <CheckIcon className="w-5 h-5 text-green-400" />
                   ) : (
                     <ClipboardDocumentIcon className="w-5 h-5" />
                   )}
                 </button>
               </div>
-              <p className="text-xs text-amber-700 bg-amber-50 p-2 rounded">
+              <p className="text-xs text-amber-300/80 bg-amber-900/20 p-2 rounded">
                 <strong>Important:</strong> Use this code as your transfer remark/reference so we can identify your payment
               </p>
             </div>
           </div>
 
           {/* Instructions */}
-          <div className="bg-gray-50 rounded-2xl p-4 space-y-3">
-            <h4 className="font-semibold text-gray-900">Payment Instructions</h4>
-            <ol className="text-sm text-gray-700 space-y-2 list-decimal list-inside">
+          <div className="bg-slate-800/60 border border-amber-400/20 rounded-2xl p-4 space-y-3">
+            <h4 className="font-semibold text-amber-50">Payment Instructions</h4>
+            <ol className="text-sm text-amber-200/80 space-y-2 list-decimal list-inside">
               <li>Copy the account details above</li>
               <li>Open your banking app or visit the bank</li>
               <li>Transfer the exact amount: <strong>{formatPrice(totalAmount)}</strong></li>
@@ -349,17 +337,17 @@ export default function MenuPaymentClient({
           </div>
 
           {/* Contact Info */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-4">
+          <div className="bg-gradient-to-br from-slate-800 to-slate-900 border border-amber-400/30 rounded-2xl p-4">
             <div className="flex items-center gap-3 mb-3">
-              <PhoneIcon className="w-5 h-5" style={{ color: primaryColor }} />
-              <span className="font-semibold text-gray-900">Need Help?</span>
+              <PhoneIcon className="w-5 h-5 text-amber-400" />
+              <span className="font-semibold text-amber-50">Need Help?</span>
             </div>
-            <div className="space-y-1 text-sm text-gray-600">
+            <div className="space-y-1 text-sm text-amber-200/80">
               <p><span className="font-medium">Business:</span> {business.name}</p>
               {business.phone && (
                 <p><span className="font-medium">Phone:</span> {business.phone}</p>
               )}
-              <p className="text-xs text-gray-500 mt-2">
+              <p className="text-xs text-amber-200/60 mt-2">
                 Contact us if you encounter any issues with the payment process
               </p>
             </div>
@@ -370,15 +358,14 @@ export default function MenuPaymentClient({
             <button
               onClick={handlePaymentComplete}
               disabled={isConfirming}
-              className="w-full py-4 rounded-lg text-white font-semibold text-lg transition-all hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{ backgroundColor: primaryColor }}
+              className="w-full py-4 rounded-lg text-slate-900 font-semibold text-lg transition-all hover:shadow-lg hover:shadow-amber-500/50 disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r from-amber-400 to-amber-500"
             >
               {isConfirming ? "Placing Order..." : "I've Made Payment"}
             </button>
             
             <button
               onClick={handleBack}
-              className="w-full py-3 rounded-lg border border-gray-300 text-gray-700 font-medium transition-all hover:bg-gray-50"
+              className="w-full py-3 rounded-lg border border-amber-400/40 text-amber-300 font-medium transition-all hover:bg-slate-700/30 bg-slate-700/20"
             >
               Back to Checkout
             </button>
@@ -386,11 +373,11 @@ export default function MenuPaymentClient({
 
           {/* Warning */}
           {timeRemaining <= 300 && ( // Show warning when 5 minutes or less
-            <div className="bg-red-50 border border-red-200 rounded-2xl p-4 text-center">
-              <p className="text-red-800 font-medium">
+            <div className="bg-red-900/30 border border-red-400/50 rounded-2xl p-4 text-center">
+              <p className="text-red-300 font-medium">
                 ⚠️ Payment time is running out!
               </p>
-              <p className="text-sm text-red-600 mt-1">
+              <p className="text-sm text-red-200/80 mt-1">
                 Complete your payment soon to avoid losing your order
               </p>
             </div>

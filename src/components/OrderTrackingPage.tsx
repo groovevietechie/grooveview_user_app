@@ -257,46 +257,29 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
   }
 
   return (
-    <div
-      className="lounge-order-tracking min-h-screen"
-      style={{
-        background: `linear-gradient(135deg, ${themeShades.lightest} 0%, #ffffff 50%, ${themeShades.lightest} 100%)`,
-      }}
-    >
+    <div className="lounge-order-tracking min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-black">
       <div
-        className="sticky top-0 z-40 backdrop-blur-xl border-b shadow-sm"
-        style={{
-          backgroundColor: `${primaryColor}15`,
-          borderColor: themeShades.light,
-        }}
+        className="sticky top-0 z-40 backdrop-blur-xl border-b shadow-sm bg-gradient-to-r from-slate-800/50 to-slate-900/50 border-amber-400/20"
       >
         <div className="max-w-7xl mx-auto px-4 py-5 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <BackButton 
               fallbackRoute={`/b/${business.slug}`}
-              className="p-2.5 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95"
-              style={{
-                color: primaryColor,
-                backgroundColor: themeShades.lightest,
-              }}
+              className="p-2.5 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95 text-amber-400 bg-slate-800"
               label=""
             />
             <div>
-              <h1 className="text-xl font-bold text-gray-900 tracking-tight">Order Tracking</h1>
-              <p className="text-sm text-gray-500 font-medium mt-0.5">{business.name}</p>
+              <h1 className="text-xl font-bold text-amber-50 tracking-tight">Order Tracking</h1>
+              <p className="text-sm text-amber-200/70 font-medium mt-0.5">{business.name}</p>
             </div>
           </div>
           <div
-            className="inline-flex flex-col items-end px-5 py-3 rounded-2xl border-2"
-            style={{
-              borderColor: themeShades.medium,
-              backgroundColor: themeShades.lightest,
-            }}
+            className="inline-flex flex-col items-end px-5 py-3 rounded-2xl border-2 border-amber-400/30 bg-slate-800/60"
           >
-            <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: themeShades.dark }}>
+            <p className="text-xs font-semibold uppercase tracking-wider text-amber-200">
               Active Orders
             </p>
-            <p className="text-3xl font-bold" style={{ color: primaryColor }}>
+            <p className="text-3xl font-bold text-amber-400">
               {orders.length}
             </p>
           </div>
@@ -308,11 +291,7 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
           <div className="flex justify-center items-center py-12">
             <div className="animate-spin">
               <div
-                className="w-12 h-12 border-4 rounded-full"
-                style={{
-                  borderColor: themeShades.lighter,
-                  borderTopColor: primaryColor,
-                }}
+                className="w-12 h-12 border-4 rounded-full border-slate-600 border-t-amber-400"
               ></div>
             </div>
           </div>
@@ -320,18 +299,14 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
 
         {!loading && orders.length === 0 && (
           <div className="text-center py-20">
-            <div
-              className="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner"
-              style={{ backgroundColor: themeShades.lightest }}
-            >
-              <ShoppingBagIcon className="w-12 h-12" style={{ color: themeShades.medium }} />
+            <div className="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner bg-slate-800">
+              <ShoppingBagIcon className="w-12 h-12 text-amber-400" />
             </div>
-            <p className="text-2xl font-bold text-gray-700 mb-2">No orders yet</p>
-            <p className="text-gray-500 mb-6">Start exploring our menu to place your first order</p>
+            <p className="text-2xl font-bold text-amber-50 mb-2">No orders yet</p>
+            <p className="text-amber-200/70 mb-6">Start exploring our menu to place your first order</p>
             <button
               onClick={() => router.push(`/b/${business.slug}`)}
-              style={{ backgroundColor: primaryColor, color: contrastColor }}
-              className="px-8 py-3.5 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 active:scale-95"
+              className="px-8 py-3.5 rounded-xl font-bold shadow-lg hover:shadow-amber-500/50 transition-all duration-200 hover:scale-105 active:scale-95 bg-gradient-to-r from-amber-400 to-amber-500 text-slate-900"
             >
               Browse Menu
             </button>
@@ -341,19 +316,10 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
         {!loading && orders.length > 0 && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-1">
-              <div
-                className="bg-white rounded-2xl shadow-sm border overflow-hidden"
-                style={{ borderColor: themeShades.light }}
-              >
-                <div
-                  className="p-5 border-b"
-                  style={{
-                    background: `linear-gradient(135deg, ${themeShades.lightest} 0%, #ffffff 100%)`,
-                    borderColor: themeShades.light,
-                  }}
-                >
-                  <h2 className="font-bold text-gray-900 text-lg">Your Orders</h2>
-                  <p className="text-xs text-gray-500 mt-1">Tap to view details</p>
+              <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-lg border border-amber-400/30 overflow-hidden">
+                <div className="p-5 border-b border-amber-400/20 bg-slate-800/80">
+                  <h2 className="font-bold text-amber-50 text-lg">Your Orders</h2>
+                  <p className="text-xs text-amber-200/70 mt-1">Tap to view details</p>
                 </div>
                 {orders.length > 1 ? (
                   <div className="flex flex-row gap-4 overflow-x-auto pb-4">

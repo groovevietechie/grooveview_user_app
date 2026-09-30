@@ -4,8 +4,6 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import type { Business } from "@/types/database"
 import { useCartStore } from "@/store/cartStore"
-import { useTheme } from "@/contexts/ThemeContext"
-import { getContrastColor, lightenColor } from "@/lib/color-utils"
 import { XMarkIcon, TrashIcon, ShoppingBagIcon } from "@heroicons/react/24/outline"
 import Image from "next/image"
 
@@ -17,12 +15,9 @@ interface CartSidebarProps {
 export default function CartSidebar({ business, onClose }: CartSidebarProps) {
   const router = useRouter()
   const { items, removeItem, updateQuantity, getTotal, clearCart } = useCartStore()
-  const { primaryColor } = useTheme()
   const [isProcessing] = useState(false)
 
   const total = getTotal()
-  const textColor = getContrastColor(primaryColor)
-  const lightBg = lightenColor(primaryColor, 90)
 
   const handleCheckout = () => {
     router.push(`/b/${business.slug}/checkout`)
@@ -37,13 +32,13 @@ export default function CartSidebar({ business, onClose }: CartSidebarProps) {
 
   if (items.length === 0) {
     return (
-      <div style={{ backgroundColor: lightBg }} className="lounge-cart rounded-2xl shadow-lg border p-6 h-fit animate-slide-in">
+      <div className="lounge-cart rounded-2xl shadow-lg border border-amber-400/30 p-6 h-fit animate-slide-in bg-gradient-to-br from-slate-900 via-blue-950 to-black">
         <div className="text-center py-8">
-          <ShoppingBagIcon style={{ color: primaryColor }} className="w-12 h-12 mx-auto mb-4 opacity-50" />
-          <p style={{ color: textColor }} className="mb-4 font-medium">
+          <ShoppingBagIcon className="w-12 h-12 mx-auto mb-4 opacity-50 text-amber-400" />
+          <p className="mb-4 font-medium text-amber-50">
             Your cart is empty
           </p>
-          <p style={{ color: textColor, opacity: 0.7 }} className="text-sm">
+          <p className="text-sm text-amber-200/70">
             Add some items to get started!
           </p>
         </div>
@@ -52,20 +47,16 @@ export default function CartSidebar({ business, onClose }: CartSidebarProps) {
   }
 
   return (
-    <div
-      style={{ backgroundColor: lightBg }}
-      className="lounge-cart rounded-2xl shadow-lg border h-fit overflow-hidden animate-slide-in"
-    >
+    <div className="lounge-cart rounded-2xl shadow-lg border border-amber-400/30 h-fit overflow-hidden animate-slide-in bg-gradient-to-br from-slate-900 via-blue-950 to-black">
       {/* Header */}
-      <div style={{ backgroundColor: primaryColor }} className="p-4 flex items-center justify-between">
-        <h3 style={{ color: textColor }} className="font-semibold text-lg">
+      <div className="p-4 flex items-center justify-between bg-gradient-to-r from-amber-400 to-amber-500">
+        <h3 className="font-semibold text-lg text-slate-900">
           Your Order
         </h3>
         {onClose && (
           <button
             onClick={onClose}
-            style={{ color: textColor }}
-            className="p-1 hover:opacity-75 rounded transition-opacity"
+            className="p-1 hover:opacity-75 rounded transition-opacity text-slate-900"
             title="Close cart"
             aria-label="Close cart"
           >
@@ -75,9 +66,9 @@ export default function CartSidebar({ business, onClose }: CartSidebarProps) {
       </div>
 
       {/* Cart Items */}
-      <div className="max-h-96 overflow-y-auto p-4 space-y-4">
+      <div className="max-h-96 overflow-y-auto p-4 space-y-4 bg-slate-800/50">
         {items.map((cartItem) => (
-          <div key={cartItem.menuItem.id} className="flex gap-3 bg-white p-3 rounded-lg">
+          <div key={cartItem.menuItem.id} className="flex gap-3 bg-slate-700/60 p-3 rounded-lg border border-amber-400/20">
             {/* Item Image */}
             {cartItem.menuItem.image_url && (
               <Image
@@ -91,8 +82,8 @@ export default function CartSidebar({ business, onClose }: CartSidebarProps) {
 
             {/* Item Details */}
             <div className="flex-1 min-w-0">
-              <h4 className="font-medium text-sm text-gray-900 truncate">{cartItem.menuItem.name}</h4>
-              <p style={{ color: primaryColor }} className="text-sm font-semibold">
+              <h4 className="font-medium text-sm text-amber-50 truncate">{cartItem.menuItem.name}</h4>
+              <p className="text-sm font-semibold text-amber-400">
                 ₦{cartItem.menuItem.price.toLocaleString()}
               </p>
 
@@ -100,29 +91,27 @@ export default function CartSidebar({ business, onClose }: CartSidebarProps) {
               <div className="flex items-center gap-2 mt-2">
                 <button
                   onClick={() => updateQuantity(cartItem.menuItem.id, cartItem.quantity - 1)}
-                  style={{ borderColor: primaryColor, color: primaryColor }}
-                  className="w-6 h-6 rounded border flex items-center justify-center text-xs hover:opacity-75 font-semibold"
+                  className="w-6 h-6 rounded border border-amber-400/40 flex items-center justify-center text-xs hover:opacity-75 font-semibold text-amber-400"
                 >
                   -
                 </button>
-                <span className="text-sm w-6 text-center font-semibold text-gray-900">{cartItem.quantity}</span>
+                <span className="text-sm w-6 text-center font-semibold text-amber-50">{cartItem.quantity}</span>
                 <button
                   onClick={() => updateQuantity(cartItem.menuItem.id, cartItem.quantity + 1)}
-                  style={{ borderColor: primaryColor, color: primaryColor }}
-                  className="w-6 h-6 rounded border flex items-center justify-center text-xs hover:opacity-75 font-semibold"
+                  className="w-6 h-6 rounded border border-amber-400/40 flex items-center justify-center text-xs hover:opacity-75 font-semibold text-amber-400"
                 >
                   +
                 </button>
               </div>
 
               {/* Special Note */}
-              {cartItem.note && <p className="text-xs text-gray-600 mt-1 italic">Note: {cartItem.note}</p>}
+              {cartItem.note && <p className="text-xs text-amber-200/70 mt-1 italic">Note: {cartItem.note}</p>}
             </div>
 
             {/* Remove Button */}
             <button
               onClick={() => removeItem(cartItem.menuItem.id)}
-              className="p-1 text-red-500 hover:bg-red-50 rounded transition-colors"
+              className="p-1 text-red-400 hover:bg-red-500/20 rounded transition-colors"
               title="Remove item"
               aria-label="Remove item"
             >
@@ -133,13 +122,13 @@ export default function CartSidebar({ business, onClose }: CartSidebarProps) {
       </div>
 
       {/* Footer */}
-      <div className="p-4 bg-white space-y-4">
+      <div className="p-4 bg-slate-800/80 space-y-4 border-t border-amber-400/20">
         {/* Total */}
-        <div className="flex justify-between items-center border-t pt-4">
-          <span style={{ color: textColor }} className="font-semibold">
+        <div className="flex justify-between items-center border-t border-amber-400/20 pt-4">
+          <span className="font-semibold text-amber-50">
             Total:
           </span>
-          <span style={{ color: primaryColor }} className="font-bold text-lg">
+          <span className="font-bold text-lg text-amber-400">
             ₦{total.toLocaleString()}
           </span>
         </div>
@@ -149,16 +138,14 @@ export default function CartSidebar({ business, onClose }: CartSidebarProps) {
           <button
             onClick={handleCheckout}
             disabled={isProcessing}
-            style={isProcessing ? {} : { backgroundColor: primaryColor, color: textColor }}
-            className="w-full py-3 px-4 rounded-md disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors font-semibold text-base"
+            className="w-full py-3 px-4 rounded-md disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors font-semibold text-base bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-slate-900 shadow-lg hover:shadow-amber-500/50"
           >
             {isProcessing ? "Processing..." : "Checkout"}
           </button>
 
           <button
             onClick={handleClearCart}
-            style={{ color: primaryColor, borderColor: primaryColor }}
-            className="w-full py-2 px-4 rounded-md border hover:opacity-75 transition-opacity text-sm font-medium"
+            className="w-full py-2 px-4 rounded-md border border-amber-400/40 hover:bg-amber-400/10 transition-colors text-sm font-medium text-amber-300"
           >
             Clear Cart
           </button>

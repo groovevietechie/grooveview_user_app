@@ -4,13 +4,14 @@ import Image from "next/image"
 import { useRouter, usePathname } from "next/navigation"
 import type { Business } from "@/types/database"
 import { useBackNavigation } from "@/hooks/useBackNavigation"
-import { HomeIcon, UserCircleIcon, BuildingStorefrontIcon } from "@heroicons/react/24/outline"
+import { HomeIcon, UserCircleIcon, SparklesIcon } from "@heroicons/react/24/outline"
 
 interface MenuHeaderProps {
   business: Business
+  onOpenSpinWheel?: () => void
 }
 
-export default function MenuHeader({ business }: MenuHeaderProps) {
+export default function MenuHeader({ business, onOpenSpinWheel }: MenuHeaderProps) {
   const router = useRouter()
   const pathname = usePathname()
 
@@ -67,7 +68,15 @@ export default function MenuHeader({ business }: MenuHeaderProps) {
 
           <nav className="lounge-desktop-nav" aria-label="Primary navigation">
             <a className="is-active" href="#top"><HomeIcon /> <span>Home</span></a>
-            <a href="#lounge-menu"><BuildingStorefrontIcon /> <span>Menu</span></a>
+            <button
+              type="button"
+              aria-label="Daily Spin Wheel"
+              onClick={onOpenSpinWheel}
+              title="Daily Spin Wheel"
+              className="hover:text-amber-300 transition-colors"
+            >
+              <SparklesIcon className="w-5 h-5" />
+            </button>
             <button
               type="button"
               aria-label="Link this device"

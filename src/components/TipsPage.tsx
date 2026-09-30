@@ -154,31 +154,27 @@ export default function TipsPage({ business, orderId, preselectedWaiterId }: Tip
   // ── Done ──────────────────────────────────────────────────────────────────
   if (step === "done") {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-        <div className="bg-white rounded-2xl shadow-lg p-8 max-w-sm w-full text-center">
-          <div
-            className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
-            style={{ backgroundColor: `${primaryColor}20` }}
-          >
-            <CheckCircleIconSolid className="w-10 h-10" style={{ color: primaryColor }} />
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-black flex items-center justify-center px-4">
+        <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-lg border border-amber-400/30 p-8 max-w-sm w-full text-center">
+          <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 bg-amber-400/20">
+            <CheckCircleIconSolid className="w-10 h-10 text-amber-400" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">Thank you!</h1>
-          <p className="text-gray-500 mb-2 text-sm">Your tip has been sent to</p>
-          <p className="text-lg font-bold text-gray-900 mb-1">{selectedWaiter?.name}</p>
-          <p className="text-3xl font-bold mb-6" style={{ color: primaryColor }}>
+          <h1 className="text-2xl font-bold text-amber-50 mb-1">Thank you!</h1>
+          <p className="text-amber-200/70 mb-2 text-sm">Your tip has been sent to</p>
+          <p className="text-lg font-bold text-amber-50 mb-1">{selectedWaiter?.name}</p>
+          <p className="text-3xl font-bold mb-6 text-amber-400">
             {fmt(finalAmount)}
           </p>
-          <p className="text-sm text-gray-400 mb-6">Waiters get 100% of your tip 🙏</p>
+          <p className="text-sm text-amber-200/60 mb-6">Waiters get 100% of your tip 🙏</p>
           <button
             onClick={() => router.push(`/b/${business.slug}/orders`)}
-            className="w-full py-3 rounded-xl text-white font-semibold mb-3"
-            style={{ backgroundColor: primaryColor }}
+            className="w-full py-3 rounded-xl text-slate-900 font-semibold mb-3 bg-gradient-to-r from-amber-400 to-amber-500 shadow-lg hover:shadow-amber-500/50"
           >
             View My Orders
           </button>
           <button
             onClick={() => router.push(`/b/${business.slug}`)}
-            className="w-full py-3 rounded-xl border border-gray-200 text-gray-600 font-medium"
+            className="w-full py-3 rounded-xl border border-amber-400/40 text-amber-300 font-medium bg-slate-700/20 hover:bg-slate-700/40"
           >
             Back to Menu
           </button>
@@ -190,14 +186,11 @@ export default function TipsPage({ business, orderId, preselectedWaiterId }: Tip
   // ── Payment ───────────────────────────────────────────────────────────────
   if (step === "payment") {
     return (
-      <div className="lounge-followup min-h-screen bg-gray-50">
+      <div className="lounge-followup min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-black">
         <div className="max-w-md mx-auto px-4 py-8 space-y-5">
           <div className="text-center space-y-1">
-            <div
-              className="w-14 h-14 mx-auto rounded-full flex items-center justify-center"
-              style={{ backgroundColor: `${primaryColor}20` }}
-            >
-              <BanknotesIcon className="w-7 h-7" style={{ color: primaryColor }} />
+            <div className="w-14 h-14 mx-auto rounded-full flex items-center justify-center bg-amber-400/20">
+              <BanknotesIcon className="w-7 h-7 text-amber-400" />
             </div>
             <h2 className="text-xl font-bold text-gray-900">Complete Tip Payment</h2>
             <p className="text-gray-500 text-sm">
@@ -205,32 +198,31 @@ export default function TipsPage({ business, orderId, preselectedWaiterId }: Tip
             </p>
           </div>
 
-          <div className="bg-white border border-gray-200 rounded-2xl p-5 text-center">
-            <p className="text-sm text-gray-400 mb-1">Amount</p>
-            <p className="text-3xl font-bold" style={{ color: primaryColor }}>
+          <div className="bg-gradient-to-br from-slate-800 to-slate-900 border border-amber-400/30 rounded-2xl p-5 text-center">
+            <p className="text-sm text-amber-200/70 mb-1">Amount</p>
+            <p className="text-3xl font-bold text-amber-400">
               {fmt(finalAmount)}
             </p>
-            <p className="text-xs text-gray-400 mt-1">Reference: {transferCode}</p>
+            <p className="text-xs text-amber-200/60 mt-1">Reference: {transferCode}</p>
           </div>
 
-          <div className="bg-white border border-gray-200 rounded-2xl p-5 space-y-4">
-            <h3 className="font-semibold text-gray-900 text-center">Bank Transfer Details</h3>
+          <div className="bg-gradient-to-br from-slate-800 to-slate-900 border border-amber-400/30 rounded-2xl p-5 space-y-4">
+            <h3 className="font-semibold text-amber-50 text-center">Bank Transfer Details</h3>
             {[
               { label: "Account Number", value: business.payment_account_number || "Not set", field: "account" },
               { label: "Account Name", value: business.payment_account_name || "Not set", field: "name" },
               { label: "Bank", value: business.payment_bank || "Not set", field: "bank" },
             ].map(({ label, value, field }) => (
               <div key={field}>
-                <p className="text-xs text-gray-500 mb-1">{label}</p>
-                <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
-                  <span className="flex-1 font-semibold text-gray-900">{value}</span>
+                <p className="text-xs text-amber-200/70 mb-1">{label}</p>
+                <div className="flex items-center gap-2 p-3 bg-slate-700/50 rounded-lg border border-amber-400/20">
+                  <span className="flex-1 font-semibold text-amber-50">{value}</span>
                   <button
                     onClick={() => copyToClipboard(value, field)}
-                    className="p-1.5 rounded-lg hover:bg-gray-200 transition-colors"
-                    style={{ color: primaryColor }}
+                    className="p-1.5 rounded-lg hover:bg-amber-400/20 transition-colors text-amber-400"
                   >
                     {copiedField === field ? (
-                      <CheckIcon className="w-4 h-4 text-green-600" />
+                      <CheckIcon className="w-4 h-4 text-green-400" />
                     ) : (
                       <ClipboardDocumentIcon className="w-4 h-4" />
                     )}
@@ -240,21 +232,21 @@ export default function TipsPage({ business, orderId, preselectedWaiterId }: Tip
             ))}
 
             <div>
-              <p className="text-xs text-gray-500 mb-1">Transfer Remark / Reference</p>
-              <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <span className="flex-1 font-mono text-lg font-bold text-blue-900">{transferCode}</span>
+              <p className="text-xs text-amber-200/70 mb-1">Transfer Remark / Reference</p>
+              <div className="flex items-center gap-2 p-3 bg-amber-900/30 border border-amber-400/50 rounded-lg">
+                <span className="flex-1 font-mono text-lg font-bold text-amber-300">{transferCode}</span>
                 <button
                   onClick={() => copyToClipboard(transferCode, "code")}
-                  className="p-1.5 rounded-lg hover:bg-blue-200 transition-colors text-blue-600"
+                  className="p-1.5 rounded-lg hover:bg-amber-400/20 transition-colors text-amber-400"
                 >
                   {copiedField === "code" ? (
-                    <CheckIcon className="w-4 h-4 text-green-600" />
+                    <CheckIcon className="w-4 h-4 text-green-400" />
                   ) : (
                     <ClipboardDocumentIcon className="w-4 h-4" />
                   )}
                 </button>
               </div>
-              <p className="text-xs text-blue-600 mt-1">
+              <p className="text-xs text-amber-300/80 mt-1">
                 Use this as your transfer remark so we can identify your tip
               </p>
             </div>
@@ -264,14 +256,13 @@ export default function TipsPage({ business, orderId, preselectedWaiterId }: Tip
             <button
               onClick={handleConfirmPayment}
               disabled={isConfirming}
-              className="w-full py-4 rounded-xl text-white font-semibold text-base disabled:opacity-50"
-              style={{ backgroundColor: primaryColor }}
+              className="w-full py-4 rounded-xl text-slate-900 font-semibold text-base disabled:opacity-50 bg-gradient-to-r from-amber-400 to-amber-500 shadow-lg hover:shadow-amber-500/50"
             >
               {isConfirming ? "Confirming..." : "I've Made the Transfer"}
             </button>
             <button
               onClick={() => router.push(`/b/${business.slug}/orders`)}
-              className="w-full py-3 rounded-xl border border-gray-200 text-gray-600 font-medium"
+              className="w-full py-3 rounded-xl border border-amber-400/40 text-amber-300 font-medium bg-slate-700/20 hover:bg-slate-700/40"
             >
               Skip for Now
             </button>
@@ -283,18 +274,18 @@ export default function TipsPage({ business, orderId, preselectedWaiterId }: Tip
 
   // ── Review & Tip (main screen) ────────────────────────────────────────────
   return (
-    <div className="lounge-followup min-h-screen bg-white">
+    <div className="lounge-followup min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-black">
       <div className="max-w-md mx-auto px-4 pt-8 pb-10 space-y-6">
 
         {/* Close / Skip */}
         <div className="flex justify-between items-center">
           <button
             onClick={() => router.push(`/b/${business.slug}/orders`)}
-            className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors text-lg font-bold"
+            className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-800 text-amber-400 hover:bg-slate-700 transition-colors text-lg font-bold border border-amber-400/30"
           >
             ✕
           </button>
-          <h1 className="text-lg font-bold text-gray-900">How was your service?</h1>
+          <h1 className="text-lg font-bold text-amber-50">How was your service?</h1>
           <div className="w-8" />
         </div>
 
@@ -310,14 +301,14 @@ export default function TipsPage({ business, orderId, preselectedWaiterId }: Tip
                 className="transition-transform hover:scale-110 active:scale-95"
               >
                 {(hoverRating || rating) >= star ? (
-                  <StarIcon className="w-10 h-10 text-yellow-400" />
+                  <StarIcon className="w-10 h-10 text-amber-400" />
                 ) : (
-                  <StarOutlineIcon className="w-10 h-10 text-gray-300" />
+                  <StarOutlineIcon className="w-10 h-10 text-slate-600" />
                 )}
               </button>
             ))}
           </div>
-          <p className="text-sm font-medium text-gray-600 h-5">
+          <p className="text-sm font-medium text-amber-300 h-5">
             {STAR_LABELS[hoverRating || rating]}
           </p>
         </div>

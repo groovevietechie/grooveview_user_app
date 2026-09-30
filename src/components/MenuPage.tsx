@@ -20,7 +20,6 @@ import BackButtonHandler from "./BackButtonHandler"
 import DeviceSyncModal from "./DeviceSyncModal"
 import EngagementPopup from "./popups/EngagementPopup"
 import DailySpinWheel from "./popups/DailySpinWheel"
-import DailySpinButton from "./DailySpinButton"
 import { ShoppingCartIcon, MapPinIcon, SparklesIcon } from "@heroicons/react/24/outline"
 import { useMenuNavigation } from "@/hooks/useMenuNavigation"
 
@@ -57,6 +56,15 @@ export default function MenuPage({ business, menuData }: MenuPageProps) {
 
     return () => window.clearInterval(timer)
   }, [heroImages.length])
+
+  // Auto-launch spin wheel on first app load
+  useEffect(() => {
+    const hasSeenSpinWheel = localStorage.getItem('spinWheelLaunched')
+    if (!hasSeenSpinWheel) {
+      setIsDailySpinOpen(true)
+      localStorage.setItem('spinWheelLaunched', 'true')
+    }
+  }, [])
 
   useEffect(() => {
     setBusinessId(business.id)
@@ -138,7 +146,7 @@ export default function MenuPage({ business, menuData }: MenuPageProps) {
           {/* Content wrapper */}
           <div className="relative z-10">
             {/* Header */}
-            <MenuHeader business={business} />
+            <MenuHeader business={business} onOpenSpinWheel={() => setIsDailySpinOpen(true)} />
 
             <section className="lounge-hero max-w-6xl mx-3 sm:mx-auto mt-4 overflow-hidden" aria-label="Lounge welcome">
               <div
@@ -237,12 +245,6 @@ export default function MenuPage({ business, menuData }: MenuPageProps) {
               onConfirm={handleEngagementConfirm}
             />
           )}
-
-          {/* Daily Spin Button */}
-          <DailySpinButton 
-            onOpenSpin={() => setIsDailySpinOpen(true)}
-            themeColor={business.theme_color_hex}
-          />
 
           {/* Daily Spin Wheel */}
           <DailySpinWheel

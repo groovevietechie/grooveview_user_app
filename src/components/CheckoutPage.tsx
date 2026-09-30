@@ -84,10 +84,10 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
   // Show loading state while redirecting
   if (items.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-black flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p className="text-gray-600">Redirecting...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-400 mx-auto mb-4"></div>
+          <p className="text-amber-200">Redirecting...</p>
         </div>
       </div>
     )
@@ -241,7 +241,7 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
   }
 
   return (
-    <div className="lounge-checkout min-h-screen bg-gray-50">
+    <div className="lounge-checkout min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-black">
       <div className="max-w-2xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-6">
@@ -250,54 +250,54 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
             fallbackRoute={`/b/${business.slug}`}
             className="mb-4"
           />
-          <h1 className="text-2xl font-bold text-gray-900">Checkout</h1>
+          <h1 className="text-2xl font-bold text-amber-50">Checkout</h1>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Order Type */}
-          <div className="bg-white rounded-lg shadow-sm border p-6">
-            <h2 className="text-lg font-semibold mb-4">Order Type</h2>
+          <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg shadow-sm border border-amber-400/30 p-6">
+            <h2 className="text-lg font-semibold mb-4 text-amber-50">Order Type</h2>
             <div className="space-y-3">
-              <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+              <label className="flex items-center gap-3 p-3 border border-amber-400/20 rounded-lg cursor-pointer hover:bg-slate-700/50 transition-colors bg-slate-700/30">
                 <input
                   type="radio"
                   value="table"
                   checked={orderType === "table"}
                   onChange={(e) => handleOrderTypeChange(e.target.value as OrderType)}
-                  style={{ accentColor: primaryColor }}
+                  style={{ accentColor: '#fbbf24' }}
                 />
-                <BuildingOfficeIcon className="w-5 h-5 text-gray-600" />
+                <BuildingOfficeIcon className="w-5 h-5 text-amber-400" />
                 <div>
-                  <span className="font-medium">Dining in (Table order)</span>
-                  <p className="text-sm text-gray-500">Order for your table in the lounge</p>
+                  <span className="font-medium text-amber-50">Dining in (Table order)</span>
+                  <p className="text-sm text-amber-200/70">Order for your table in the lounge</p>
                 </div>
               </label>
-              <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+              <label className="flex items-center gap-3 p-3 border border-amber-400/20 rounded-lg cursor-pointer hover:bg-slate-700/50 transition-colors bg-slate-700/30">
                 <input
                   type="radio"
                   value="room"
                   checked={orderType === "room"}
                   onChange={(e) => handleOrderTypeChange(e.target.value as OrderType)}
-                  style={{ accentColor: primaryColor }}
+                  style={{ accentColor: '#fbbf24' }}
                 />
-                <HomeIcon className="w-5 h-5 text-gray-600" />
+                <HomeIcon className="w-5 h-5 text-amber-400" />
                 <div>
-                  <span className="font-medium">Room service (Service order)</span>
-                  <p className="text-sm text-gray-500">Delivery to your booked room</p>
+                  <span className="font-medium text-amber-50">Room service (Service order)</span>
+                  <p className="text-sm text-amber-200/70">Delivery to your booked room</p>
                 </div>
               </label>
-              <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+              <label className="flex items-center gap-3 p-3 border border-amber-400/20 rounded-lg cursor-pointer hover:bg-slate-700/50 transition-colors bg-slate-700/30">
                 <input
                   type="radio"
                   value="home"
                   checked={orderType === "home"}
                   onChange={(e) => handleOrderTypeChange(e.target.value as OrderType)}
-                  style={{ accentColor: primaryColor }}
+                  style={{ accentColor: '#fbbf24' }}
                 />
-                <TruckIcon className="w-5 h-5 text-gray-600" />
+                <TruckIcon className="w-5 h-5 text-amber-400" />
                 <div>
-                  <span className="font-medium">Home delivery</span>
-                  <p className="text-sm text-gray-500">Delivery to your home address</p>
+                  <span className="font-medium text-amber-50">Home delivery</span>
+                  <p className="text-sm text-amber-200/70">Delivery to your home address</p>
                 </div>
               </label>
             </div>
@@ -305,13 +305,13 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
             {/* Table Number */}
             {orderType === "table" && (
               <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Table Number *</label>
+                <label className="block text-sm font-medium text-amber-50 mb-2">Table Number *</label>
                 <input
                   type="text"
                   value={tableNumber}
                   onChange={(e) => setTableNumber(e.target.value)}
                   placeholder="e.g., 5"
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full p-3 border border-amber-400/30 rounded-md bg-slate-700/50 text-amber-50 placeholder-amber-200/50 focus:ring-2 focus:ring-amber-400 focus:border-transparent"
                   required
                 />
               </div>
@@ -321,24 +321,24 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
             {orderType === "room" && (
               <div className="mt-4 space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Room Number/Name *</label>
+                  <label className="block text-sm font-medium text-amber-50 mb-2">Room Number/Name *</label>
                   <input
                     type="text"
                     value={roomNumber}
                     onChange={(e) => setRoomNumber(e.target.value)}
                     placeholder="e.g., 101, A-205, Presidential Suite"
-                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full p-3 border border-amber-400/30 rounded-md bg-slate-700/50 text-amber-50 placeholder-amber-200/50 focus:ring-2 focus:ring-amber-400 focus:border-transparent"
                     required
                   />
-                  <p className="text-sm text-gray-500 mt-1">
+                  <p className="text-sm text-amber-200/70 mt-1">
                     Enter your room number or name for room service delivery
                   </p>
                 </div>
                 
                 {/* Room Service Info */}
-                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                  <h4 className="font-medium text-amber-900 mb-2">Room Service Information</h4>
-                  <ul className="text-sm text-amber-800 space-y-1">
+                <div className="bg-amber-900/30 border border-amber-400/40 rounded-lg p-4">
+                  <h4 className="font-medium text-amber-200 mb-2">Room Service Information</h4>
+                  <ul className="text-sm text-amber-200/80 space-y-1">
                     <li>• Estimated delivery time: 20-30 minutes</li>
                     <li>• Service available 24/7</li>
                     <li>• Please ensure someone is available to receive the order</li>
@@ -352,18 +352,18 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
             {orderType === "home" && (
               <div className="mt-4 space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Delivery Address *</label>
+                  <label className="block text-sm font-medium text-amber-50 mb-2">Delivery Address *</label>
                   <textarea
                     value={deliveryAddress}
                     onChange={(e) => setDeliveryAddress(e.target.value)}
                     placeholder="Enter your full delivery address including landmarks"
                     rows={3}
-                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                    className="w-full p-3 border border-amber-400/30 rounded-md bg-slate-700/50 text-amber-50 placeholder-amber-200/50 focus:ring-2 focus:ring-amber-400 focus:border-transparent resize-none"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-amber-50 mb-2">
                     <PhoneIcon className="w-4 h-4 inline mr-1" />
                     Phone Number *
                   </label>
@@ -372,10 +372,10 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
                     value={deliveryPhone}
                     onChange={(e) => setDeliveryPhone(e.target.value)}
                     placeholder="e.g., +234 801 234 5678"
-                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full p-3 border border-amber-400/30 rounded-md bg-slate-700/50 text-amber-50 placeholder-amber-200/50 focus:ring-2 focus:ring-amber-400 focus:border-transparent"
                     required
                   />
-                  <p className="text-sm text-gray-500 mt-1">
+                  <p className="text-sm text-amber-200/70 mt-1">
                     We'll call you when we arrive for delivery
                   </p>
                 </div>
@@ -385,9 +385,9 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
 
           {/* Waiter Selection */}
           {waiters.length > 0 && (
-            <div className="bg-white rounded-lg shadow-sm border p-6">
-              <h2 className="text-lg font-semibold mb-1">Choose Your Waiter</h2>
-              <p className="text-sm text-gray-500 mb-4">Optional — select who will serve you today</p>
+            <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg shadow-sm border border-amber-400/30 p-6">
+              <h2 className="text-lg font-semibold mb-1 text-amber-50">Choose Your Waiter</h2>
+              <p className="text-sm text-amber-200/70 mb-4">Optional — select who will serve you today</p>
               <div className="flex gap-3 flex-wrap">
                 <button
                   type="button"
@@ -395,14 +395,14 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
                   className="flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all"
                   style={
                     !selectedWaiterId
-                      ? { borderColor: primaryColor, backgroundColor: `${primaryColor}10` }
-                      : { borderColor: "#e5e7eb" }
+                      ? { borderColor: '#fbbf24', backgroundColor: 'rgba(251, 191, 36, 0.1)' }
+                      : { borderColor: 'rgba(251, 191, 36, 0.2)' }
                   }
                 >
-                  <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
-                    <UserCircleIcon className="w-8 h-8 text-gray-400" />
+                  <div className="w-12 h-12 rounded-full bg-slate-700 flex items-center justify-center">
+                    <UserCircleIcon className="w-8 h-8 text-amber-400" />
                   </div>
-                  <span className="text-xs font-medium text-gray-600">Any</span>
+                  <span className="text-xs font-medium text-amber-200">Any</span>
                 </button>
                 {waiters.map((waiter) => (
                   <button
@@ -412,8 +412,8 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
                     className="flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all"
                     style={
                       selectedWaiterId === waiter.id
-                        ? { borderColor: primaryColor, backgroundColor: `${primaryColor}10` }
-                        : { borderColor: "#e5e7eb" }
+                        ? { borderColor: '#fbbf24', backgroundColor: 'rgba(251, 191, 36, 0.1)' }
+                        : { borderColor: 'rgba(251, 191, 36, 0.2)' }
                     }
                   >
                     {waiter.profile_image_url ? (
@@ -423,11 +423,11 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
                         className="w-12 h-12 rounded-full object-cover"
                       />
                     ) : (
-                      <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
-                        <UserCircleIcon className="w-8 h-8 text-gray-400" />
+                      <div className="w-12 h-12 rounded-full bg-slate-700 flex items-center justify-center">
+                        <UserCircleIcon className="w-8 h-8 text-amber-400" />
                       </div>
                     )}
-                    <span className="text-xs font-medium text-gray-800 max-w-[60px] truncate">{waiter.name}</span>
+                    <span className="text-xs font-medium text-amber-200 max-w-[60px] truncate">{waiter.name}</span>
                   </button>
                 ))}
               </div>
@@ -435,23 +435,24 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
           )}
 
           {/* Order Summary */}
-          <div className="bg-white rounded-lg shadow-sm border p-6">            <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
-            <div className="space-y-3">
+          <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg shadow-sm border border-amber-400/30 p-6">            
+            <h2 className="text-lg font-semibold mb-4 text-amber-50">Order Summary</h2>
+            <div className="space-y-3 text-amber-50">
               {items.map((cartItem) => (
                 <div key={cartItem.menuItem.id} className="flex justify-between items-start">
                   <div className="flex-1">
                     <p className="font-medium">{cartItem.menuItem.name}</p>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-amber-200/70">
                       ₦{cartItem.menuItem.price.toLocaleString()} × {cartItem.quantity}
                     </p>
-                    {cartItem.note && <p className="text-sm text-gray-500 italic">Note: {cartItem.note}</p>}
+                    {cartItem.note && <p className="text-sm text-amber-200/70 italic">Note: {cartItem.note}</p>}
                   </div>
                   <p className="font-medium">₦{(cartItem.menuItem.price * cartItem.quantity).toLocaleString()}</p>
                 </div>
               ))}
               
               {/* Subtotal */}
-              <div className="border-t pt-3 flex justify-between items-center">
+              <div className="border-t border-amber-400/20 pt-3 flex justify-between items-center">
                 <span className="font-medium">Subtotal:</span>
                 <span className="font-medium">₦{total.toLocaleString()}</span>
               </div>
@@ -466,10 +467,10 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
 
               {/* Token Payment Section */}
               {customer && availableTokens > 0 && (
-                <div className="border-t pt-3 space-y-3">
+                <div className="border-t border-amber-400/20 pt-3 space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <CurrencyDollarIcon className="w-5 h-5" style={{ color: primaryColor }} />
+                      <CurrencyDollarIcon className="w-5 h-5 text-amber-400" />
                       <span className="font-medium">Use Reward Tokens</span>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
@@ -479,19 +480,19 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
                         onChange={(e) => setUseTokens(e.target.checked)}
                         className="sr-only peer"
                       />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-amber-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
+                      <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-amber-400/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-amber-400 after:border-amber-400 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
                     </label>
                   </div>
                   
                   {useTokens && (
-                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 space-y-2">
+                    <div className="bg-amber-900/30 border border-amber-400/40 rounded-lg p-3 space-y-2">
                       <div className="flex justify-between text-sm">
-                        <span className="text-amber-800">Available Tokens:</span>
-                        <span className="font-semibold text-amber-900">₦{availableTokens.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                        <span className="text-amber-200">Available Tokens:</span>
+                        <span className="font-semibold text-amber-300">₦{availableTokens.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                       </div>
                       <div className="flex justify-between text-sm">
-                        <span className="text-amber-800">Using:</span>
-                        <span className="font-semibold text-amber-900">-₦{actualTokenAmount.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                        <span className="text-amber-200">Using:</span>
+                        <span className="font-semibold text-amber-300">-₦{actualTokenAmount.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                       </div>
                       <input
                         type="range"
@@ -501,9 +502,9 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
                         value={tokenAmount}
                         onChange={(e) => setTokenAmount(parseFloat(e.target.value))}
                         className="w-full"
-                        style={{ accentColor: primaryColor }}
+                        style={{ accentColor: '#fbbf24' }}
                       />
-                      <p className="text-xs text-amber-700">
+                      <p className="text-xs text-amber-200/80">
                         💡 Slide to adjust token amount (max: ₦{maxTokensToUse.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})
                       </p>
                     </div>
@@ -512,14 +513,14 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
               )}
               
               {/* Final Total */}
-              <div className="border-t pt-3 flex justify-between items-center">
+              <div className="border-t border-amber-400/20 pt-3 flex justify-between items-center">
                 <span className="font-semibold text-lg">Total to Pay:</span>
-                <span className="font-semibold text-lg" style={{ color: primaryColor }}>₦{finalTotal.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                <span className="font-semibold text-lg text-amber-400">₦{finalTotal.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
 
               {useTokens && actualTokenAmount > 0 && (
-                <div className="bg-green-50 border border-green-200 rounded-lg p-2">
-                  <p className="text-xs text-green-800 text-center">
+                <div className="bg-green-900/30 border border-green-400/40 rounded-lg p-2">
+                  <p className="text-xs text-green-300 text-center">
                     🎉 You're saving ₦{actualTokenAmount.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} with tokens!
                   </p>
                 </div>
@@ -528,8 +529,8 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
           </div>
 
           {/* Customer Note */}
-          <div className="bg-white rounded-lg shadow-sm border p-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+          <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg shadow-sm border border-amber-400/30 p-6">
+            <label className="block text-sm font-medium text-amber-50 mb-2">
               {orderType === "room" 
                 ? "Special Instructions for Room Service (Optional)" 
                 : "Special Instructions (Optional)"}
@@ -543,48 +544,48 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
                   : "Any special requests for your order..."
               }
               rows={3}
-              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+              className="w-full p-3 border border-amber-400/30 rounded-md bg-slate-700/50 text-amber-50 placeholder-amber-200/50 focus:ring-2 focus:ring-amber-400 focus:border-transparent resize-none"
               maxLength={500}
             />
             {orderType === "room" && (
-              <p className="text-sm text-gray-500 mt-2">
+              <p className="text-sm text-amber-200/70 mt-2">
                 💡 Tip: Let us know if you prefer contactless delivery or have specific delivery preferences
               </p>
             )}
           </div>
 
           {/* Payment Method */}
-          <div className="bg-white rounded-lg shadow-sm border p-6">
-            <h2 className="text-lg font-semibold mb-4">Payment Method</h2>
+          <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg shadow-sm border border-amber-400/30 p-6">
+            <h2 className="text-lg font-semibold mb-4 text-amber-50">Payment Method</h2>
             
             {/* Table and Room Service Payment Options */}
             {(orderType === "table" || orderType === "room") && (
               <div className="space-y-3">
-                <label className="flex items-center gap-3">
+                <label className="flex items-center gap-3 text-amber-50">
                   <input
                     type="radio"
                     value="cash"
                     checked={paymentMethod === "cash"}
                     onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
-                    style={{ accentColor: primaryColor }}
+                    style={{ accentColor: '#fbbf24' }}
                   />
                   <span>
                     {orderType === "table" ? "Pay in place (Cash / POS)" : "Pay on delivery (Cash)"}
                   </span>
                 </label>
-                <label className="flex items-center gap-3">
+                <label className="flex items-center gap-3 text-amber-50">
                   <input
                     type="radio"
                     value="transfer"
                     checked={paymentMethod === "transfer"}
                     onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
-                    style={{ accentColor: primaryColor }}
+                    style={{ accentColor: '#fbbf24' }}
                   />
                   <span>Bank Transfer</span>
                 </label>
                 {paymentMethod === "transfer" && (
-                  <div className="ml-6 mt-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                    <p className="text-sm text-amber-800">
+                  <div className="ml-6 mt-2 p-3 bg-amber-900/30 border border-amber-400/40 rounded-lg">
+                    <p className="text-sm text-amber-200">
                       💡 You'll proceed to payment first, then your order will be placed after payment confirmation
                     </p>
                   </div>
@@ -595,19 +596,19 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
             {/* Home Delivery Payment Options */}
             {orderType === "home" && (
               <div className="space-y-3">
-                <label className="flex items-center gap-3">
+                <label className="flex items-center gap-3 text-amber-50">
                   <input
                     type="radio"
                     value="transfer"
                     checked={paymentMethod === "transfer"}
                     onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
-                    style={{ accentColor: primaryColor }}
+                    style={{ accentColor: '#fbbf24' }}
                     disabled
                   />
                   <span>Bank Transfer (Required for home delivery)</span>
                 </label>
-                <div className="ml-6 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                  <p className="text-sm text-yellow-800">
+                <div className="ml-6 p-3 bg-amber-900/30 border border-amber-400/40 rounded-lg">
+                  <p className="text-sm text-amber-200">
                     <strong>Home delivery requires advance payment via bank transfer.</strong><br />
                     You'll proceed to payment first, then your order will be placed after payment confirmation.
                   </p>
@@ -620,8 +621,7 @@ export default function CheckoutPage({ business }: CheckoutPageProps) {
           <button
             type="submit"
             disabled={isSubmitting}
-            style={isSubmitting ? {} : { backgroundColor: primaryColor }}
-            className="w-full text-white py-4 px-6 rounded-lg disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors font-semibold text-lg"
+            className="w-full text-slate-900 py-4 px-6 rounded-lg disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors font-semibold text-lg bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 shadow-lg hover:shadow-amber-500/50"
           >
             {isSubmitting 
               ? "Processing..." 
