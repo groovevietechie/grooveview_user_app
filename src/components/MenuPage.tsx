@@ -19,6 +19,8 @@ import FloatingOrderButton from "./FloatingOrderButton"
 import BackButtonHandler from "./BackButtonHandler"
 import DeviceSyncModal from "./DeviceSyncModal"
 import EngagementPopup from "./popups/EngagementPopup"
+import DailySpinWheel from "./popups/DailySpinWheel"
+import DailySpinButton from "./DailySpinButton"
 import { ShoppingCartIcon, MapPinIcon, SparklesIcon } from "@heroicons/react/24/outline"
 import { useMenuNavigation } from "@/hooks/useMenuNavigation"
 
@@ -36,13 +38,14 @@ export default function MenuPage({ business, menuData }: MenuPageProps) {
   const [showFloatingButton, setShowFloatingButton] = useState(false)
   const [orderCounts, setOrderCounts] = useState<Record<string, number>>({})
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false)
+  const [isDailySpinOpen, setIsDailySpinOpen] = useState(false)
   const [heroSlide, setHeroSlide] = useState(0)
   const heroImages = ["/back1.png", "/back2.png", "/back3.png"]
   const { getItemCount, setBusinessId } = useCartStore()
   const { getServiceItemCount, setBusinessId: setServiceBusinessId } = useServiceStore()
   const { setPrimaryColor } = useTheme()
   const { handleBack } = useMenuNavigation()
-  const { currentPopup, showPopup, dismissPopup, confirmPopup } = useEngagementPopup()
+  const { currentPopup, showPopup, dismissPopup, confirmPopup, triggerRandomPopup } = useEngagementPopup()
   
   // Pre-load customer profile data on mount
   const customerProfile = useCustomerProfile()
@@ -87,44 +90,35 @@ export default function MenuPage({ business, menuData }: MenuPageProps) {
     }
     window.addEventListener('openDeviceSync', handleOpenDeviceSync)
 
-    // Trigger engagement popup on page load with delay
+    // Offer one context-aware moment after the menu has had time to breathe.
     const popupTimer = setTimeout(() => {
-      const popupTypes = ['spinWheel', 'couponOffer', 'limitedOffer']
-      const randomType = popupTypes[Math.floor(Math.random() * popupTypes.length)]
-
-      if (randomType === 'spinWheel') {
-        showPopup({
-          type: 'spinWheel',
-          title: 'Spin to get ₦300,000',
-          subtitle: 'Coupon bundle',
-        })
-      } else if (randomType === 'couponOffer') {
-        showPopup({
-          type: 'couponOffer',
-          title: 'Get it with just 1 order',
-          amount: 300000,
-          description: 'Coupon bundle',
-          expiresIn: '09/25/2026',
-        })
-      } else {
-        showPopup({
-          type: 'limitedOffer',
-          title: 'Get it with just 1 order',
-          amount: 300000,
-          description: 'Coupon bundle',
-          expiresIn: '03:59:15',
-        })
-      }
-    }, 2000) // Show popup 2 seconds after page load
+      triggerRandomPopup({
+        businessName: business.name,
+        hasCartItems: getItemCount() > 0,
+        hasPreviousOrders: getDeviceOrders(business.id).length > 0,
+        hasLinkedDevice: Boolean(getCustomerId()),
+      })
+    }, 3500)
 
     return () => {
       window.removeEventListener('openDeviceSync', handleOpenDeviceSync)
       clearTimeout(popupTimer)
     }
-  }, [business.id, business.theme_color_hex, setBusinessId, setServiceBusinessId, setPrimaryColor, showPopup])
+  }, [business.id, business.name, business.theme_color_hex, setBusinessId, setServiceBusinessId, setPrimaryColor, triggerRandomPopup, getItemCount])
 
   const itemCount = getItemCount()
   const serviceItemCount = getServiceItemCount()
+
+  const handleEngagementConfirm = () => {
+    if (currentPopup?.action === 'viewCart') {
+      setIsCartOpen(true)
+    } else if (currentPopup?.action === 'exploreMenu') {
+      document.getElementById('lounge-menu')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    } else if (currentPopup?.action === 'linkDevice') {
+      window.dispatchEvent(new CustomEvent('openDeviceSync'))
+    }
+    confirmPopup()
+  }
 
   // Determine which sidebar to show based on current mode and item counts
   const getSidebarContent = () => {
@@ -170,9 +164,6 @@ export default function MenuPage({ business, menuData }: MenuPageProps) {
                 ))}
               </div>
             </section>
-
-            <div id="lounge-experience" className="sr-only">Premium lounge experiences and curated service.</div>
-            <div id="lounge-contact" className="sr-only">Contact information is available from the lounge.</div>
 
             {/* Main Content */}
             <div id="lounge-menu" className="max-w-6xl mx-auto px-3 sm:px-5 py-8">
@@ -243,9 +234,22 @@ export default function MenuPage({ business, menuData }: MenuPageProps) {
               popupData={currentPopup}
               themeColor={business.theme_color_hex}
               onClose={dismissPopup}
-              onConfirm={confirmPopup}
+              onConfirm={handleEngagementConfirm}
             />
           )}
+
+          {/* Daily Spin Button */}
+          <DailySpinButton 
+            onOpenSpin={() => setIsDailySpinOpen(true)}
+            themeColor={business.theme_color_hex}
+          />
+
+          {/* Daily Spin Wheel */}
+          <DailySpinWheel
+            isOpen={isDailySpinOpen}
+            onClose={() => setIsDailySpinOpen(false)}
+            themeColor={business.theme_color_hex}
+          />
         </div>
       </BackButtonHandler>
     </Suspense>

@@ -156,6 +156,11 @@ body {
 .lounge-desktop-nav button { display: grid; width: 2.55rem; height: 2.55rem; place-items: center; border: 1px solid rgba(118, 164, 244, .32); border-radius: 50%; color: #eef6ff; background: rgba(37, 83, 157, .23); transition: transform .2s ease, background .2s ease; }
 .lounge-desktop-nav button:last-child { width: 2rem; border-color: transparent; background: transparent; }
 .lounge-desktop-nav button:hover { transform: translateY(-2px); background: rgba(67, 118, 208, .4); }
+/* Favorites are intentionally not part of the customer header action set. */
+.lounge-header [aria-label*="favorite" i],
+.lounge-header [title*="favorite" i],
+.lounge-header [aria-label*="favourite" i],
+.lounge-header [title*="favourite" i] { display: none !important; }
 @media (min-width: 850px) { .lounge-desktop-nav { gap: .7rem; } }
 
 .lounge-hero { position: relative; min-height: 315px; border: 1px solid rgba(89, 148, 255, .35); border-radius: 28px; background: #05111f; box-shadow: 0 28px 70px rgba(0, 0, 0, .45); }

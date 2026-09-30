@@ -4,7 +4,7 @@ import Image from "next/image"
 import { useRouter, usePathname } from "next/navigation"
 import type { Business } from "@/types/database"
 import { useBackNavigation } from "@/hooks/useBackNavigation"
-import { HomeIcon, ChatBubbleOvalLeftEllipsisIcon, InformationCircleIcon, UserCircleIcon, BuildingStorefrontIcon } from "@heroicons/react/24/outline"
+import { HomeIcon, UserCircleIcon, BuildingStorefrontIcon } from "@heroicons/react/24/outline"
 
 interface MenuHeaderProps {
   business: Business
@@ -68,8 +68,6 @@ export default function MenuHeader({ business }: MenuHeaderProps) {
           <nav className="lounge-desktop-nav" aria-label="Primary navigation">
             <a className="is-active" href="#top"><HomeIcon /> <span>Home</span></a>
             <a href="#lounge-menu"><BuildingStorefrontIcon /> <span>Menu</span></a>
-            <a href="#lounge-experience"><InformationCircleIcon /> <span>About</span></a>
-            <a href="#lounge-contact"><ChatBubbleOvalLeftEllipsisIcon /> <span>Contact</span></a>
             <button
               type="button"
               aria-label="Link this device"

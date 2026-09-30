@@ -6,6 +6,7 @@ import RewardNotificationPopup from './RewardNotificationPopup'
 import CouponOfferPopup from './CouponOfferPopup'
 import LimitedOfferPopup from './LimitedOfferPopup'
 import PremiumDealPopup from './PremiumDealPopup'
+import ExperiencePromptPopup from './ExperiencePromptPopup'
 
 interface EngagementPopupProps {
   popupData?: PopupData
@@ -79,6 +80,20 @@ export default function EngagementPopup({
           amount={popupData.amount || 300000}
           onClose={onClose}
           autoClose={popupData.autoClose}
+          themeColor={themeColor}
+        />
+      )
+
+    case 'experiencePrompt':
+      return (
+        <ExperiencePromptPopup
+          eyebrow={popupData.eyebrow || 'A moment for you'}
+          title={popupData.title || 'Find your next favourite'}
+          subtitle={popupData.subtitle || 'A better visit starts with one good choice.'}
+          supportingText={popupData.supportingText || 'Explore the menu and make the moment yours.'}
+          actionLabel={popupData.actionLabel || 'Explore now'}
+          onClose={onClose}
+          onConfirm={onConfirm}
           themeColor={themeColor}
         />
       )
