@@ -201,7 +201,7 @@ export default function MenuPage({ business, menuData }: MenuPageProps) {
             <div className="fixed bottom-6 right-6 lg:hidden z-40">
               <button
                 onClick={() => setIsCartOpen(true)}
-                style={{ backgroundColor: business.theme_color_hex }}
+                style={{ backgroundColor: '#1e3a8a' }}
                 className="text-white p-4 rounded-full shadow-xl hover:shadow-2xl transition-all hover:scale-110 flex items-center justify-center relative"
                 aria-label={`View cart with ${itemCount} items`}
               >

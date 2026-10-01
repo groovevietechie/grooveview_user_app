@@ -65,6 +65,7 @@ export default function DeviceSyncModal({
   const [showEditProfile, setShowEditProfile] = useState(false)
   const [savingProfile, setSavingProfile] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [hasSeenRewardTokens, setHasSeenRewardTokens] = useState(true)
 
   const contrastColor = getContrastColor(primaryColor)
   const lightColor = lightenColor(primaryColor, 95)
@@ -73,6 +74,17 @@ export default function DeviceSyncModal({
     if (!isOpen) return
     loadCustomerDataByDevice()
   }, [isOpen])
+
+  const handleRewardClaimed = () => {
+    setHasSeenRewardTokens(false)
+  }
+
+  useEffect(() => {
+    window.addEventListener('rewardTokenClaimed', handleRewardClaimed)
+    return () => {
+      window.removeEventListener('rewardTokenClaimed', handleRewardClaimed)
+    }
+  }, [])
 
   const loadCustomerDataByDevice = async () => {
     setLoading(true)
@@ -264,6 +276,14 @@ export default function DeviceSyncModal({
     }
   }
 
+  const handleCloseModal = () => {
+    // Mark tokens as seen when closing modal
+    setHasSeenRewardTokens(true)
+    // Dispatch event to clear notification dot from header
+    window.dispatchEvent(new CustomEvent('closeDeviceSync'))
+    onClose()
+  }
+
   const copyPasscode = () => {
     if (!customer) return
     navigator.clipboard.writeText(customer.sync_passcode)
@@ -292,7 +312,7 @@ export default function DeviceSyncModal({
               <p className="text-xs text-amber-200/70">Manage your devices</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 rounded-full hover:bg-white/10 transition-colors text-amber-200/70 hover:text-amber-300">
+          <button onClick={handleCloseModal} className="p-2 rounded-full hover:bg-white/10 transition-colors text-amber-200/70 hover:text-amber-300">
             <XMarkIcon className="w-5 h-5" />
           </button>
         </div>

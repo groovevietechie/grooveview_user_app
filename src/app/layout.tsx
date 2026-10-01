@@ -4,6 +4,8 @@ import { Suspense } from "react";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import NavigationHandler from "@/components/NavigationHandler";
 import MobileBackHandler from "@/components/MobileBackHandler";
+import PWAInstallPrompt from "@/components/PWAInstallPrompt";
+import PWAServiceWorkerRegister from "@/components/PWAServiceWorkerRegister";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -20,10 +22,12 @@ export const metadata: Metadata = {
   title: "GrooveVie - Order Food",
   description: "Scan QR codes to order food from your favorite restaurants",
   viewport: "width=device-width, initial-scale=1, user-scalable=no",
+  manifest: "/manifest.json",
   other: {
     "mobile-web-app-capable": "yes",
     "apple-mobile-web-app-capable": "yes",
-    "apple-mobile-web-app-status-bar-style": "default"
+    "apple-mobile-web-app-status-bar-style": "default",
+    "apple-mobile-web-app-title": "GrooveVie"
   }
 };
 
@@ -38,9 +42,11 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeProvider>
+          <PWAServiceWorkerRegister />
           <Suspense fallback={null}>
             <NavigationHandler />
             <MobileBackHandler />
+            <PWAInstallPrompt />
           </Suspense>
           {children}
         </ThemeProvider>

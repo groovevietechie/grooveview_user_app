@@ -14,7 +14,7 @@ export default function FloatingOrderButton({ businessSlug, primaryColor }: Floa
   return (
     <button
       onClick={() => router.push(`/b/${businessSlug}/orders`)}
-      style={{ backgroundColor: primaryColor }}
+      style={{ backgroundColor: '#1e3a8a' }}
       className="fixed bottom-8 left-6 z-30 text-white pl-4 pr-5 py-3 rounded-full shadow-2xl transition-all hover:scale-105 hover:shadow-3xl active:scale-95 flex items-center gap-2"
       aria-label="Track your orders"
       title="Track your orders"

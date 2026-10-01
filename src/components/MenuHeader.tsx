@@ -4,7 +4,8 @@ import Image from "next/image"
 import { useRouter, usePathname } from "next/navigation"
 import type { Business } from "@/types/database"
 import { useBackNavigation } from "@/hooks/useBackNavigation"
-import { HomeIcon, UserCircleIcon, SparklesIcon } from "@heroicons/react/24/outline"
+import { HomeIcon, UserCircleIcon } from "@heroicons/react/24/outline"
+import { useState, useEffect } from "react"
 
 interface MenuHeaderProps {
   business: Business
@@ -14,6 +15,7 @@ interface MenuHeaderProps {
 export default function MenuHeader({ business, onOpenSpinWheel }: MenuHeaderProps) {
   const router = useRouter()
   const pathname = usePathname()
+  const [hasNewRewardTokens, setHasNewRewardTokens] = useState(false)
 
   // Use the back navigation hook for the menu page
   useBackNavigation({
@@ -27,6 +29,26 @@ export default function MenuHeader({ business, onOpenSpinWheel }: MenuHeaderProp
   const nameParts = business.name.split(' ')
   const mainName = nameParts[0] || business.name
   const subtitle = nameParts.slice(1).join(' ')
+
+  // Listen for reward token notifications
+  useEffect(() => {
+    const handleRewardClaimed = () => {
+      setHasNewRewardTokens(true)
+    }
+
+    const handleDeviceSyncClosed = () => {
+      // Clear the notification when device sync modal is closed
+      setHasNewRewardTokens(false)
+    }
+
+    window.addEventListener('rewardTokenClaimed', handleRewardClaimed)
+    window.addEventListener('closeDeviceSync', handleDeviceSyncClosed)
+
+    return () => {
+      window.removeEventListener('rewardTokenClaimed', handleRewardClaimed)
+      window.removeEventListener('closeDeviceSync', handleDeviceSyncClosed)
+    }
+  }, [])
 
   return (
     <header className="lounge-header sticky top-0 z-30">
@@ -66,23 +88,28 @@ export default function MenuHeader({ business, onOpenSpinWheel }: MenuHeaderProp
 
           </div>
 
-          <nav className="lounge-desktop-nav" aria-label="Primary navigation">
+          <nav className="lounge-desktop-nav flex items-center gap-4" aria-label="Primary navigation">
             <a className="is-active" href="#top"><HomeIcon /> <span>Home</span></a>
+            <button
+              type="button"
+              aria-label="Link this device"
+              onClick={() => window.dispatchEvent(new CustomEvent("openDeviceSync"))}
+              className="relative flex items-center justify-center hover:text-amber-300 transition-colors"
+            >
+              <UserCircleIcon className="w-5 h-5" />
+              {/* Red blinking notification dot */}
+              {hasNewRewardTokens && (
+                <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse border border-red-600 shadow-lg shadow-red-500/50"></span>
+              )}
+            </button>
             <button
               type="button"
               aria-label="Daily Spin Wheel"
               onClick={onOpenSpinWheel}
               title="Daily Spin Wheel"
-              className="hover:text-amber-300 transition-colors"
+              className="px-6 py-2 rounded-lg bg-amber-400 text-slate-900 font-semibold hover:bg-amber-300 transition-colors active:scale-95 text-sm flex items-center justify-center whitespace-nowrap"
             >
-              <SparklesIcon className="w-5 h-5" />
-            </button>
-            <button
-              type="button"
-              aria-label="Link this device"
-              onClick={() => window.dispatchEvent(new CustomEvent("openDeviceSync"))}
-            >
-              <UserCircleIcon />
+              Spin
             </button>
           </nav>
 
