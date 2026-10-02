@@ -6,6 +6,7 @@ import NavigationHandler from "@/components/NavigationHandler";
 import MobileBackHandler from "@/components/MobileBackHandler";
 import PWAServiceWorkerRegister from "@/components/PWAServiceWorkerRegister";
 import PWARedirect from "@/components/PWARedirect";
+import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -44,6 +45,7 @@ export default function RootLayout({
         <ThemeProvider>
           <PWAServiceWorkerRegister />
           <PWARedirect />
+          <PWAInstallPrompt />
           <Suspense fallback={null}>
             <NavigationHandler />
             <MobileBackHandler />
