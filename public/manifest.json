@@ -1,8 +1,8 @@
-{
+﻿{
   "name": "GrooveVie - Order Food",
   "short_name": "GrooveVie",
   "description": "Order food from your favorite lounges and restaurants",
-  "start_url": "/",
+  "start_url": "/b/groovevie-serviced-lounge?tab=a03564a6-344e-471e-86c6-1581ba9ff929",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
@@ -53,7 +53,7 @@
       "name": "Order Food",
       "short_name": "Order",
       "description": "Quick access to order food",
-      "url": "/",
+      "url": "/b/groovevie-serviced-lounge?tab=a03564a6-344e-471e-86c6-1581ba9ff929",
       "icons": [
         {
           "src": "/icon-192.png",
@@ -65,3 +65,4 @@
   "categories": ["food", "shopping"],
   "prefer_related_applications": false
 }
+

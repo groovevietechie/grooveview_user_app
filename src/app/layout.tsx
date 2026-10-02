@@ -4,8 +4,8 @@ import { Suspense } from "react";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import NavigationHandler from "@/components/NavigationHandler";
 import MobileBackHandler from "@/components/MobileBackHandler";
-import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import PWAServiceWorkerRegister from "@/components/PWAServiceWorkerRegister";
+import PWARedirect from "@/components/PWARedirect";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -43,10 +43,10 @@ export default function RootLayout({
       >
         <ThemeProvider>
           <PWAServiceWorkerRegister />
+          <PWARedirect />
           <Suspense fallback={null}>
             <NavigationHandler />
             <MobileBackHandler />
-            <PWAInstallPrompt />
           </Suspense>
           {children}
         </ThemeProvider>

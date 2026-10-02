@@ -9,16 +9,28 @@ export default function PWAServiceWorkerRegister() {
       navigator.serviceWorker
         .register("/sw.js", { scope: "/" })
         .then((registration) => {
-          console.log("Service Worker registered successfully:", registration)
+          console.log("[PWA] Service Worker registered successfully:", registration)
+          
+          // Listen for controller change (SW update)
+          navigator.serviceWorker.addEventListener("controllerchange", () => {
+            console.log("[PWA] Service Worker controller changed - app updated")
+          })
           
           // Check for updates periodically (every 6 hours)
-          setInterval(() => {
-            registration.update()
+          const updateInterval = setInterval(() => {
+            registration.update().catch((error) => {
+              console.error("[PWA] Error checking for SW updates:", error)
+            })
           }, 6 * 60 * 60 * 1000)
+          
+          // Return cleanup function
+          return () => clearInterval(updateInterval)
         })
         .catch((error) => {
-          console.error("Service Worker registration failed:", error)
+          console.error("[PWA] Service Worker registration failed:", error)
         })
+    } else {
+      console.warn("[PWA] Service Workers are not supported in this browser")
     }
   }, [])
 

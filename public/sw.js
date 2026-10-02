@@ -1,5 +1,5 @@
 // Service Worker for GrooveVie PWA
-const CACHE_NAME = 'groovevie-v1';
+const CACHE_NAME = 'groovevie-v2';
 const urlsToCache = [
   '/',
   '/manifest.json'
@@ -59,7 +59,18 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Cache first for other requests
+  // Always refresh HTML so UI updates, including the install prompt, are not
+  // hidden behind a stale cached document.
+  if (request.destination === 'document') {
+    event.respondWith(
+      fetch(request)
+        .then((response) => response)
+        .catch(() => caches.match(request))
+    );
+    return;
+  }
+
+  // Cache first for static assets
   event.respondWith(
     caches.match(request).then((response) => {
       if (response) {
