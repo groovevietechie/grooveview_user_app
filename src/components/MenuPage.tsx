@@ -99,6 +99,8 @@ export default function MenuPage({ business, menuData }: MenuPageProps) {
     window.addEventListener('openDeviceSync', handleOpenDeviceSync)
 
     // Offer one context-aware moment after the menu has had time to breathe.
+    // DISABLED: Engagement popup removed per user request
+    /*
     const popupTimer = setTimeout(() => {
       triggerRandomPopup({
         businessName: business.name,
@@ -107,10 +109,12 @@ export default function MenuPage({ business, menuData }: MenuPageProps) {
         hasLinkedDevice: Boolean(getCustomerId()),
       })
     }, 3500)
+    */
+    const popupTimer = null
 
     return () => {
       window.removeEventListener('openDeviceSync', handleOpenDeviceSync)
-      clearTimeout(popupTimer)
+      if (popupTimer) clearTimeout(popupTimer)
     }
   }, [business.id, business.name, business.theme_color_hex, setBusinessId, setServiceBusinessId, setPrimaryColor, triggerRandomPopup, getItemCount])
 

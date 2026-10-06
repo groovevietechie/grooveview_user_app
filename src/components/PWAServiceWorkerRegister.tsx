@@ -11,17 +11,24 @@ export default function PWAServiceWorkerRegister() {
         .then((registration) => {
           console.log("[PWA] Service Worker registered successfully:", registration)
           
+          // Immediately check for updates
+          registration.update().catch((error) => {
+            console.error("[PWA] Error checking for SW updates on init:", error)
+          })
+          
           // Listen for controller change (SW update)
           navigator.serviceWorker.addEventListener("controllerchange", () => {
             console.log("[PWA] Service Worker controller changed - app updated")
+            // Reload the page to show the new version
+            window.location.reload()
           })
           
-          // Check for updates periodically (every 6 hours)
+          // Check for updates periodically (every 1 hour)
           const updateInterval = setInterval(() => {
             registration.update().catch((error) => {
               console.error("[PWA] Error checking for SW updates:", error)
             })
-          }, 6 * 60 * 60 * 1000)
+          }, 60 * 60 * 1000)
           
           // Return cleanup function
           return () => clearInterval(updateInterval)

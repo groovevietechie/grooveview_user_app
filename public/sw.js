@@ -1,5 +1,5 @@
 // Service Worker for GrooveVie PWA
-const CACHE_NAME = 'groovevie-v2';
+const CACHE_NAME = 'groovevie-v4-orders-list-fix';
 const urlsToCache = [
   '/',
   '/manifest.json'
@@ -15,13 +15,15 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// Activate event
+// Activate event - Clear old caches
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
+          // Delete all old cache versions
           if (cacheName !== CACHE_NAME) {
+            console.log('[SW] Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })

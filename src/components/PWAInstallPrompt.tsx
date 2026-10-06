@@ -50,7 +50,7 @@ export default function PWAInstallPrompt() {
   }, [])
 
   const install = async () => {
-    if (!deferredPrompt) { setShowHelp((current) => !current); return }
+    if (!deferredPrompt) return
     try {
       await deferredPrompt.prompt()
       const { outcome } = await deferredPrompt.userChoice
@@ -83,7 +83,6 @@ export default function PWAInstallPrompt() {
             <div className="gv-install-v2__badge" aria-hidden="true"><b /><b /><ArrowDownTrayIcon /></div>
             <div><h2 id="gv-install-title">Install GrooveVie</h2><p>Keep your favorite menus one tap away with a faster, app-like experience.</p></div>
           </div>
-          {showHelp && !deferredPrompt && <div className="gv-install-v2__help">Open your browser menu and choose <strong>Add to Home Screen</strong>.</div>}
           <div className="gv-install-v2__actions">
             <button className="gv-install-v2__primary" onClick={install}><ArrowDownTrayIcon />{deferredPrompt ? "Install now" : "Install now"}</button>
             <button className="gv-install-v2__secondary" onClick={dismiss}>Not now</button>
