@@ -20,6 +20,7 @@ import BackButtonHandler from "./BackButtonHandler"
 import DeviceSyncModal from "./DeviceSyncModal"
 import EngagementPopup from "./popups/EngagementPopup"
 import DailySpinWheel from "./popups/DailySpinWheel"
+import MenuPagePWAPrompt from "./MenuPagePWAPrompt"
 import { ShoppingCartIcon, MapPinIcon, SparklesIcon } from "@heroicons/react/24/outline"
 import { useMenuNavigation } from "@/hooks/useMenuNavigation"
 
@@ -256,6 +257,9 @@ export default function MenuPage({ business, menuData }: MenuPageProps) {
             onClose={() => setIsDailySpinOpen(false)}
             themeColor={business.theme_color_hex}
           />
+
+          {/* PWA Install Prompt - Menu Page Only */}
+          <MenuPagePWAPrompt />
         </div>
       </BackButtonHandler>
     </Suspense>

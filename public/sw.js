@@ -1,5 +1,5 @@
 // Service Worker for GrooveVie PWA
-const CACHE_NAME = 'groovevie-v4-orders-list-fix';
+const CACHE_NAME = 'groovevie-v5-pwa-menu-only';
 const urlsToCache = [
   '/',
   '/manifest.json'
