@@ -393,7 +393,30 @@ export async function useTokensForPayment(
 }
 
 /**
- * Award 2% reward tokens to a customer when their order is marked as served.
+ * Fetch the cashback token percentage from system settings
+ * Returns the percentage value (e.g., 2 for 2%)
+ */
+export async function getCashbackTokenPercentage(): Promise<number> {
+  try {
+    const response = await fetch(`${API_BASE}/api/system/settings?key=cashback_token_percentage`)
+
+    if (!response.ok) {
+      console.warn("[CustomerAPI] Could not fetch token percentage, using default 2%")
+      return 2
+    }
+
+    const data = await response.json()
+    const percentage = Number(data.setting?.setting_value) || 2
+    return percentage
+  } catch (error) {
+    console.warn("[CustomerAPI] Error fetching token percentage:", error)
+    return 2
+  }
+}
+
+/**
+ * Award reward tokens to a customer when their order is marked as served.
+ * Token percentage is fetched from system settings (dynamic, default 2%).
  * Idempotent — safe to call multiple times for the same order.
  */
 export async function awardTokensForOrder(

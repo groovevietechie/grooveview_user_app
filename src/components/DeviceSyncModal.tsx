@@ -20,7 +20,9 @@ import {
   regeneratePasscode,
   updateDeviceActivity,
   updateCustomerProfile,
+  getCashbackTokenPercentage,
 } from "@/lib/customer-api"
+import { useSystemSetting } from "@/hooks/useSystemSettings"
 import type { Customer, CustomerDevice } from "@/types/database"
 import {
   XMarkIcon,
@@ -41,6 +43,27 @@ interface DeviceSyncModalProps {
   preloadedCustomer?: Customer | null
   preloadedDevices?: CustomerDevice[]
   onDataChange?: () => void
+}
+
+/**
+ * Sub-component to fetch and display reward tokens info with dynamic percentage
+ */
+function RewardTokensInfo() {
+  // Real-time token percentage subscription
+  const { value: tokenPercentageStr, loading } = useSystemSetting(
+    "cashback_token_percentage",
+    "2"
+  )
+  const tokenPercentage = Number(tokenPercentageStr) || 2
+
+  return (
+    <div className="bg-slate-700/30 rounded-lg p-3 border border-amber-400/10">
+      <p className="text-xs text-amber-200/80">
+        💰 Earn {loading ? "..." : `${tokenPercentage}%`} tokens on every completed order across all your devices
+      </p>
+      <p className="text-xs text-amber-200/80 mt-1">🎁 Use tokens to pay for your orders (1 token = ₦1)</p>
+    </div>
+  )
 }
 
 export default function DeviceSyncModal({
@@ -550,10 +573,7 @@ export default function DeviceSyncModal({
                         </p>
                       </div>
                     </div>
-                    <div className="bg-slate-700/30 rounded-lg p-3 border border-amber-400/10">
-                      <p className="text-xs text-amber-200/80">💰 Earn 2% tokens on every completed order across all your devices</p>
-                      <p className="text-xs text-amber-200/80 mt-1">🎁 Use tokens to pay for your orders (1 token = ₦1)</p>
-                    </div>
+                    <RewardTokensInfo />
                   </div>
 
                   {/* Passcode */}

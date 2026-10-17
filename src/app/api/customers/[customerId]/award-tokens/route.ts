@@ -27,8 +27,34 @@ function appendRedeemedMarker(note?: string | null): string {
 }
 
 /**
+ * Fetch the cashback token percentage from system settings
+ */
+async function getCashbackTokenPercentage(): Promise<number> {
+  try {
+    const { data, error } = await supabase
+      .from("system_settings")
+      .select("setting_value")
+      .eq("setting_key", "cashback_token_percentage")
+      .single()
+
+    if (error) {
+      console.warn("[AwardTokens] Could not fetch token percentage, using default 2%:", error)
+      return 2
+    }
+
+    const percentage = Number(data?.setting_value) || 2
+    console.log(`[AwardTokens] Token percentage from database: ${percentage}%`)
+    return percentage
+  } catch (error) {
+    console.warn("[AwardTokens] Error fetching token percentage, using default 2%:", error)
+    return 2
+  }
+}
+
+/**
  * POST /api/customers/[customerId]/award-tokens
- * Award 2% reward tokens to a customer for a completed (served) order.
+ * Award reward tokens to a customer for a completed (served) order.
+ * Token percentage is fetched from system_settings (default 2%).
  * Looks up customer via customer_devices since orders.customer_id references auth.users.
  */
 export async function POST(
@@ -97,8 +123,9 @@ export async function POST(
       ownsOrderViaDevice = device?.customer_id === customerId
     }
 
-    // Calculate 2% token reward
-    const tokensToAward = Math.round(order_total * 0.02 * 100) / 100
+    // Fetch token percentage from system settings (defaults to 2%)
+    const tokenPercentage = await getCashbackTokenPercentage()
+    const tokensToAward = Math.round(order_total * (tokenPercentage / 100) * 100) / 100
 
     // Get current balance
     const { data: customer, error: fetchError } = await supabase

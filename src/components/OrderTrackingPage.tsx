@@ -11,7 +11,9 @@ import { getCustomerId } from "@/lib/device-identity"
 import { getCustomerOrders, awardTokensForOrder } from "@/lib/customer-api"
 import { useBackNavigation } from "@/hooks/useBackNavigation"
 import { useCustomerProfile } from "@/hooks/useCustomerProfile"
+import { useSystemSetting } from "@/hooks/useSystemSettings"
 import BackButton from "@/components/BackButton"
+import SpinEarnedNotification from "@/components/popups/SpinEarnedNotification"
 import {
   CheckCircleIcon,
   ClockIcon,
@@ -68,6 +70,21 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
   const [customerId, setCustomerId] = useState<string | null>(null)
   const [expandedItem, setExpandedItem] = useState<string | null>(null)
   
+  // Spin notification state
+  const [spinNotification, setSpinNotification] = useState<{
+    isOpen: boolean
+    spinCount: number
+    orderAmount: number
+  }>({ isOpen: false, spinCount: 0, orderAmount: 0 })
+  const processedSpinOrdersRef = useRef<Set<string>>(new Set())
+  
+  // Real-time token percentage subscription
+  const { value: tokenPercentageStr, loading: settingLoading } = useSystemSetting(
+    "cashback_token_percentage",
+    "2"
+  )
+  const tokenPercentage = Number(tokenPercentageStr) || 2
+  
   const CLAIMED_KEY = `claimed_orders_${business.id}`
   const claimedOrderIds = useRef<Set<string>>(new Set())
   const { refreshCustomerData } = useCustomerProfile()
@@ -116,6 +133,7 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
   const loadOrders = async () => {
     try {
       const customerId = getCustomerId()
+      const cid = customerId
 
       if (customerId) {
         const customerOrders = await getCustomerOrders(customerId, business.id)
@@ -131,6 +149,30 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
           const merged = [...customerOrders, ...deviceOnlyOrders].map(o =>
             claimedOrderIds.current.has(o.id) ? { ...o, tokens_awarded: true } : o
           )
+          
+          // Check for newly completed orders (served status) with amount > 10,000
+          merged.forEach(order => {
+            if (
+              order.status === 'served' &&
+              order.total_amount >= 10000 &&
+              !processedSpinOrdersRef.current.has(order.id) &&
+              cid
+            ) {
+              // Award 1 spin for this order
+              processedSpinOrdersRef.current.add(order.id)
+              
+              // Show notification
+              setSpinNotification({
+                isOpen: true,
+                spinCount: 1,
+                orderAmount: order.total_amount,
+              })
+              
+              // Award spin via API
+              awardSpinForOrder(cid, order.id, order.total_amount)
+            }
+          })
+          
           return merged
         })
       } else {
@@ -152,6 +194,30 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
     }
   }
 
+  const awardSpinForOrder = async (customerId: string, orderId: string, orderAmount: number) => {
+    try {
+      const response = await fetch('/api/spins/balance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customerId,
+          spinCount: 1,
+          source: 'order_completion',
+          sourceId: orderId,
+        }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        console.log(`[OrderTracking] Awarded 1 spin for order ${orderId}`)
+      } else {
+        console.error('[OrderTracking] Failed to award spin:', await response.text())
+      }
+    } catch (error) {
+      console.error('[OrderTracking] Error awarding spin:', error)
+    }
+  }
+
   const handleClaimTokens = async (order: OrderWithItems) => {
     const cid = customerId || getCustomerId()
     if (!cid) {
@@ -163,7 +229,7 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
     try {
       const result = await awardTokensForOrder(cid, order.id, order.total_amount)
       if (result.success) {
-        const awarded = result.tokensAwarded ?? Math.round(order.total_amount * 0.02 * 100) / 100
+        const awarded = result.tokensAwarded ?? Math.round(order.total_amount * (tokenPercentage / 100) * 100) / 100
         claimedOrderIds.current.add(order.id)
         try {
           localStorage.setItem(CLAIMED_KEY, JSON.stringify([...claimedOrderIds.current]))
@@ -263,6 +329,15 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 pb-12">
+      {/* Spin Earned Notification */}
+      <SpinEarnedNotification
+        isOpen={spinNotification.isOpen}
+        onClose={() => setSpinNotification({ ...spinNotification, isOpen: false })}
+        spinCount={spinNotification.spinCount}
+        orderAmount={spinNotification.orderAmount}
+        themeColor={primaryColor}
+      />
+
       {/* Header */}
       <header className="sticky top-0 z-50 backdrop-blur-2xl border-b border-amber-400/10 bg-gradient-to-r from-slate-950/80 to-blue-950/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
@@ -520,7 +595,7 @@ export default function OrderTrackingPage({ business }: OrderTrackingPageProps) 
                       <GiftIcon className="w-6 h-6" />
                       {claiming
                         ? 'Claiming Tokens...'
-                        : `Claim ₦${(Math.round(selectedOrder.total_amount * 0.02 * 100) / 100).toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Reward Tokens`}
+                        : `Claim ₦${(Math.round(selectedOrder.total_amount * (tokenPercentage / 100) * 100) / 100).toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Reward Tokens`}
                     </button>
                   )}
 

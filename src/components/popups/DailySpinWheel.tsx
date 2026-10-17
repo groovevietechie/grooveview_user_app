@@ -1,9 +1,11 @@
 "use client"
 
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
-import { XMarkIcon } from '@heroicons/react/24/outline'
+import { XMarkIcon, QuestionMarkCircleIcon, GiftIcon } from '@heroicons/react/24/outline'
 import { useDailySpinWheel, type RewardType } from '@/hooks/useDailySpinWheel'
 import { getCustomerId } from '@/lib/device-identity'
+import HowToEarnSpinsModal from '@/components/modals/HowToEarnSpinsModal'
+import MyRewardsPanel from '@/components/popups/MyRewardsPanel'
 
 interface DailySpinWheelProps {
   isOpen: boolean
@@ -11,9 +13,7 @@ interface DailySpinWheelProps {
   themeColor?: string
 }
 
-const REWARD_ORDER: RewardType[] = ['greenBeer', 'blackBeer', 'tryAgain', 'cashback200', 'cashback50', 'discount10']
-
-const SEGMENT = 360 / REWARD_ORDER.length
+const SEGMENT = 360 / 6
 const POINTER_ANGLE = 270 // SVG angle (0deg = 3 o'clock) that sits under the pointer (12 o'clock)
 const SPIN_MS = 5200
 const BULB_COUNT = 16
@@ -50,11 +50,18 @@ export default function DailySpinWheel({
   themeColor = '#fbbf24',
 }: DailySpinWheelProps) {
   const customerId = getCustomerId() ?? undefined
-  const { canSpinToday, timeUntilNextSpin, performSpin, REWARDS, isLoading } = useDailySpinWheel(customerId)
+  const { canSpinToday, performSpin, REWARDS, isLoading, spinBalance } = useDailySpinWheel(customerId)
 
   const [isSpinning, setIsSpinning] = useState(false)
   const [result, setResult] = useState<any>(null)
   const [showResult, setShowResult] = useState(false)
+  const [showHowToEarn, setShowHowToEarn] = useState(false)
+  const [showMyRewards, setShowMyRewards] = useState(false)
+  const [greenDrinkCooldown, setGreenDrinkCooldown] = useState<{
+    active: boolean
+    endsAt: string | null
+    timeRemaining: { days: number; hours: number; minutes: number; seconds: number } | null
+  } | null>(null)
 
   const wheelRef = useRef<SVGSVGElement>(null)
   const pointerRef = useRef<HTMLDivElement>(null)
@@ -102,13 +109,19 @@ export default function DailySpinWheel({
     })
   }, [])
 
-  const handleSpin = () => {
-    if (isSpinning || !canSpinToday) return
+  const handleSpin = async () => {
+    if (isSpinning || !canSpinToday || !customerId) return
 
-    const spinResult = performSpin()
-    if (!spinResult) return
+    // Get the reward type from performSpin
+    const spinResult = await performSpin(customerId)
+    if (!spinResult) {
+      alert('Failed to spin. Please try again.')
+      return
+    }
 
-    const rewardIndex = REWARD_ORDER.indexOf(spinResult.reward.type)
+    const rewardType = spinResult.reward.reward_type
+    const rewardOrder = Object.keys(REWARDS)
+    const rewardIndex = rewardOrder.indexOf(rewardType)
     if (rewardIndex === -1) return
 
     setIsSpinning(true)
@@ -140,7 +153,13 @@ export default function DailySpinWheel({
       } else {
         rafRef.current = null
         setIsSpinning(false)
-        timeoutRef.current = setTimeout(() => setShowResult(true), 500)
+        timeoutRef.current = setTimeout(() => {
+          setShowResult(true)
+          // Check for green drink cooldown
+          if (spinResult.reward.reward_type === 'greenBeer' && spinResult.greenDrinkCooldown) {
+            setGreenDrinkCooldown(spinResult.greenDrinkCooldown)
+          }
+        }, 500)
       }
     }
     rafRef.current = requestAnimationFrame(frame)
@@ -150,18 +169,30 @@ export default function DailySpinWheel({
     if (isSpinning) return
     setResult(null)
     setShowResult(false)
+    setGreenDrinkCooldown(null)
     onClose()
   }
 
   if (!isOpen || isLoading) return null
 
   const bulbs = Array.from({ length: BULB_COUNT }, (_, i) => (i / BULB_COUNT) * Math.PI * 2)
-  const countdown = timeUntilNextSpin
-    ? `${String(timeUntilNextSpin.hours).padStart(2, '0')}:${String(timeUntilNextSpin.minutes).padStart(2, '0')}:${String(timeUntilNextSpin.seconds).padStart(2, '0')}`
-    : '--:--:--'
+  const rewardEntries = Object.entries(REWARDS)
+  const rewardOrder = rewardEntries.map(([key]) => key)
 
   return (
     <>
+      {/* How to Earn Spins Modal */}
+      <HowToEarnSpinsModal 
+        isOpen={showHowToEarn} 
+        onClose={() => setShowHowToEarn(false)} 
+      />
+
+      {/* My Rewards Panel */}
+      <MyRewardsPanel 
+        isOpen={showMyRewards}
+        onClose={() => setShowMyRewards(false)}
+      />
+
       {/* Backdrop */}
       <div
         className="fixed inset-0 z-40 backdrop-blur-md"
@@ -184,22 +215,53 @@ export default function DailySpinWheel({
 
           {!showResult ? (
             <>
-              {/* Title */}
+              {/* Title & Spin Balance Header */}
               <div className="text-center pt-8 mb-6 dsw-fade-in">
-                <h3
-                  className="font-black text-3xl sm:text-4xl tracking-tight uppercase"
-                  style={{
-                    background: 'linear-gradient(180deg,#ffffff 0%,#fde68a 45%,#f59e0b 100%)',
-                    WebkitBackgroundClip: 'text',
-                    backgroundClip: 'text',
-                    color: 'transparent',
-                    filter: 'drop-shadow(0 3px 0 rgba(120,53,15,0.8)) drop-shadow(0 8px 14px rgba(0,0,0,0.5))',
-                  }}
-                >
-                  Daily Spin
-                </h3>
-                <p className="mt-3 inline-block px-4 py-1 rounded-full bg-black/40 border border-amber-300/40 text-amber-100 text-sm font-semibold">
-                  1 free spin every day
+                <div className="flex items-center justify-between mb-4 px-4">
+                  <div className="flex-1" />
+                  <div className="flex-1 text-center">
+                    <h3
+                      className="font-black text-3xl sm:text-4xl tracking-tight uppercase"
+                      style={{
+                        background: 'linear-gradient(180deg,#ffffff 0%,#fde68a 45%,#f59e0b 100%)',
+                        WebkitBackgroundClip: 'text',
+                        backgroundClip: 'text',
+                        color: 'transparent',
+                        filter: 'drop-shadow(0 3px 0 rgba(120,53,15,0.8)) drop-shadow(0 8px 14px rgba(0,0,0,0.5))',
+                      }}
+                    >
+                      Daily Spin
+                    </h3>
+                  </div>
+                  <div className="flex-1 flex justify-end gap-2">
+                    <button
+                      onClick={() => setShowMyRewards(true)}
+                      className="hover:scale-110 transition-transform p-2 rounded-full hover:bg-white/10"
+                      aria-label="View my rewards"
+                      title="View my rewards"
+                    >
+                      <GiftIcon className="w-6 h-6 text-amber-300 hover:text-amber-100 transition-colors" />
+                    </button>
+                    <button
+                      onClick={() => setShowHowToEarn(true)}
+                      className="hover:scale-110 transition-transform p-2 rounded-full hover:bg-white/10"
+                      aria-label="How to earn spins"
+                      title="How to earn spins"
+                    >
+                      <QuestionMarkCircleIcon className="w-6 h-6 text-amber-300 hover:text-amber-100 transition-colors" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Spin Balance Display */}
+                <div className="mt-4 mb-3 inline-block px-5 py-2 rounded-full bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-emerald-300/50">
+                  <p className="text-emerald-100 text-sm font-bold">
+                    💫 Spins Available: <span className="text-xl font-black text-emerald-300">{spinBalance}</span>
+                  </p>
+                </div>
+
+                <p className="mt-2 inline-block px-4 py-1 rounded-full bg-black/40 border border-amber-300/40 text-amber-100 text-sm font-semibold">
+                  Earn 1 spin per order over ₦10,000
                 </p>
               </div>
 
@@ -263,8 +325,9 @@ export default function DailySpinWheel({
                       </radialGradient>
                     </defs>
 
-                    {REWARD_ORDER.map((rewardType, index) => {
+                    {rewardOrder.map((rewardType, index) => {
                       const reward = REWARDS[rewardType]
+                      if (!reward) return null
                       const style = SLICE_STYLES[index % 2]
                       const a1 = (index * SEGMENT * Math.PI) / 180
                       const a2 = ((index + 1) * SEGMENT * Math.PI) / 180
@@ -326,7 +389,7 @@ export default function DailySpinWheel({
                     })}
 
                     {/* Pegs at slice boundaries */}
-                    {REWARD_ORDER.map((_, i) => {
+                    {rewardOrder.map((_, i) => {
                       const a = (i * SEGMENT * Math.PI) / 180
                       return (
                         <circle
@@ -403,32 +466,18 @@ export default function DailySpinWheel({
               <div className="mt-[18%] sm:mt-[16%]">
                 <button
                   onClick={handleSpin}
-                  disabled={isSpinning || !canSpinToday}
+                  disabled={isSpinning || !canSpinToday || spinBalance <= 0}
                   className={`relative overflow-hidden w-full py-4 rounded-full font-extrabold text-lg tracking-wide transition-all ${
-                    canSpinToday
+                    canSpinToday && spinBalance > 0
                       ? 'text-amber-950 bg-gradient-to-b from-amber-200 via-amber-400 to-amber-600 shadow-[0_6px_0_#78350f,0_14px_26px_rgba(0,0,0,0.55)] active:translate-y-[3px] active:shadow-[0_3px_0_#78350f] disabled:opacity-70'
                       : 'text-white/60 bg-white/10 border border-white/15 cursor-not-allowed'
                   }`}
                 >
-                  {canSpinToday && !isSpinning && <span className="dsw-shine" />}
+                  {canSpinToday && !isSpinning && spinBalance > 0 && <span className="dsw-shine" />}
                   <span className="relative">
-                    {isSpinning ? 'Spinning...' : canSpinToday ? 'Spin Now' : 'Spin used today'}
+                    {isSpinning ? 'Spinning...' : spinBalance > 0 ? `Spin Now (${spinBalance})` : 'No spins available'}
                   </span>
                 </button>
-
-                <div className="mt-4 rounded-2xl bg-white/95 text-slate-800 px-5 py-4 shadow-[0_10px_30px_rgba(0,0,0,0.4)]">
-                  {canSpinToday ? (
-                    <p className="text-center font-semibold">Your free spin for today is ready</p>
-                  ) : (
-                    <div className="text-center">
-                      <p className="text-sm font-semibold text-slate-500">Next spin available in</p>
-                      <p className="text-3xl font-black text-amber-600 font-mono tabular-nums">{countdown}</p>
-                    </div>
-                  )}
-                  <p className="mt-2 pt-2 border-t border-slate-200 text-center text-xs text-slate-500">
-                    One spin per day. Come back tomorrow!
-                  </p>
-                </div>
               </div>
             </>
           ) : result ? (
@@ -486,6 +535,23 @@ export default function DailySpinWheel({
               </h2>
               <p className="text-xl sm:text-2xl font-bold mb-3 text-amber-300 whitespace-pre-line">{result.reward.label}</p>
               <p className="text-white/80 text-base sm:text-lg mb-8 max-w-sm mx-auto">{result.reward.description}</p>
+
+              {/* Green Drink Cooldown Indicator */}
+              {greenDrinkCooldown?.active && (
+                <div className="mb-6 mx-auto max-w-sm rounded-lg bg-amber-500/20 border border-amber-500/50 p-4">
+                  <p className="text-amber-200 text-sm font-semibold text-center">
+                    ⏰ Weekly Cooldown Active
+                  </p>
+                  <p className="text-amber-100 text-xs text-center mt-2">
+                    You can redeem green drink again in:{' '}
+                    <span className="font-bold">
+                      {greenDrinkCooldown.timeRemaining
+                        ? `${greenDrinkCooldown.timeRemaining.days}d ${greenDrinkCooldown.timeRemaining.hours}h`
+                        : 'Soon'}
+                    </span>
+                  </p>
+                </div>
+              )}
 
               <div className="flex gap-3 flex-col sm:flex-row max-w-sm mx-auto">
                 <button

@@ -1,16 +1,10 @@
 import { useState, useCallback, useEffect } from 'react'
 
-export type RewardType = 
-  | 'greenBeer' 
-  | 'blackBeer' 
-  | 'tryAgain' 
-  | 'cashback200' 
-  | 'cashback50' 
-  | 'discount10'
+export type RewardType = string
 
 export interface Reward {
   id: string
-  type: RewardType
+  reward_type: RewardType
   label: string
   description: string
   value?: number | string
@@ -25,213 +19,226 @@ export interface SpinResult {
   reward: Reward
   spinTime: string
   redeemed: boolean
+  greenDrinkCooldown?: {
+    active: boolean
+    cooldownEndsAt: string | null
+    timeRemaining?: {
+      days: number
+      hours: number
+      minutes: number
+      seconds: number
+    } | null
+  } | null
 }
 
-const REWARDS: Record<RewardType, Omit<Reward, 'id' | 'earnedAt' | 'redeemed'>> = {
+const STORAGE_KEY = 'dailySpinWheel'
+
+// Default rewards fallback if database is unavailable
+const DEFAULT_REWARDS: Record<string, any> = {
   greenBeer: {
-    type: 'greenBeer',
-    label: '1 Green Bottled Beer',
-    description: 'Enjoy a refreshing green bottled beer',
+    reward_type: 'greenBeer',
+    label: '🍺 Green Bottled Drink',
+    description: 'Free green bottled drink - redeemable once a week',
     icon: '🍺',
-    probability: 4,
-    color: '#10b981',
+    probability: 25,
+    color: '#34d399',
+    value: 1,
   },
   blackBeer: {
-    type: 'blackBeer',
-    label: '1 Black Bottled Beer',
-    description: 'Enjoy a premium black bottled beer',
+    reward_type: 'blackBeer',
+    label: '🍺 Black Bottled Drink',
+    description: 'Free black bottled drink',
     icon: '🍺',
-    probability: 3,
-    color: '#1f2937',
-  },
-  tryAgain: {
-    type: 'tryAgain',
-    label: 'Try Again Tomorrow',
-    description: 'Better luck next time! Come back tomorrow',
-    icon: '🎲',
-    probability: 80,
+    probability: 15,
     color: '#6b7280',
+    value: 1,
   },
   cashback200: {
-    type: 'cashback200',
+    reward_type: 'cashback200',
     label: '₦200 Cashback',
     description: 'Get ₦200 cashback on your next order',
     value: 200,
     icon: '💰',
-    probability: 5,
+    probability: 20,
     color: '#f97316',
   },
   cashback50: {
-    type: 'cashback50',
+    reward_type: 'cashback50',
     label: '₦50 Cashback',
     description: 'Get ₦50 cashback on your next order',
     value: 50,
     icon: '💵',
-    probability: 6,
-    color: '#eab308',
+    probability: 20,
+    color: '#fbbf24',
   },
   discount10: {
-    type: 'discount10',
-    label: '10% Discount on ₦100k+ bills',
-    description: 'Get 10% off on orders over ₦100,000',
-    value: '10%',
+    reward_type: 'discount10',
+    label: '10% Discount',
+    description: 'Get 10% discount on your next order',
+    value: 10,
     icon: '🏷️',
-    probability: 2,
-    color: '#ec4899',
+    probability: 15,
+    color: '#8b5cf6',
+  },
+  tryAgain: {
+    reward_type: 'tryAgain',
+    label: '🎯 Try Again',
+    description: 'Spin again for free!',
+    icon: '🎯',
+    probability: 5,
+    color: '#ef4444',
+    value: 0,
   },
 }
 
-const STORAGE_KEY = 'dailySpinWheel'
-const SPIN_COOLDOWN_MS = 24 * 60 * 60 * 1000 // 24 hours
-
 export const useDailySpinWheel = (customerId?: string) => {
-  const [lastSpinTime, setLastSpinTime] = useState<number | null>(null)
   const [spinResults, setSpinResults] = useState<SpinResult[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [rewards, setRewards] = useState<Record<string, any>>(DEFAULT_REWARDS)
+  const [spinBalance, setSpinBalance] = useState(0)
 
-  // Load spin data from localStorage
+  // Load rewards from database
   useEffect(() => {
-    const loadSpinData = () => {
+    const fetchRewards = async () => {
       try {
-        const storageKey = customerId ? `${STORAGE_KEY}_${customerId}` : STORAGE_KEY
-        const data = localStorage.getItem(storageKey)
-        if (data) {
-          const parsed = JSON.parse(data)
-          setLastSpinTime(parsed.lastSpinTime)
-          setSpinResults(parsed.results || [])
+        const response = await fetch('/api/spins/rewards')
+        if (response.ok) {
+          const data = await response.json()
+          const rewardsMap: Record<string, any> = {}
+          
+          data.rewards?.forEach((reward: any) => {
+            rewardsMap[reward.reward_type] = {
+              reward_type: reward.reward_type,
+              label: reward.label,
+              description: reward.description,
+              icon: reward.icon,
+              probability: reward.probability,
+              color: reward.color,
+              value: reward.value,
+            }
+          })
+
+          if (Object.keys(rewardsMap).length > 0) {
+            setRewards(rewardsMap)
+            console.log('[useDailySpinWheel] Loaded rewards from database')
+          }
         }
       } catch (error) {
-        console.error('Failed to load spin data:', error)
-      } finally {
-        setIsLoading(false)
+        console.warn('[useDailySpinWheel] Failed to fetch rewards, using defaults:', error)
       }
     }
 
-    loadSpinData()
-  }, [customerId])
+    fetchRewards()
+  }, [])
 
-  // Save spin data to localStorage
-  const saveSpinData = useCallback((time: number, results: SpinResult[]) => {
-    try {
-      const storageKey = customerId ? `${STORAGE_KEY}_${customerId}` : STORAGE_KEY
-      localStorage.setItem(
-        storageKey,
-        JSON.stringify({
-          lastSpinTime: time,
-          results,
-          version: 1,
-        })
-      )
-    } catch (error) {
-      console.error('Failed to save spin data:', error)
+  // Load spin balance for customer
+  useEffect(() => {
+    if (!customerId) return
+
+    const fetchSpinBalance = async () => {
+      try {
+        const response = await fetch(`/api/spins/balance?customerId=${customerId}`)
+        if (response.ok) {
+          const data = await response.json()
+          setSpinBalance(data.balance?.spin_balance || 0)
+          console.log(`[useDailySpinWheel] Spin balance for ${customerId}: ${data.balance?.spin_balance || 0}`)
+        }
+      } catch (error) {
+        console.warn('[useDailySpinWheel] Failed to fetch spin balance:', error)
+      }
     }
+
+    fetchSpinBalance()
+    setIsLoading(false)
   }, [customerId])
 
-  // Check if user can spin today
+  // Check if user can spin
   const canSpinToday = useCallback(() => {
-    if (!lastSpinTime) return true
-    const now = Date.now()
-    return now - lastSpinTime > SPIN_COOLDOWN_MS
-  }, [lastSpinTime])
-
-  // Get time until next spin
-  const getTimeUntilNextSpin = useCallback(() => {
-    if (!lastSpinTime) return null
-    const now = Date.now()
-    const timeSinceLastSpin = now - lastSpinTime
-    const timeRemaining = SPIN_COOLDOWN_MS - timeSinceLastSpin
-
-    if (timeRemaining <= 0) return null
-
-    const hours = Math.floor(timeRemaining / (60 * 60 * 1000))
-    const minutes = Math.floor((timeRemaining % (60 * 60 * 1000)) / (60 * 1000))
-    const seconds = Math.floor((timeRemaining % (60 * 1000)) / 1000)
-
-    return { hours, minutes, seconds }
-  }, [lastSpinTime])
+    if (spinBalance <= 0) return false
+    return true
+  }, [spinBalance])
 
   // Calculate weighted random reward based on probabilities
-  const selectReward = useCallback((): RewardType => {
+  const selectReward = useCallback((): string => {
+    const rewardEntries = Object.entries(rewards)
+    if (rewardEntries.length === 0) return 'tryAgain'
+
     const random = Math.random() * 100
     let cumulative = 0
 
-    const rewardOrder: RewardType[] = ['greenBeer', 'blackBeer', 'tryAgain', 'cashback200', 'cashback50', 'discount10']
-
-    for (const rewardType of rewardOrder) {
-      cumulative += REWARDS[rewardType].probability
+    for (const [key, reward] of rewardEntries) {
+      cumulative += reward.probability
       if (random <= cumulative) {
-        return rewardType
+        return key
       }
     }
 
     // Fallback
     return 'tryAgain'
-  }, [])
+  }, [rewards])
 
-  // Execute spin
-  const performSpin = useCallback((): SpinResult | null => {
+  // Execute spin - deducts from balance and records result
+  const performSpin = useCallback(async (customerId: string): Promise<SpinResult | null> => {
     if (!canSpinToday()) {
+      console.warn('[useDailySpinWheel] Cannot spin: no balance')
       return null
     }
 
     const rewardType = selectReward()
-    const rewardConfig = REWARDS[rewardType]
+    const rewardConfig = rewards[rewardType]
     const now = new Date().toISOString()
 
-    const result: SpinResult = {
-      reward: {
-        id: `${rewardType}_${Date.now()}`,
-        ...rewardConfig,
-        earnedAt: now,
+    // Deduct spin from balance via API
+    try {
+      const response = await fetch('/api/spins/use', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customerId,
+          rewardType,
+          rewardLabel: rewardConfig.label,
+          rewardValue: rewardConfig.value,
+        }),
+      })
+
+      if (!response.ok) {
+        console.error('[useDailySpinWheel] Failed to use spin')
+        return null
+      }
+
+      const data = await response.json()
+      setSpinBalance(data.newBalance)
+
+      const result: SpinResult = {
+        reward: {
+          id: `${rewardType}_${Date.now()}`,
+          reward_type: rewardType,
+          ...rewardConfig,
+          earnedAt: now,
+          redeemed: false,
+        },
+        spinTime: now,
         redeemed: false,
-      },
-      spinTime: now,
-      redeemed: false,
+        greenDrinkCooldown: data.greenDrinkCooldown || null,
+      }
+
+      const newResults = [result, ...spinResults]
+      setSpinResults(newResults)
+
+      return result
+    } catch (error) {
+      console.error('[useDailySpinWheel] Error performing spin:', error)
+      return null
     }
-
-    const newResults = [result, ...spinResults]
-    const newLastSpinTime = Date.now()
-
-    setLastSpinTime(newLastSpinTime)
-    setSpinResults(newResults)
-    saveSpinData(newLastSpinTime, newResults)
-
-    return result
-  }, [canSpinToday, selectReward, spinResults, saveSpinData])
-
-  // Mark reward as redeemed
-  const redeemReward = useCallback((rewardId: string) => {
-    setSpinResults(prev => {
-      const updated = prev.map(result => 
-        result.reward.id === rewardId
-          ? { ...result, reward: { ...result.reward, redeemed: true }, redeemed: true }
-          : result
-      )
-      saveSpinData(lastSpinTime || Date.now(), updated)
-      return updated
-    })
-  }, [lastSpinTime, saveSpinData])
-
-  // Get unread results (not redeemed)
-  const getUnredeemedRewards = useCallback(() => {
-    return spinResults.filter(r => !r.redeemed)
-  }, [spinResults])
-
-  // Get all rewards for display
-  const getAllRewards = useCallback(() => {
-    return spinResults
-  }, [spinResults])
+  }, [canSpinToday, selectReward, rewards, spinResults])
 
   return {
-    lastSpinTime,
-    spinResults,
     canSpinToday: canSpinToday(),
-    timeUntilNextSpin: getTimeUntilNextSpin(),
     performSpin,
-    redeemReward,
-    getUnredeemedRewards,
-    getAllRewards,
+    rewards,
+    REWARDS: rewards,
+    spinBalance,
     isLoading,
-    REWARDS,
+    spinResults,
   }
 }
