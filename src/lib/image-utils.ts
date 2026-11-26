@@ -46,6 +46,19 @@ export const isValidImageUrl = (url: string | null | undefined): boolean => {
 }
 
 /**
+ * Keep migrated storage references working while old database rows still
+ * contain the paused project's hostname. The object paths are unchanged.
+ */
+export const normalizeStorageUrl = (url: string | null | undefined): string | null | undefined => {
+  if (!url) return url
+
+  return url.replace(
+    "https://idvrnrvqvdzppvzbbtgj.supabase.co",
+    "https://cmlwqzrzoeiyvwkotqav.supabase.co",
+  )
+}
+
+/**
  * Generate a color-based fallback for items without images
  */
 export const generateColorFallback = (name: string, baseColor: string) => {

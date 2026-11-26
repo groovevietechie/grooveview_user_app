@@ -58,14 +58,8 @@ export default function MenuPage({ business, menuData }: MenuPageProps) {
     return () => window.clearInterval(timer)
   }, [heroImages.length])
 
-  // Auto-launch spin wheel on first app load
-  useEffect(() => {
-    const hasSeenSpinWheel = localStorage.getItem('spinWheelLaunched')
-    if (!hasSeenSpinWheel) {
-      setIsDailySpinOpen(true)
-      localStorage.setItem('spinWheelLaunched', 'true')
-    }
-  }, [])
+  // Removed: Auto-launch spin wheel on first app load
+  // Spin wheel should only open when user explicitly clicks the spin button from the menu
 
   useEffect(() => {
     setBusinessId(business.id)

@@ -1,5 +1,16 @@
 import { supabase } from "./supabase"
+import { normalizeStorageUrl } from "./image-utils"
 import type { Business, Menu, MenuCategory, MenuItem, OrderSubmission, ServiceConfiguration, ServiceOption, ServiceBooking, ServiceBookingSubmission, ServiceStatus, Staff, Waiter, Tip } from "@/types/database"
+
+// Logging utility for debugging API calls
+function logError(context: string, error: any) {
+  console.error(`[GrooveVie API] ${context}`, {
+    message: error?.message,
+    code: error?.code,
+    status: error?.status,
+    details: error?.details,
+  })
+}
 
 const TOKEN_NOTE_PREFIX = "[reward_tokens_used:"
 const CUSTOMER_PROFILE_NOTE_PREFIX = "[customer_profile_id:"
@@ -32,14 +43,37 @@ function appendOrderMetadata(note: string | null | undefined, tokenAmount: numbe
 export async function getBusinessBySlug(slug: string): Promise<Business | null> {
   // Normalize slug: decode URI encoding and replace spaces with hyphens
   const normalizedSlug = decodeURIComponent(slug).toLowerCase().replace(/\s+/g, "-")
-  const { data, error } = await supabase.from("businesses").select("*").eq("slug", normalizedSlug).single()
+  console.log("[GrooveVie API] Fetching business with slug:", normalizedSlug)
+  
+  try {
+    // Use a simple query without .single() to avoid issues
+    // .single() can fail if RLS returns a permission error or if Supabase auth isn't set up right
+    const { data: businesses, error } = await supabase
+      .from("businesses")
+      .select("*")
+      .eq("slug", normalizedSlug)
+      .limit(1)
 
-  if (error) {
-    console.error("[GrooveVie API] Error fetching business:", error.message)
+    if (error) {
+      logError("Query failed", error)
+      return null
+    }
+
+    if (!businesses || businesses.length === 0) {
+      console.warn("[GrooveVie API] No business found with slug:", normalizedSlug)
+      return null
+    }
+
+    const business = {
+      ...businesses[0],
+      logo_url: normalizeStorageUrl(businesses[0].logo_url),
+    }
+    console.log("[GrooveVie API] Business found:", business?.name)
+    return business
+  } catch (err) {
+    console.error("[GrooveVie API] Exception in getBusinessBySlug:", err)
     return null
   }
-
-  return data
 }
 
 // Menu API
@@ -56,7 +90,10 @@ export async function getMenusByBusinessId(businessId: string): Promise<Menu[]> 
     return []
   }
 
-  return data || []
+  return (data || []).map((menu) => ({
+    ...menu,
+    image_url: normalizeStorageUrl(menu.image_url),
+  }))
 }
 
 // Menu Categories API
@@ -72,7 +109,10 @@ export async function getCategoriesByMenuId(menuId: string): Promise<MenuCategor
     return []
   }
 
-  return data || []
+  return (data || []).map((category) => ({
+    ...category,
+    image_url: normalizeStorageUrl(category.image_url),
+  }))
 }
 
 // Menu Items API
@@ -114,6 +154,7 @@ export async function getItemsByCategoryId(categoryId: string): Promise<MenuItem
 
   return (data || []).map(item => ({
     ...item,
+    image_url: normalizeStorageUrl(item.image_url),
     option_categories: (item.menu_item_option_categories || [])
       .sort((a: any, b: any) => a.display_order - b.display_order)
       .map((category: any) => ({
@@ -188,6 +229,7 @@ export async function getFullMenu(businessId: string): Promise<{
   // Process items to include sorted option categories and options
   const processedItems = (items || []).map(item => ({
     ...item,
+    image_url: normalizeStorageUrl(item.image_url),
     option_categories: (item.menu_item_option_categories || [])
       .sort((a: any, b: any) => a.display_order - b.display_order)
       .map((category: any) => ({
@@ -200,7 +242,10 @@ export async function getFullMenu(businessId: string): Promise<{
 
   return {
     menus,
-    categories: categories || [],
+    categories: (categories || []).map((category) => ({
+      ...category,
+      image_url: normalizeStorageUrl(category.image_url),
+    })),
     items: processedItems,
   }
 }
@@ -223,7 +268,10 @@ export async function getStaffMembers(businessId: string): Promise<Staff[]> {
     }
 
     console.log("[API] Staff members fetched:", data?.length || 0)
-    return data || []
+    return (data || []).map((staff) => ({
+      ...staff,
+      profile_image_url: normalizeStorageUrl(staff.profile_image_url),
+    }))
   } catch (error) {
     console.error("[API] Error fetching staff members:", error)
     return []
@@ -335,7 +383,10 @@ export async function getServiceOptions(businessId: string, serviceType?: string
     }
 
     console.log("[API] Service options fetched:", data?.length || 0)
-    return data || []
+    return (data || []).map((option) => ({
+      ...option,
+      image_url: normalizeStorageUrl(option.image_url),
+    }))
   } catch (error) {
     console.error("[API] Error fetching service options:", error)
     throw error
@@ -946,7 +997,10 @@ export async function getAvailableWaiters(businessId: string): Promise<Waiter[]>
       console.error("[API] Waiters fetch failed:", error)
       return []
     }
-    return data || []
+    return (data || []).map((waiter) => ({
+      ...waiter,
+      profile_image_url: normalizeStorageUrl(waiter.profile_image_url),
+    }))
   } catch (error) {
     console.error("[API] Error fetching waiters:", error)
     return []

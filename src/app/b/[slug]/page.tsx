@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation"
 import { getBusinessBySlug, getFullMenu } from "@/lib/api"
+import { supabase } from "@/lib/supabase"
 import type { Business, Menu, MenuCategory, MenuItem } from "@/types/database"
 import MenuPage from "@/components/MenuPage"
 
@@ -34,7 +35,49 @@ export default async function BusinessPage({ params }: PageProps) {
   const { business, menuData } = await getBusinessData(normalizedSlug)
 
   if (!business) {
-    notFound()
+    // Debug: Fetch and display all available businesses
+    let availableBusinesses = []
+    try {
+      const { data, error } = await supabase.from("businesses").select("id, name, slug, is_active").limit(10)
+      if (!error && data) {
+        availableBusinesses = data
+      }
+    } catch (err) {
+      console.error("Error fetching businesses for debug:", err)
+    }
+
+    return (
+      <div 
+        className="min-h-screen flex items-center justify-center relative"
+        style={{
+          backgroundImage: 'url(/menu_page_background.jpeg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      >
+        <div className="absolute inset-0 bg-black opacity-30"></div>
+        <div className="text-center p-8 bg-white rounded-lg shadow-md max-w-2xl relative z-10">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Business Not Found</h1>
+          <p className="text-gray-600 mb-6">
+            Could not find a business with slug: <code className="bg-gray-100 px-2 py-1">{normalizedSlug}</code>
+          </p>
+          {availableBusinesses.length > 0 && (
+            <div className="mt-6 text-left">
+              <p className="font-semibold text-gray-700 mb-3">Available Businesses:</p>
+              <ul className="bg-gray-50 p-4 rounded border border-gray-200 space-y-2">
+                {availableBusinesses.map((b) => (
+                  <li key={b.id} className="text-sm text-gray-600">
+                    <code className="bg-white px-2 py-1 font-mono">{b.slug}</code> - {b.name} {b.is_active ? '(Active)' : '(Inactive)'}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          <p className="text-sm text-gray-500 mt-6">Please check the URL and try again.</p>
+        </div>
+      </div>
+    )
   }
 
   if (!business.is_active) {

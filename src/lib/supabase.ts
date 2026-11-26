@@ -1,8 +1,15 @@
 import { createClient } from "@supabase/supabase-js"
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://idvrnrvqvdzppvzbbtgj.supabase.co"
-const supabaseAnonKey =
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://cmlwqzrzoeiyvwkotqav.supabase.co"
+const supabasePublishableKey =
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkdnJucnZxdmR6cHB2emJidGdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ4MzIzMTksImV4cCI6MjA4MDQwODMxOX0.JNi8HXhzk6UP9e32p1zaFi03NSy4zKdMTyZgHP8Hcuc"
+  "sb_publishable_Ok-XHx8Fr_WjUT20NEeZag_KsVJx8fO"
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+// Server routes use the secret key for database writes. It is never selected
+// in the browser bundle because window is defined for client-side execution.
+const supabaseKey = typeof window === "undefined"
+  ? process.env.SUPABASE_SECRET_KEY || supabasePublishableKey
+  : supabasePublishableKey
+
+export const supabase = createClient(supabaseUrl, supabaseKey)
