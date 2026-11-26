@@ -1,26 +1,8 @@
-import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
+import { supabase } from '@/lib/supabase'
 
 export async function GET(request: NextRequest) {
   try {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-    if (!supabaseUrl || !supabaseKey) {
-      console.warn('[Menu API] Supabase environment variables not configured, returning empty menu')
-      return NextResponse.json({
-        success: true,
-        items: [],
-        summary: {
-          total: 0,
-          drinks: 0,
-          food: 0,
-        },
-      })
-    }
-
-    const supabase = createClient(supabaseUrl, supabaseKey)
-
     // Fetch all menu items from database
     const { data, error } = await supabase
       .from('menus')
